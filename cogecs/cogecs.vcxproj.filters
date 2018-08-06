@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="driver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="grammar.g.d_parser.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\arg.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\gram.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\grammar.g.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\lex.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\lr.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\mkdparse.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\parse.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\read_binary.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\scan.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\symtab.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\util.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\version.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+    <ClCompile Include="dparser\write_tables.c">
+      <Filter>dparser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ast.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="code_emitter.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="compiler.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="expressions.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="interpreter.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="jitcompiler.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\arg.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\d.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\dparse.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\dparse_tables.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\dparse_tree.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\dsymtab.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\gram.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\gramgram.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\lex.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\lr.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\mkdparse.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\parse.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\read_binary.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\scan.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\util.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+    <ClInclude Include="dparser\write_tables.h">
+      <Filter>dparser</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{999db167-8f1a-43fc-b294-d89c7ec9f8bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dparser">
+      <UniqueIdentifier>{6bb30080-48d9-4cec-acef-699ec68322a8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="grammar.g">
+      <Filter>source</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
