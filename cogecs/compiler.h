@@ -49,6 +49,7 @@ visit_node(int depth, const std::string& name, const std::string& value, std::sh
 void
 pre_visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
     if (name == "statement") currentStatement.reset(new Statement);            
+	if (name == "id") currentStatement->vardecl = value;
 }
 
 void

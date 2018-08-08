@@ -47,6 +47,8 @@ int main(int argc, char* argv[])
 
     auto statements = compile(argv[1], p.get());
 
+    printAST(statements);
+
     auto fun = emit_machine_code(&v, statements);
     
     {
