@@ -48,14 +48,21 @@ visit_node(int depth, const std::string& name, const std::string& value, std::sh
 
 void
 pre_visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
-    if (name == "statement") currentStatement.reset(new Statement);            
-	if (name == "id") currentStatement->vardecl = value;
+    if (name == "var_statement") currentStatement.reset(new VarDecl);            
+	if (name == "id" && dynamic_cast<VarDecl*>(currentStatement.get())) static_cast<VarDecl*>(currentStatement.get())->vardecl = value;
+	if (name == "expr_statement") currentStatement.reset(new Expression);
+	if (dynamic_cast<Expression*>(currentStatement.get())) {
+		if (name == "id" || name == "number" || name == "op") {
+			auto expr = static_cast<Expression*>(currentStatement.get());
+			expr->elements.push_back(value);
+		}
+	}
 }
 
 void
 post_visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
     if (name == "statement") {
-        statementList.push_back(*currentStatement);
+        statementList.push_back(currentStatement);
         currentStatement.reset();
     }
 }
@@ -63,7 +70,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, st
 
 void
 print_parsetree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementList& statementList) {    
-    std::shared_ptr<Statement> statementPtr (new Statement);
+    std::shared_ptr<Statement> statementPtr (new BasicStatement);
     traverse_tree(pt, pn, 0, pre, post, statementPtr, statementList);
 }
 

@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         std::cerr << "syntax: language filename" << std::endl;
         return -1;
     }
-    
+
     std::vector<int> v = { 4,2,6 };
 
     auto p = initialize_parser(argv[1]);
