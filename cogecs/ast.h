@@ -81,7 +81,36 @@ struct IfStatement : public Statement
 
 };
 
-typedef std::vector<std::shared_ptr<Statement>> StatementList;
+struct WhileLoop : public Statement
+{
+	StatementList statements;
+	void dump(size_t& depth) const {
+		std::cout << getTabs(depth);
+		std::cout << "WhileLoop" << std::endl;
+		++depth;
+		for (auto const e : statements) {
+			e->dump(depth);
+		}
+		--depth;
+	}
+
+};
+
+struct BlockStatement : public Statement
+{
+	StatementList statements;
+	void dump(size_t& depth) const {
+		std::cout << getTabs(depth);
+		std::cout << "BlockStatement" << std::endl;
+		++depth;
+		for (auto const e : statements) {
+			e->dump(depth);
+		}
+		--depth;
+	}
+};
+
+
 typedef std::vector<std::string> StatementStack;
 
 void printAST(const StatementList& statementList)
