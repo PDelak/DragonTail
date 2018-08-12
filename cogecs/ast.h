@@ -2,12 +2,15 @@
 #define LANGUAGE_AST_H
 
 #include <iostream>
+#include <vector>
 
 struct Statement
 {
+	size_t scope = 0;
 	virtual ~Statement() {}
 	virtual void dump() const = 0;
 };
+
 
 struct BasicStatement : public Statement
 {
@@ -16,10 +19,10 @@ struct BasicStatement : public Statement
 
 struct VarDecl : public Statement
 {
-	std::string vardecl;
+	std::string var_name;
 	void dump() const {
 		std::cout << "Variable declaration" << std::endl;
-		std::cout << "\tname:" << vardecl << std::endl;
+		std::cout << "\tname:" << var_name << std::endl;
 	}
 };
 
@@ -45,7 +48,22 @@ struct Expression : public Statement
 	
 };
 
-typedef std::list<std::shared_ptr<Statement>> StatementList;
+typedef std::vector<std::shared_ptr<Statement>> StatementList;
+
+struct IfStatement : public Statement
+{
+	StatementList statements;
+	void dump() const {
+		std::cout << "IfStatement" << std::endl;
+		for (auto const e : statements) {
+			e->dump();
+		}
+	}
+
+};
+
+typedef std::vector<std::shared_ptr<Statement>> StatementList;
+typedef std::vector<std::string> StatementStack;
 
 void printAST(const StatementList& statementList)
 {

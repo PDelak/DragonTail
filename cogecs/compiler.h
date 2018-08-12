@@ -5,25 +5,26 @@ const size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
 const size_t INDENT_SPACES = 4;
 extern D_ParserTables parser_tables_gram;
 
-typedef void (visit_node_fn_t)(int depth, const std::string& token_name, const std::string& token_value, std::shared_ptr<Statement>&, StatementList& statementList);
+typedef void (visit_node_fn_t)(int depth, const std::string& token_name, const std::string& token_value, StatementStack&, StatementList& statementList, size_t& scope);
 
 static void
-traverse_tree(D_ParserTables pt, D_ParseNode *pn, int depth, visit_node_fn_t pre, visit_node_fn_t post, std::shared_ptr<Statement>& statementPtr, StatementList& statementList) {
+traverse_tree(D_ParserTables pt, D_ParseNode *pn, int depth, visit_node_fn_t pre, visit_node_fn_t post, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
     
     int len = pn->end - pn->start_loc.s;
     std::string val = std::string(pn->start_loc.s, pn->start_loc.s + len);
     std::string name = std::string(pt.symbols[pn->symbol].name);
 
-    pre(depth, name.c_str(), const_cast<char*>(val.c_str()), statementPtr, statementList);
+    pre(depth, name.c_str(), const_cast<char*>(val.c_str()), stmtStack, statementList, scope);
     
     depth++;
     
     int nch = d_get_number_of_children(pn);
     for (int i = 0; i < nch; i++) {
         D_ParseNode *xpn = d_get_child(pn, i);
-        traverse_tree(pt, xpn, depth, pre, post, statementPtr, statementList);        
+        traverse_tree(pt, xpn, depth, pre, post, stmtStack, statementList, scope);        
     }
-    post(depth, name, val, statementPtr, statementList);
+    post(depth, name, val, stmtStack, statementList, scope);
+	
 }
 static char *
 change_newline2space(char *s) {
@@ -41,37 +42,70 @@ change_newline2space(char *s) {
 }
 
 void
-visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
+visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
     printf("%*s", depth*INDENT_SPACES, "");
     printf("%s  %s.\n", name.c_str(), change_newline2space(const_cast<char*>(value.c_str())));
 }
 
 void
-pre_visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
-    if (name == "var_statement") currentStatement.reset(new VarDecl);            
-	if (name == "id" && dynamic_cast<VarDecl*>(currentStatement.get())) static_cast<VarDecl*>(currentStatement.get())->vardecl = value;
-	if (name == "expr_statement") currentStatement.reset(new Expression);
-	if (dynamic_cast<Expression*>(currentStatement.get())) {
-		if (name == "id" || name == "number" || name == "op") {
-			auto expr = static_cast<Expression*>(currentStatement.get());
-			expr->elements.push_back(value);
-		}
+pre_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
+	if (name == "var_statement") stmtStack.push_back("var_statement");
+	if (name == "expr_statement") stmtStack.push_back("expr_statement");
+	if (name == "id" || name == "op" || name == "number") stmtStack.push_back(value);
+	if (name == "if_statement") {
+		stmtStack.push_back("if_statement");
+		++scope;
 	}
 }
 
 void
-post_visit_node(int depth, const std::string& name, const std::string& value, std::shared_ptr<Statement>& currentStatement, StatementList& statementList) {
-    if (name == "statement") {
-        statementList.push_back(currentStatement);
-        currentStatement.reset();
-    }
+post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
+	
+	if (name == "var_statement") {
+		auto begin = stmtStack.rbegin();
+		auto var_name = *begin;
+		auto i = stmtStack.erase(std::next(begin).base());
+		stmtStack.erase(--i);
+		auto node = std::make_shared<VarDecl>();
+		node->scope = scope;
+		node->var_name = var_name;
+		statementList.push_back(node);
+	}
+	if (name == "expr_statement") {
+		auto node = std::make_shared<Expression>();
+		node->scope = scope;
+		auto begin = stmtStack.rbegin();
+		auto it = std::next(begin).base();
+		while (*it != "expr_statement") {			
+			node->elements.insert(node->elements.begin(), *it);
+			--it;			
+		}
+		statementList.push_back(node);
+		stmtStack.erase(it, begin.base());
+	}
+	if (name == "if_statement") {
+		// move all statements with if scope to if 
+		auto begin = statementList.rbegin();
+		auto it = std::next(begin).base();
+		while (it != statementList.begin()) {
+			if ((*it)->scope != scope) break;
+			--it;
+		}
+		std::advance(it, 1);
+		auto node = std::make_shared<IfStatement>();	
+		node->scope = scope;
+		std::copy(it, begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it, begin.base());
+		statementList.push_back(node);
+		--scope;
+	}
 }
 
 
 void
-print_parsetree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementList& statementList) {    
-    std::shared_ptr<Statement> statementPtr (new BasicStatement);
-    traverse_tree(pt, pn, 0, pre, post, statementPtr, statementList);
+print_parsetree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementList& statementList, size_t& scope) {        
+	StatementStack stmtStack;
+    traverse_tree(pt, pn, 0, pre, post, stmtStack, statementList, scope);
 }
 
 
@@ -86,7 +120,8 @@ StatementList parse(D_Parser *p, char* begin, char* end)
     auto pn = dparse(p, begin, std::distance(begin, end));
     if (p->syntax_errors) printf("compilation failure %d %s\n", p->loc.line, p->loc.pathname);
     StatementList statementList;
-    print_parsetree(parser_tables_gram, pn, pre_visit_node, post_visit_node, statementList);
+	size_t scope = 0;
+    print_parsetree(parser_tables_gram, pn, pre_visit_node, post_visit_node, statementList, scope);
     return statementList;
 }
 
