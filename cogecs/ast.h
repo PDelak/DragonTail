@@ -68,6 +68,7 @@ typedef std::vector<std::shared_ptr<Statement>> StatementList;
 
 struct IfStatement : public Statement
 {
+	Expression condition;
 	StatementList statements;
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
@@ -83,6 +84,7 @@ struct IfStatement : public Statement
 
 struct WhileLoop : public Statement
 {
+	Expression condition;
 	StatementList statements;
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);

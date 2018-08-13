@@ -1,6 +1,8 @@
 #ifndef LANGUAGE_COMPILER_H
 #define LANGUAGE_COMPILER_H
 
+#include <set>
+
 const size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
 const size_t INDENT_SPACES = 4;
 extern D_ParserTables parser_tables_gram;
@@ -49,13 +51,24 @@ visit_node(int depth, const std::string& name, const std::string& value, Stateme
 
 void
 pre_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
-	if (name == "var_statement") stmtStack.push_back("var_statement");
-	if (name == "expr_statement") stmtStack.push_back("expr_statement");
 	if (name == "id" || name == "op" || name == "number") stmtStack.push_back(value);
-	if (name == "if_statement") {
-		stmtStack.push_back("if_statement");
-		++scope;
+	else {
+		std::set<std::string> rules = { 
+			"var_statement", 
+			"expr_statement",
+			"if_statement",
+			"block_statement",	
+			"while_loop"};
+		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
+	std::set<std::string> compound_rules = { 
+		"if_statement",
+		"block_statement",
+		"while_loop" 
+	};
+	// increase scope number only for compound rules
+	if (compound_rules.find(name) != compound_rules.end()) ++scope;
+
 }
 
 void
@@ -93,10 +106,57 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 		}
 		std::advance(it, 1);
 		auto node = std::make_shared<IfStatement>();	
-		node->scope = scope;
+		node->scope = scope - 1;
 		std::copy(it, begin.base(), std::back_inserter(node->statements));
 		statementList.erase(it, begin.base());
 		statementList.push_back(node);
+
+		auto ifBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "if_statement");
+		std::copy(ifBegin.base(), stmtStack.rbegin().base(), std::back_inserter(node->condition.elements));
+
+		stmtStack.erase(--ifBegin.base(), stmtStack.rbegin().base());
+		--scope;
+	}
+	if (name == "block_statement") {
+		// move all statements with if scope to if 
+		auto begin = statementList.rbegin();
+		auto it = std::next(begin).base();
+		while (it != statementList.begin()) {
+			if ((*it)->scope != scope) break;
+			--it;
+		}
+		std::advance(it, 1);
+		auto node = std::make_shared<BlockStatement>();
+		node->scope = scope - 1;
+		std::copy(it, begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it, begin.base());
+		statementList.push_back(node);
+
+		auto blockBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "block_statement");
+		stmtStack.erase(--blockBegin.base(), stmtStack.rbegin().base());
+
+		--scope;
+	}
+	if (name == "while_loop") {
+		// move all statements with if scope to if 
+		auto begin = statementList.rbegin();
+		auto it = std::next(begin).base();
+		while (it != statementList.begin()) {
+			if ((*it)->scope != scope) break;
+			--it;
+		}
+		std::advance(it, 1);
+		auto node = std::make_shared<WhileLoop>();
+		node->scope = scope - 1;
+		std::copy(it, begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it, begin.base());
+		statementList.push_back(node);
+
+		auto whileLoopBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "while_loop");
+		// move condition expr
+		std::copy(whileLoopBegin.base(), stmtStack.rbegin().base(), std::back_inserter(node->condition.elements));
+		// clean stack
+		stmtStack.erase(--whileLoopBegin.base(), stmtStack.rbegin().base());
 		--scope;
 	}
 }
