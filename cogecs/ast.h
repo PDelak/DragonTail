@@ -51,10 +51,6 @@ struct Expression : public Statement
 		++depth;
 		std::cout << getTabs(depth);
 		std::cout << "elements size:" << elements.size() << std::endl;
-		if (elements.size() == 1) {
-			std::cout << getTabs(depth);
-			std::cout << "var : " << elements[0] << std::endl;
-		}
 		int index = 0;
 		for (const auto e: elements) {
 				std::cout << getTabs(depth);
@@ -83,6 +79,7 @@ struct IfStatement : public Statement
 		std::cout << getTabs(depth);
 		std::cout << "IfStatement" << std::endl;
 		++depth;
+		condition.dump(depth);
 		for (auto const e : statements) {
 			e->dump(depth);
 		}
@@ -101,6 +98,7 @@ struct WhileLoop : public Statement
 		std::cout << getTabs(depth);
 		std::cout << "WhileLoop" << std::endl;
 		++depth;
+		condition.dump(depth);
 		for (auto const e : statements) {
 			e->dump(depth);
 		}

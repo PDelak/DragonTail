@@ -137,7 +137,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	}
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
-		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
+		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
 			
 		--scope;
