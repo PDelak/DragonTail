@@ -83,6 +83,27 @@ void clearStmtStackFor(const std::string& statementName, StatementStack& stmtSta
 	stmtStack.erase(--ifBegin.base(), stmtStack.rbegin().base());
 }
 
+void moveStatementsToNode(StatementList& src, StatementList& dst, size_t scope)
+{
+	auto begin = src.rbegin();
+
+	auto it = std::find_if(src.rbegin(), src.rend(), [&](const StatementPtr& statement) {
+		return statement->scope != scope;
+	});
+
+	std::copy(it.base(), begin.base(), std::back_inserter(dst));
+	src.erase(it.base(), begin.base());
+}
+
+template<typename NodeType>
+void addAstCompoundNode(StatementList& statementList, StatementStack& stmtStack, size_t scope, const std::string& nodeName, const std::shared_ptr<NodeType>& node)
+{
+	moveStatementsToNode(statementList, node->statements, scope);
+	statementList.push_back(node);
+
+	clearStmtStackFor(nodeName, stmtStack);
+}
+
 void
 post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
 	
@@ -102,54 +123,23 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 		clearStmtStackFor("expr_statement", stmtStack);
 	}
 	if (name == "if_statement") {
-		// move all statements with if scope to if 
 		auto node = std::make_shared<IfStatement>(scope - 1);
-
-		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
-			return statement->scope != scope;
-		});
-		
-		auto begin = statementList.rbegin();
-		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it.base(), begin.base());
-		statementList.push_back(node);
-
 		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
-		clearStmtStackFor("if_statement", stmtStack);
+		addAstCompoundNode<IfStatement>(statementList, stmtStack, scope, "if_statement", node);
+		
 		--scope;
 	}
 	if (name == "block_statement") {
 		auto node = std::make_shared<BlockStatement>(scope - 1);
-		// move all statements with if scope to if 
-		auto begin = statementList.rbegin();
+		addAstCompoundNode<BlockStatement>(statementList, stmtStack, scope, "block_statement", node);
 
-		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
-			return statement->scope != scope;
-		});
-				
-		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it.base(), begin.base());
-		statementList.push_back(node);
-
-		clearStmtStackFor("block_statement", stmtStack);
 		--scope;
 	}
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
-
-		// move all statements with if scope to if 
-		auto begin = statementList.rbegin();
-
-		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
-			return statement->scope != scope;
-		});
-		
-		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it.base(), begin.base());
-		statementList.push_back(node);
-
-		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
-		clearStmtStackFor("while_loop", stmtStack);
+		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
+		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
+			
 		--scope;
 	}
 }
