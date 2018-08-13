@@ -71,6 +71,18 @@ pre_visit_node(int depth, const std::string& name, const std::string& value, Sta
 
 }
 
+void moveExpressionFromStackToNode(StatementStack& stmtStack, const std::string& statementName, std::vector<std::string>& elements)
+{
+	auto statementIt = std::find(stmtStack.rbegin(), stmtStack.rend(), statementName);
+	std::copy(statementIt.base(), stmtStack.rbegin().base(), std::back_inserter(elements));
+}
+
+void clearStmtStackFor(const std::string& statementName, StatementStack& stmtStack)
+{
+	auto ifBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), statementName);
+	stmtStack.erase(--ifBegin.base(), stmtStack.rbegin().base());
+}
+
 void
 post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
 	
@@ -85,68 +97,59 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	}
 	if (name == "expr_statement") {
 		auto node = std::make_shared<Expression>(scope);		
-		auto expr_statement = std::find(stmtStack.rbegin(), stmtStack.rend(), "expr_statement");
-		std::copy(expr_statement.base(), stmtStack.rbegin().base(), std::back_inserter(node->elements));
+		moveExpressionFromStackToNode(stmtStack, "expr_statement", node->elements);
 		statementList.push_back(node);
-		stmtStack.erase(expr_statement.base(), stmtStack.rbegin().base());
+		clearStmtStackFor("expr_statement", stmtStack);
 	}
 	if (name == "if_statement") {
 		// move all statements with if scope to if 
-		
+		auto node = std::make_shared<IfStatement>(scope - 1);
+
 		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
 			return statement->scope != scope;
 		});
 		
 		auto begin = statementList.rbegin();
-		auto node = std::make_shared<IfStatement>(scope - 1);	
 		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
 		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
-		auto ifBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "if_statement");
-		std::copy(ifBegin.base(), stmtStack.rbegin().base(), std::back_inserter(node->condition.elements));
-
-		stmtStack.erase(--ifBegin.base(), stmtStack.rbegin().base());
+		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
+		clearStmtStackFor("if_statement", stmtStack);
 		--scope;
 	}
 	if (name == "block_statement") {
+		auto node = std::make_shared<BlockStatement>(scope - 1);
 		// move all statements with if scope to if 
 		auto begin = statementList.rbegin();
 
 		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
 			return statement->scope != scope;
 		});
-
-		auto node = std::make_shared<BlockStatement>(scope - 1);
-		
+				
 		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
 		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
-		auto blockBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "block_statement");
-		stmtStack.erase(--blockBegin.base(), stmtStack.rbegin().base());
-
+		clearStmtStackFor("block_statement", stmtStack);
 		--scope;
 	}
 	if (name == "while_loop") {
+		auto node = std::make_shared<WhileLoop>(scope - 1);
+
 		// move all statements with if scope to if 
 		auto begin = statementList.rbegin();
 
 		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
 			return statement->scope != scope;
 		});
-
-		auto node = std::make_shared<WhileLoop>(scope - 1);
 		
 		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
 		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
-		auto whileLoopBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "while_loop");
-		// move condition expr
-		std::copy(whileLoopBegin.base(), stmtStack.rbegin().base(), std::back_inserter(node->condition.elements));
-		// clean stack
-		stmtStack.erase(--whileLoopBegin.base(), stmtStack.rbegin().base());
+		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
+		clearStmtStackFor("while_loop", stmtStack);
 		--scope;
 	}
 }
