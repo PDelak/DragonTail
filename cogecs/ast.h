@@ -7,6 +7,8 @@
 struct Statement
 {
 	size_t scope = 0;
+	Statement():scope(0) {}
+	explicit Statement(size_t scope):scope(scope) {}
 	virtual ~Statement() {}
 	virtual void dump(size_t& depth) const = 0;
 };
@@ -14,6 +16,7 @@ struct Statement
 
 struct BasicStatement : public Statement
 {
+	explicit BasicStatement(size_t scope):Statement(scope) {}
 	void dump(size_t& depth) const {}
 };
 
@@ -28,6 +31,7 @@ std::string getTabs(size_t depth)
 struct VarDecl : public Statement
 {
 	std::string var_name;
+	VarDecl(size_t scope):Statement(scope) {}
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "Variable declaration" << std::endl;
@@ -39,6 +43,8 @@ struct VarDecl : public Statement
 struct Expression : public Statement
 {
 	std::vector<std::string> elements;
+	Expression() {}
+	Expression(size_t scope):Statement(scope) {}
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "Expression" << std::endl;
@@ -64,12 +70,15 @@ struct Expression : public Statement
 	
 };
 
-typedef std::vector<std::shared_ptr<Statement>> StatementList;
+using StatementPtr = std::shared_ptr<Statement>;
+using StatementList = std::vector<StatementPtr>;
 
 struct IfStatement : public Statement
 {
 	Expression condition;
 	StatementList statements;
+	IfStatement() {}
+	IfStatement(size_t scope):Statement(scope) {}
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "IfStatement" << std::endl;
@@ -86,6 +95,8 @@ struct WhileLoop : public Statement
 {
 	Expression condition;
 	StatementList statements;
+	WhileLoop() {}
+	WhileLoop(size_t scope) :Statement(scope) {}
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "WhileLoop" << std::endl;
@@ -101,6 +112,9 @@ struct WhileLoop : public Statement
 struct BlockStatement : public Statement
 {
 	StatementList statements;
+	BlockStatement() {}
+	BlockStatement(size_t scope) :Statement(scope) {}
+
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "BlockStatement" << std::endl;

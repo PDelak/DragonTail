@@ -79,36 +79,28 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 		auto var_name = *begin;
 		auto i = stmtStack.erase(std::next(begin).base());
 		stmtStack.erase(--i);
-		auto node = std::make_shared<VarDecl>();
-		node->scope = scope;
+		auto node = std::make_shared<VarDecl>(scope);
 		node->var_name = var_name;
 		statementList.push_back(node);
 	}
 	if (name == "expr_statement") {
-		auto node = std::make_shared<Expression>();
-		node->scope = scope;
-		auto begin = stmtStack.rbegin();
-		auto it = std::next(begin).base();
-		while (*it != "expr_statement") {			
-			node->elements.insert(node->elements.begin(), *it);
-			--it;			
-		}
+		auto node = std::make_shared<Expression>(scope);		
+		auto expr_statement = std::find(stmtStack.rbegin(), stmtStack.rend(), "expr_statement");
+		std::copy(expr_statement.base(), stmtStack.rbegin().base(), std::back_inserter(node->elements));
 		statementList.push_back(node);
-		stmtStack.erase(it, begin.base());
+		stmtStack.erase(expr_statement.base(), stmtStack.rbegin().base());
 	}
 	if (name == "if_statement") {
 		// move all statements with if scope to if 
+		
+		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
+			return statement->scope != scope;
+		});
+		
 		auto begin = statementList.rbegin();
-		auto it = std::next(begin).base();
-		while (it != statementList.begin()) {
-			if ((*it)->scope != scope) break;
-			--it;
-		}
-		std::advance(it, 1);
-		auto node = std::make_shared<IfStatement>();	
-		node->scope = scope - 1;
-		std::copy(it, begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it, begin.base());
+		auto node = std::make_shared<IfStatement>(scope - 1);	
+		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
 		auto ifBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "if_statement");
@@ -120,16 +112,15 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	if (name == "block_statement") {
 		// move all statements with if scope to if 
 		auto begin = statementList.rbegin();
-		auto it = std::next(begin).base();
-		while (it != statementList.begin()) {
-			if ((*it)->scope != scope) break;
-			--it;
-		}
-		std::advance(it, 1);
-		auto node = std::make_shared<BlockStatement>();
-		node->scope = scope - 1;
-		std::copy(it, begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it, begin.base());
+
+		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
+			return statement->scope != scope;
+		});
+
+		auto node = std::make_shared<BlockStatement>(scope - 1);
+		
+		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
 		auto blockBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "block_statement");
@@ -140,16 +131,15 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	if (name == "while_loop") {
 		// move all statements with if scope to if 
 		auto begin = statementList.rbegin();
-		auto it = std::next(begin).base();
-		while (it != statementList.begin()) {
-			if ((*it)->scope != scope) break;
-			--it;
-		}
-		std::advance(it, 1);
-		auto node = std::make_shared<WhileLoop>();
-		node->scope = scope - 1;
-		std::copy(it, begin.base(), std::back_inserter(node->statements));
-		statementList.erase(it, begin.base());
+
+		auto it = std::find_if(statementList.rbegin(), statementList.rend(), [&](const StatementPtr& statement) {
+			return statement->scope != scope;
+		});
+
+		auto node = std::make_shared<WhileLoop>(scope - 1);
+		
+		std::copy(it.base(), begin.base(), std::back_inserter(node->statements));
+		statementList.erase(it.base(), begin.base());
 		statementList.push_back(node);
 
 		auto whileLoopBegin = std::find(stmtStack.rbegin(), stmtStack.rend(), "while_loop");
