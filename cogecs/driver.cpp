@@ -49,25 +49,6 @@ int main(int argc, char* argv[])
 
     printAST(statements);
 
-    auto fun = emit_machine_code(&v, statements);
-    
-    {
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        for (size_t i = 0; i < 1000; ++i) { fun(); }
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Machine code execution = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
-    }
-    
-    std::vector<int> v2 = { 4,2,6 };
-
-    {
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-        for (size_t i = 0; i < 1000; ++i) { eval(&v2, statements);}
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Interpretation = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
-    }
-
-    if(!expect_eq(v, v2)) throw 1;
  
     return 0;
 }
