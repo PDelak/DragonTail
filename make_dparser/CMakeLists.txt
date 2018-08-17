@@ -41,8 +41,7 @@ set(CPPFILES
 set(PRIVATE_HFILES  
   )
 
-#include_directories(${PROJECT_SOURCE_DIR}/cogecs)
-#include_directories(dparser)
+include_directories(${PROJECT_SOURCE_DIR}/cogecs/dparser)
 add_executable(make_dparser ${CPPFILES} ${PRIVATE_HFILES})
 
 

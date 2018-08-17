@@ -60,12 +60,7 @@ enable_testing()
 
 include_directories(cogecs)
 add_subdirectory(make_dparser)
-
-#add_custom_target(bar ALL
-#  COMMAND  "${CMAKE_BINARY_DIR}/bin/make_dparser ${PROJECT_SOURCE_DIR}/cogecs/grammar.g"
-#)
 add_subdirectory(cogecs)
-
 
 
 add_custom_target(TOPLEVEL_COGECS SOURCES
