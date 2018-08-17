@@ -1,0 +1,65 @@
+        Variable declaration
+                name:a
+        Expression
+                elements size:3
+                var : a
+                op  : =
+                var : 5
+        Variable declaration
+                name:b
+        Expression
+                elements size:5
+                var : b
+                op  : =
+                var : a
+                op  : +
+                var : 6
+        BlockStatement
+                Variable declaration
+                        name:xxx
+                WhileLoop
+                        Expression
+                                elements size:3
+                                var : x
+                                op  : >
+                                var : 4
+                        BlockStatement
+                                Variable declaration
+                                        name:yyy
+                                IfStatement
+                                        Expression
+                                                elements size:3
+                                                var : xxx
+                                                op  : ==
+                                                var : 10
+                                        BlockStatement
+                                                Expression
+                                                        elements size:3
+                                                        var : yyy
+                                                        op  : =
+                                                        var : 1
+                                                Variable declaration
+                                                        name:a
+                                                Expression
+                                                        elements size:5
+                                                        var : a
+                                                        op  : =
+                                                        var : yyy
+                                                        op  : -
+                                                        var : 5
+        IfStatement
+                Expression
+                        elements size:3
+                        var : x
+                        op  : ==
+                        var : 3
+                BlockStatement
+                        Variable declaration
+                                name:a
+                        Expression
+                                elements size:3
+                                var : a
+                                op  : =
+                                var : 5
+                        Variable declaration
+                                name:b
