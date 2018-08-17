@@ -2,6 +2,12 @@
 #define LANGUAGE_COMPILER_H
 
 #include <set>
+#include <algorithm>
+#include <fstream>
+#include <iterator>
+#include <functional>
+#include "dparse.h"
+#include "ast.h"
 
 const size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
 const size_t INDENT_SPACES = 4;
@@ -191,6 +197,13 @@ ParserPtr initialize_parser(const std::string& filename)
     parser->save_parse_tree = 1;
     parser->loc.pathname = const_cast<char*>(filename.c_str());
     return parser;
+}
+
+ParserPtr initialize_parser()
+{
+	ParserPtr parser(new_D_Parser(&parser_tables_gram, 1), [](D_Parser* p) { free_D_Parser(p); });
+	parser->save_parse_tree = 1;
+	return parser;
 }
 
 #endif

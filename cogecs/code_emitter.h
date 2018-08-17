@@ -1,6 +1,8 @@
 #ifndef MACHINE_CODE_EMITTER_H
 #define MACHINE_CODE_EMITTER_H
 
+#include "ast.h"
+
 auto emit_machine_code(std::vector<int>* v, const StatementList& statementList)
 {
     X86InstrVector i_vector;

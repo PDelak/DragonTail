@@ -15,11 +15,11 @@ project(CoGeCs CXX C)
 
 # gtest
 
-# add_subdirectory(googletest)
+add_subdirectory(googletest)
 
-#include_directories(
-#  ${gtest_SOURCE_DIR}/include
-#)
+include_directories(
+  ${gtest_SOURCE_DIR}/include
+)
 
 ###############################################################################
 
@@ -61,7 +61,7 @@ enable_testing()
 include_directories(cogecs)
 add_subdirectory(make_dparser)
 add_subdirectory(cogecs)
-
+add_subdirectory(tests)
 
 add_custom_target(TOPLEVEL_COGECS SOURCES
   #Configure_Make.bat
