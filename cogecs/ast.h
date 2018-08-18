@@ -57,6 +57,8 @@ struct Expression : public Statement
 	std::vector<std::string> elements;
 	Expression() {}
 	Expression(size_t scope):Statement(scope) {}
+	Expression(size_t scope, const std::initializer_list<std::string>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
+	
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "Expression" << std::endl;
@@ -205,6 +207,6 @@ void dumpAST(const StatementList& statementList, std::ostream& out)
 
 
 template<typename Node, typename... Params>
-StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(params...);}
+StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(Node(params...));}
 
 #endif
