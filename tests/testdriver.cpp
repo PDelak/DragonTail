@@ -41,6 +41,27 @@ TEST(CoGeCs, test3)
 	});
 }
 
+TEST(CoGeCs, test4)
+{
+	
+	testProgram("{}",
+	{
+		makeNode<BlockStatement>(0)
+	});
+}
+
+TEST(CoGeCs, test5)
+{
+		
+	testProgram("if(1) {}",
+	{
+		makeNode<IfStatement>(IfStatement(0, 
+                                          Expression(0,{ "1" }),
+                                          { makeNode<BlockStatement>(BlockStatement(0)) }))
+	});
+
+}
+
 
 int main(int argc, char* argv[]) 
 {    

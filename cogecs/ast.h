@@ -106,6 +106,11 @@ struct IfStatement : public Statement
 	StatementList statements;
 	IfStatement() {}
 	IfStatement(size_t scope):Statement(scope) {}
+	IfStatement(size_t scope, Expression expr, StatementList stmt) 
+		:Statement(scope)
+		,condition(expr)
+		,statements(stmt)
+	{}
 	void dump(size_t& depth) const {
 		std::cout << getTabs(depth);
 		std::cout << "IfStatement" << std::endl;
@@ -120,7 +125,7 @@ struct IfStatement : public Statement
 		out << getTabs(depth);
 		out << "IfStatement" << std::endl;
 		++depth;
-		condition.dump(depth);
+		condition.dump(depth, out);
 		for (auto const e : statements) {
 			e->dump(depth, out);
 		}
