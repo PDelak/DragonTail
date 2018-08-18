@@ -8,7 +8,7 @@ TEST(CoGeCs, test1)
 	std::string VarText = "var a;";
 	
 	StatementList result = {
-		std::make_shared<VarDecl>(0, "a")
+		makeNode<VarDecl>(0, "a")
 	};
 
 	auto parser = initialize_parser();

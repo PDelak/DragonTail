@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <initializer_list>
 
 struct Statement
 {
@@ -201,4 +202,9 @@ void dumpAST(const StatementList& statementList, std::ostream& out)
 		(*begin)->dump(depth, out);
 	}
 }
+
+
+template<typename Node, typename... Params>
+StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(params...);}
+
 #endif
