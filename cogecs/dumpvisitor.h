@@ -29,6 +29,10 @@ struct DumpVisitor : public AstVisitor
 	}
 	void visit(const BlockStatement* stmt) 
 	{
+		// only block statements at global scope
+		// needs to be visited
+		// all others are connected to compound statements
+		// like if or while loop
 		if (stmt->scope != 0) return;
 		stmt->dump(depth, out);
 	}

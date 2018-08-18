@@ -19,6 +19,7 @@
 #include "code_emitter.h"
 #include "compiler.h"
 #include "nullvisitor.h"
+#include "dumpvisitor.h"
 
 void print(const std::vector<int>& v)
 {
@@ -46,12 +47,11 @@ int main(int argc, char* argv[])
 
     auto p = initialize_parser(argv[1]);
 
-    NullVisitor visitor;
+	size_t depth = 0;
+	
+    DumpVisitor visitor(depth, std::cout);
 
     auto statements = compile(argv[1], p.get(), visitor);
-
-    printAST(statements);
-
- 
+	 
     return 0;
 }
