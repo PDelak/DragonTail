@@ -18,6 +18,7 @@
 #include "interpreter.h"
 #include "code_emitter.h"
 #include "compiler.h"
+#include "nullvisitor.h"
 
 void print(const std::vector<int>& v)
 {
@@ -45,7 +46,9 @@ int main(int argc, char* argv[])
 
     auto p = initialize_parser(argv[1]);
 
-    auto statements = compile(argv[1], p.get());
+    NullVisitor visitor;
+
+    auto statements = compile(argv[1], p.get(), visitor);
 
     printAST(statements);
 
