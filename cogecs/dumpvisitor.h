@@ -7,27 +7,34 @@ struct DumpVisitor : public AstVisitor
 {	
 	DumpVisitor(size_t depth, std::ostream& out) :depth(depth), out(out) {}
 	
-	void visit(const BasicStatement* stmt) 
+	void visitPre(const BasicStatement*) {}
+	void visitPre(const VarDecl*) {}
+	void visitPre(const Expression*) {}
+	void visitPre(const IfStatement*) {}
+	void visitPre(const WhileLoop*) {}
+	void visitPre(const BlockStatement*) {}
+
+	void visitPost(const BasicStatement* stmt) 
 	{
 		stmt->dump(depth, out);
 	}
-	void visit(const VarDecl* stmt) 
+	void visitPost(const VarDecl* stmt) 
 	{
 		stmt->dump(depth, out);
 	}
-	void visit(const Expression* stmt) 
+	void visitPost(const Expression* stmt) 
 	{
 		stmt->dump(depth, out);
 	}
-	void visit(const IfStatement* stmt) 
+	void visitPost(const IfStatement* stmt) 
 	{
 		stmt->dump(depth, out);
 	}
-	void visit(const WhileLoop* stmt) 
+	void visitPost(const WhileLoop* stmt) 
 	{
 		stmt->dump(depth, out);
 	}
-	void visit(const BlockStatement* stmt) 
+	void visitPost(const BlockStatement* stmt) 
 	{
 		// only block statements at global scope
 		// needs to be visited

@@ -122,33 +122,33 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 		auto node = std::make_shared<VarDecl>(scope);
 		node->var_name = var_name;
 		statementList.push_back(node);
-		visitor.visit(node.get());
+		visitor.visitPost(node.get());
 	}
 	if (name == "expr_statement") {
 		auto node = std::make_shared<Expression>(scope);		
 		moveExpressionFromStackToNode(stmtStack, "expr_statement", node->elements);
 		statementList.push_back(node);
 		clearStmtStackFor("expr_statement", stmtStack);
-		visitor.visit(node.get());
+		visitor.visitPost(node.get());
 	}
 	if (name == "if_statement") {
 		auto node = std::make_shared<IfStatement>(scope - 1);
 		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
 		addAstCompoundNode<IfStatement>(statementList, stmtStack, scope, "if_statement", node);
-		visitor.visit(node.get());
+		visitor.visitPost(node.get());
 		--scope;
 	}
 	if (name == "block_statement") {
 		auto node = std::make_shared<BlockStatement>(scope - 1);
 		addAstCompoundNode<BlockStatement>(statementList, stmtStack, scope, "block_statement", node);
-		visitor.visit(node.get());
+		visitor.visitPost(node.get());
 		--scope;
 	}
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
 		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
-		visitor.visit(node.get());
+		visitor.visitPost(node.get());
 		--scope;
 	}
 }

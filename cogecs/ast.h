@@ -47,7 +47,11 @@ struct VarDecl : public Statement
 		out << getTabs(depth + 1);
 		out << "name:" << var_name << std::endl;
 	}
-	void traverse(AstVisitor& visitor) {}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
 };
 
 struct Expression : public Statement
@@ -75,7 +79,11 @@ struct Expression : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) {}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
 };
 
 using StatementPtr = std::shared_ptr<Statement>;
@@ -102,7 +110,15 @@ struct IfStatement : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) {}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		condition.traverse(visitor);
+		for (auto stmt : statements) {
+			stmt->traverse(visitor);
+		}
+		visitor.visitPost(this);
+	}
 };
 
 struct WhileLoop : public Statement
@@ -121,7 +137,15 @@ struct WhileLoop : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) {}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		condition.traverse(visitor);
+		for (auto stmt : statements) {
+			stmt->traverse(visitor);
+		}
+		visitor.visitPost(this);
+	}
 };
 
 struct BlockStatement : public Statement
@@ -139,9 +163,29 @@ struct BlockStatement : public Statement
 		}
 		--depth;
 	}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);		
+		for (auto stmt : statements) {
+			stmt->traverse(visitor);
+		}
+		visitor.visitPost(this);
+	}
+};
+
+struct LabelStatement : public Statement
+{
+	explicit LabelStatement(size_t scope) :Statement(scope) {}
+	void dump(size_t& depth, std::ostream& out) const {}
 	void traverse(AstVisitor& visitor) {}
 };
 
+struct GotoStatement : public Statement
+{
+	explicit GotoStatement(size_t scope) :Statement(scope) {}
+	void dump(size_t& depth, std::ostream& out) const {}
+	void traverse(AstVisitor& visitor) {}
+};
 
 typedef std::vector<std::string> StatementStack;
 

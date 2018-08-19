@@ -5,12 +5,18 @@
 
 struct NullVisitor : public AstVisitor
 {	
-	void visit(const BasicStatement*) {}
-	void visit(const VarDecl*) {}
-	void visit(const Expression*) {}
-	void visit(const IfStatement*) {}
-	void visit(const WhileLoop*) {}
-	void visit(const BlockStatement*) {}
+	void visitPre(const BasicStatement*) {}
+	void visitPre(const VarDecl*) {}
+	void visitPre(const Expression*) {}
+	void visitPre(const IfStatement*) {}
+	void visitPre(const WhileLoop*) {}
+	void visitPre(const BlockStatement*) {}
+	void visitPost(const BasicStatement*) {}
+	void visitPost(const VarDecl*) {}
+	void visitPost(const Expression*) {}
+	void visitPost(const IfStatement*) {}
+	void visitPost(const WhileLoop*) {}
+	void visitPost(const BlockStatement*) {}
 };
 
 #endif

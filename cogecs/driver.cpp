@@ -52,6 +52,6 @@ int main(int argc, char* argv[])
     DumpVisitor visitor(depth, std::cout);
 
     auto statements = compile(argv[1], p.get(), visitor);
-	 
+	
     return 0;
 }
