@@ -13,7 +13,6 @@ struct Statement
 	Statement():scope(0) {}
 	explicit Statement(size_t scope):scope(scope) {}
 	virtual ~Statement() {}
-	virtual void dump(size_t& depth) const = 0;
 	virtual void dump(size_t& depth, std::ostream& out) const = 0;
 };
 
@@ -21,7 +20,6 @@ struct Statement
 struct BasicStatement : public Statement
 {
 	explicit BasicStatement(size_t scope):Statement(scope) {}
-	void dump(size_t& depth) const {}
 	void dump(size_t& depth, std::ostream& out) const {}
 };
 
@@ -38,12 +36,6 @@ struct VarDecl : public Statement
 	std::string var_name;
 	VarDecl(size_t scope):Statement(scope) {}
 	VarDecl(size_t scope, std::string var) :Statement(scope), var_name(var) {}
-	void dump(size_t& depth) const {
-		std::cout << getTabs(depth);
-		std::cout << "Variable declaration" << std::endl;
-		std::cout << getTabs(depth+1);
-		std::cout << "name:" << var_name << std::endl;
-	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "Variable declaration" << std::endl;
@@ -59,24 +51,6 @@ struct Expression : public Statement
 	Expression(size_t scope):Statement(scope) {}
 	Expression(size_t scope, const std::initializer_list<std::string>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
 	
-	void dump(size_t& depth) const {
-		std::cout << getTabs(depth);
-		std::cout << "Expression" << std::endl;
-		++depth;
-		std::cout << getTabs(depth);
-		std::cout << "elements size:" << elements.size() << std::endl;
-		int index = 0;
-		for (const auto e: elements) {
-				std::cout << getTabs(depth);
-				if (!(index % 2))
-				std::cout << "var : " << e << std::endl;
-				else 
-				std::cout << "op  : " << e << std::endl;
-				
-				++index;
-		}
-		--depth;
-	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "Expression" << std::endl;
@@ -111,16 +85,6 @@ struct IfStatement : public Statement
 		,condition(expr)
 		,statements(stmt)
 	{}
-	void dump(size_t& depth) const {
-		std::cout << getTabs(depth);
-		std::cout << "IfStatement" << std::endl;
-		++depth;
-		condition.dump(depth);
-		for (auto const e : statements) {
-			e->dump(depth);
-		}
-		--depth;
-	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "IfStatement" << std::endl;
@@ -140,16 +104,6 @@ struct WhileLoop : public Statement
 	StatementList statements;
 	WhileLoop() {}
 	WhileLoop(size_t scope) :Statement(scope) {}
-	void dump(size_t& depth) const {
-		std::cout << getTabs(depth);
-		std::cout << "WhileLoop" << std::endl;
-		++depth;
-		condition.dump(depth);
-		for (auto const e : statements) {
-			e->dump(depth);
-		}
-		--depth;
-	}
 	void dump(size_t& depth, std::ostream& out) const {
 		std::cout << getTabs(depth);
 		std::cout << "WhileLoop" << std::endl;
@@ -168,15 +122,6 @@ struct BlockStatement : public Statement
 	BlockStatement() {}
 	BlockStatement(size_t scope) :Statement(scope) {}
 
-	void dump(size_t& depth) const {
-		std::cout << getTabs(depth);
-		std::cout << "BlockStatement" << std::endl;
-		++depth;
-		for (auto const e : statements) {
-			e->dump(depth);
-		}
-		--depth;
-	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "BlockStatement" << std::endl;
@@ -197,7 +142,7 @@ void printAST(const StatementList& statementList)
 	size_t depth = 1;
 	auto begin = statementList.begin();
 	for (; begin != statementList.end(); ++begin) {
-		(*begin)->dump(depth);
+		(*begin)->dump(depth, std::cout);
 	}
 }
 
