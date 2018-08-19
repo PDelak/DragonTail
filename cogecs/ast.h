@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <initializer_list>
+#include "astvisitor.h"
 
 struct Statement
 {
@@ -14,6 +15,9 @@ struct Statement
 	explicit Statement(size_t scope):scope(scope) {}
 	virtual ~Statement() {}
 	virtual void dump(size_t& depth, std::ostream& out) const = 0;
+	// traverses whole ast tree 
+	// accept visitor as parameter
+	virtual void traverse(AstVisitor& visitor) = 0;
 };
 
 
@@ -21,6 +25,7 @@ struct BasicStatement : public Statement
 {
 	explicit BasicStatement(size_t scope):Statement(scope) {}
 	void dump(size_t& depth, std::ostream& out) const {}
+	void traverse(AstVisitor& visitor) {}
 };
 
 std::string getTabs(size_t depth)
@@ -42,6 +47,7 @@ struct VarDecl : public Statement
 		out << getTabs(depth + 1);
 		out << "name:" << var_name << std::endl;
 	}
+	void traverse(AstVisitor& visitor) {}
 };
 
 struct Expression : public Statement
@@ -69,6 +75,7 @@ struct Expression : public Statement
 		}
 		--depth;
 	}
+	void traverse(AstVisitor& visitor) {}
 };
 
 using StatementPtr = std::shared_ptr<Statement>;
@@ -95,7 +102,7 @@ struct IfStatement : public Statement
 		}
 		--depth;
 	}
-
+	void traverse(AstVisitor& visitor) {}
 };
 
 struct WhileLoop : public Statement
@@ -114,6 +121,7 @@ struct WhileLoop : public Statement
 		}
 		--depth;
 	}
+	void traverse(AstVisitor& visitor) {}
 };
 
 struct BlockStatement : public Statement
@@ -131,7 +139,7 @@ struct BlockStatement : public Statement
 		}
 		--depth;
 	}
-
+	void traverse(AstVisitor& visitor) {}
 };
 
 
@@ -155,6 +163,12 @@ void dumpAST(const StatementList& statementList, std::ostream& out)
 	}
 }
 
+void traverse(const StatementList& statementList, AstVisitor& visitor)
+{
+	for (auto stmt : statementList) {
+		stmt->traverse(visitor);
+	}
+}
 
 template<typename Node, typename... Params>
 StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(Node(params...));}
