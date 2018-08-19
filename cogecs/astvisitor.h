@@ -1,12 +1,19 @@
 #ifndef COGECS_AST_VISITOR
 #define COGECS_AST_VISITOR
 
+#include <vector>
+#include <memory>
+
+struct Statement;
 struct BasicStatement;
 struct VarDecl;
 struct Expression;
 struct IfStatement;
 struct WhileLoop;
 struct BlockStatement;
+
+using StatementPtr = std::shared_ptr<Statement>;
+using StatementList = std::vector<StatementPtr>;
 
 struct AstVisitor
 {
