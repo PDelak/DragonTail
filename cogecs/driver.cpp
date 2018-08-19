@@ -14,7 +14,6 @@
 #include "dparse.h"
 #include "ast.h"
 #include "jitcompiler.h"
-#include "expressions.h"
 #include "interpreter.h"
 #include "code_emitter.h"
 #include "compiler.h"
