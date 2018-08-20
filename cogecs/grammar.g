@@ -1,11 +1,12 @@
 start : statement*;
 statement : basic_statement;
-basic_statement : var_statement ';' | expr_statement ';' | if_statement | block_statement | while_loop | label | goto_statement;
+basic_statement : var_statement ';' | expr_statement ';' | if_statement | block_statement | while_loop | label | goto_statement ;
 expr_statement : expr;
 expr : expr op expr | 
 		   expr op expr | 
 		   expr op expr |
-		   expr op expr |
+		   expr op expr |		   
+		   not expr |
 		   id | 
 		   number;
 var_statement : 'var' id;
@@ -17,3 +18,4 @@ goto_statement : 'goto' id;
 op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>';
 id : "[a-zA-Z]*";
 number : "[0-9]*";
+not : '!';

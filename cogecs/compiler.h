@@ -58,7 +58,7 @@ visit_node(int depth, const std::string& name, const std::string& value, Stateme
 
 void
 pre_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
-	if (name == "id" || name == "op" || name == "number") stmtStack.push_back(value);
+	if (name == "id" || name == "op" || name == "number" || name == "not") stmtStack.push_back(value);
 	else {
 		std::set<std::string> rules = { 
 			"var_statement", 
