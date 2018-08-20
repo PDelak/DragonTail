@@ -11,12 +11,14 @@ struct NullVisitor : public AstVisitor
 	void visitPre(const IfStatement*) {}
 	void visitPre(const WhileLoop*) {}
 	void visitPre(const BlockStatement*) {}
+	void visitPre(const LabelStatement*) {}
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl*) {}
 	void visitPost(const Expression*) {}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
 	void visitPost(const BlockStatement*) {}
+	void visitPost(const LabelStatement*) {}
 };
 
 #endif

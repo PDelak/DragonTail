@@ -65,13 +65,15 @@ pre_visit_node(int depth, const std::string& name, const std::string& value, Sta
 			"expr_statement",
 			"if_statement",
 			"block_statement",	
-			"while_loop"};
+			"while_loop",
+			"label"
+		};
 		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
 	std::set<std::string> compound_rules = { 
 		"if_statement",
 		"block_statement",
-		"while_loop" 
+		"while_loop",		
 	};
 	// increase scope number only for compound rules
 	if (compound_rules.find(name) != compound_rules.end()) ++scope;
@@ -114,6 +116,17 @@ void addAstCompoundNode(StatementList& statementList, StatementStack& stmtStack,
 void
 post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
 	
+	if (name == "label") {
+		auto begin = stmtStack.rbegin();
+		auto label = *begin;
+		auto i = stmtStack.erase(std::next(begin).base());
+		stmtStack.erase(--i);
+		auto node = std::make_shared<LabelStatement>(scope);	
+		node->label = label;
+		statementList.push_back(node);
+		visitor.visitPost(node.get());		
+	}
+
 	if (name == "var_statement") {
 		auto begin = stmtStack.rbegin();
 		auto var_name = *begin;

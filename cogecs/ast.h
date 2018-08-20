@@ -176,8 +176,20 @@ struct BlockStatement : public Statement
 struct LabelStatement : public Statement
 {
 	explicit LabelStatement(size_t scope) :Statement(scope) {}
-	void dump(size_t& depth, std::ostream& out) const {}
-	void traverse(AstVisitor& visitor) {}
+	void dump(size_t& depth, std::ostream& out) const 
+	{
+		out << getTabs(depth);
+		out << "Label" << std::endl;
+		out << getTabs(depth + 1);
+		out << "name:" << label << std::endl;
+
+	}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
+	std::string label;
 };
 
 struct GotoStatement : public Statement
