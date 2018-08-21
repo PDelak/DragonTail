@@ -195,8 +195,20 @@ struct LabelStatement : public Statement
 struct GotoStatement : public Statement
 {
 	explicit GotoStatement(size_t scope) :Statement(scope) {}
-	void dump(size_t& depth, std::ostream& out) const {}
-	void traverse(AstVisitor& visitor) {}
+	void dump(size_t& depth, std::ostream& out) const
+	{
+		out << getTabs(depth);
+		out << "Goto" << std::endl;
+		out << getTabs(depth + 1);
+		out << "name:" << label << std::endl;
+
+	}
+	void traverse(AstVisitor& visitor)
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
+	std::string label;
 };
 
 typedef std::vector<std::string> StatementStack;

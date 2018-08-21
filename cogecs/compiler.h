@@ -66,7 +66,8 @@ pre_visit_node(int depth, const std::string& name, const std::string& value, Sta
 			"if_statement",
 			"block_statement",	
 			"while_loop",
-			"label"
+			"label",
+			"goto_statement"
 		};
 		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
@@ -116,6 +117,17 @@ void addAstCompoundNode(StatementList& statementList, StatementStack& stmtStack,
 void
 post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
 	
+	if (name == "goto_statement") {
+		auto begin = stmtStack.rbegin();
+		auto label = *begin;
+		auto i = stmtStack.erase(std::next(begin).base());
+		stmtStack.erase(--i);
+		auto node = std::make_shared<GotoStatement>(scope);
+		node->label = label;
+		statementList.push_back(node);
+		visitor.visitPost(node.get());
+	}
+
 	if (name == "label") {
 		auto begin = stmtStack.rbegin();
 		auto label = *begin;
@@ -182,9 +194,12 @@ public:
 
 StatementList parse(D_Parser *p, char* begin, char* end, AstVisitor& visitor)
 {
-    auto pn = dparse(p, begin, std::distance(begin, end));
-    if (p->syntax_errors) printf("compilation failure %d %s\n", p->loc.line, p->loc.pathname);
-    StatementList statementList;
+	StatementList statementList;
+	auto pn = dparse(p, begin, std::distance(begin, end));
+	if (p->syntax_errors) {
+		printf("compilation failure %d %s\n", p->loc.line, p->loc.pathname);
+		return statementList;
+	}
 	size_t scope = 0;
     print_parsetree(parser_tables_gram, pn, pre_visit_node, post_visit_node, statementList, scope, visitor);
     return statementList;

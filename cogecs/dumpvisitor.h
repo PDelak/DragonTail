@@ -14,6 +14,7 @@ struct DumpVisitor : public AstVisitor
 	void visitPre(const WhileLoop*) {}
 	void visitPre(const BlockStatement*) {}
 	void visitPre(const LabelStatement*) {}
+	void visitPre(const GotoStatement*) {}
 
 	void visitPost(const BasicStatement* stmt) 
 	{
@@ -50,6 +51,11 @@ struct DumpVisitor : public AstVisitor
 		stmt->dump(depth, out);
 	}
 	void visitPost(const LabelStatement* stmt)
+	{
+		if (stmt->scope != 0) return;
+		stmt->dump(depth, out);
+	}
+	void visitPost(const GotoStatement* stmt)
 	{
 		if (stmt->scope != 0) return;
 		stmt->dump(depth, out);
