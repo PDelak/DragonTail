@@ -19,6 +19,8 @@
 #include "compiler.h"
 #include "nullvisitor.h"
 #include "dumpvisitor.h"
+#include "astcopier.h"
+#include "cfg_flatten.h"
 
 void print(const std::vector<int>& v)
 {
@@ -51,6 +53,12 @@ int main(int argc, char* argv[])
     DumpVisitor visitor(depth, std::cout);
 
     auto statements = compile(argv[1], p.get(), visitor);
-		
+
+	AstCopier astCopier;
+
+	traverse(statements, astCopier);
+
+	dumpAST(astCopier.getStatements(), std::cout);
+
     return 0;
 }

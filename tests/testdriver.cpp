@@ -1,3 +1,4 @@
+#include <cctype>
 #include "compiler.h"
 #include "ast.h"
 #include "nullvisitor.h"
@@ -14,8 +15,11 @@ void testProgram(std::string text, StatementList result)
 	dumpAST(result, expected);
 	std::ostringstream parsed;
 	dumpAST(statements, parsed);
-
-	EXPECT_EQ(parsed.str(), expected.str());
+	auto lhs = expected.str();
+	auto rhs = parsed.str();
+	lhs.erase(std::remove(lhs.begin(), lhs.end(), ' '), lhs.end());
+	rhs.erase(std::remove(rhs.begin(), rhs.end(), ' '), rhs.end());
+	EXPECT_EQ(lhs, rhs);
 }
 
 TEST(CoGeCs, test1)
@@ -60,6 +64,20 @@ TEST(CoGeCs, test5)
 		makeNode<IfStatement>(IfStatement(0, 
                                           Expression(0,{ "1" }),
                                           { makeNode<BlockStatement>(BlockStatement(0)) }))
+	});
+
+}
+
+TEST(CoGeCs, test6)
+{
+
+	testProgram("var a; if(1) {} var b;",
+	{
+		makeNode<VarDecl>(0, "a"),
+		makeNode<IfStatement>(IfStatement(0,
+		Expression(0,{ "1" }),
+		{ makeNode<BlockStatement>(BlockStatement(0)) })),
+		makeNode<VarDecl>(0, "b")
 	});
 
 }

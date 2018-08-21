@@ -21,14 +21,6 @@ struct AstVisitor
 {
 
 	virtual ~AstVisitor() {}
-	void setStatementList(const StatementList& slist)
-	{
-		stmtList = slist;
-	}
-	void setCurrentNodeIterator(const StatementList::const_iterator& slistIterator)
-	{
-		stmtListConstIterator = slistIterator;
-	}
 	virtual void visitPre(const BasicStatement*) = 0;
 	virtual void visitPost(const BasicStatement*) = 0;
 	virtual void visitPre(const VarDecl*) = 0;
@@ -45,10 +37,6 @@ struct AstVisitor
 	virtual void visitPost(const LabelStatement*) = 0;
 	virtual void visitPre(const GotoStatement*) = 0;
 	virtual void visitPost(const GotoStatement*) = 0;
-
-private:
-	StatementList stmtList;
-	StatementList::const_iterator stmtListConstIterator;
 };
 
 #endif
