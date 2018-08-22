@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     traverse(statements, astCloner);
 
-    dumpAST(astCopier.getStatements(), std::cout);
+    dumpAST(astCloner.getStatements(), std::cout);
 
     return 0;
 }
