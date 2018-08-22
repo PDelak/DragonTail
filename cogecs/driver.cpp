@@ -19,7 +19,7 @@
 #include "compiler.h"
 #include "nullvisitor.h"
 #include "dumpvisitor.h"
-#include "astcopier.h"
+#include "astcloner.h"
 #include "cfg_flatten.h"
 
 void print(const std::vector<int>& v)
@@ -48,17 +48,17 @@ int main(int argc, char* argv[])
 
     auto p = initialize_parser(argv[1]);
 
-	size_t depth = 0;
+    size_t depth = 0;
 	
     DumpVisitor visitor(depth, std::cout);
 
     auto statements = compile(argv[1], p.get(), visitor);
 
-	AstCopier astCopier;
+    AstCloner astCloner;
 
-	traverse(statements, astCopier);
+    traverse(statements, astCloner);
 
-	dumpAST(astCopier.getStatements(), std::cout);
+    dumpAST(astCopier.getStatements(), std::cout);
 
     return 0;
 }
