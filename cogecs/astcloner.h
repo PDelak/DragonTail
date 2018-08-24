@@ -28,13 +28,20 @@ struct AstCloner : public AstVisitor
 		auto node = makeNode<IfStatement>(IfStatement(scope));
 		nodesStack.push(node);
 	}
-	void visitPre(const WhileLoop*) {}
+
+	void visitPre(const WhileLoop*) 
+	{
+		auto node = makeNode<WhileLoop>(WhileLoop(scope));
+		nodesStack.push(node);
+	}
+
 	void visitPre(const BlockStatement* stmt) 
 	{
 		auto node = makeNode<BlockStatement>(BlockStatement(scope));
 		nodesStack.push(node);
 		++scope;
 	}
+
 	void visitPre(const LabelStatement*) {}
 	void visitPre(const GotoStatement*) {}
 
@@ -57,7 +64,6 @@ struct AstCloner : public AstVisitor
 	{
 		auto ifstmt = nodesStack.top();
 		nodesStack.pop();
-		StatementList body;
 		auto it = statements.rbegin();		
 		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
 		++it;
@@ -67,6 +73,15 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const WhileLoop* stmt) 
 	{
+		auto loop = nodesStack.top();
+		nodesStack.pop();
+		auto it = statements.rbegin();
+		static_cast<IfStatement*>(loop.get())->statements.push_back(*it);
+		++it;
+		static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		statements.erase(it.base(), statements.end());
+		statements.push_back(loop);
+
 	}
 	void visitPost(const BlockStatement* stmt) 
 	{
