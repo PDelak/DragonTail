@@ -25,6 +25,7 @@ SET_SOURCE_FILES_PROPERTIES(
 	)
 
 set(CPPFILES
+	${PROJECT_SOURCE_DIR}/cogecs/ast.cpp
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
     ${PROJECT_SOURCE_DIR}/cogecs/dparser/arg.c
 	${PROJECT_SOURCE_DIR}/cogecs/dparser/dparse_tree.c
