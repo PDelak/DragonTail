@@ -201,8 +201,8 @@ StatementList parse(D_Parser *p, char* begin, char* end, AstVisitor& visitor)
 		return statementList;
 	}
 	size_t scope = 0;
-    print_parsetree(parser_tables_gram, pn, pre_visit_node, post_visit_node, statementList, scope, visitor);
-    return statementList;
+	print_parsetree(parser_tables_gram, pn, pre_visit_node, post_visit_node, statementList, scope, visitor);
+	return statementList;
 }
 
 StatementList compile(const std::string& file, D_Parser *p, AstVisitor& visitor)
