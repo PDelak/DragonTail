@@ -42,7 +42,13 @@ struct AstCloner : public AstVisitor
 		++scope;
 	}
 
-	void visitPre(const LabelStatement*) {}
+	void visitPre(const LabelStatement* stmt) 
+	{
+		auto node = makeNode<LabelStatement>(LabelStatement(scope));		
+		static_cast<LabelStatement*>(node.get())->label = stmt->label;
+		nodesStack.push(node);
+	}
+
 	void visitPre(const GotoStatement*) {}
 
 	void visitPost(const BasicStatement* stmt) 
@@ -67,7 +73,14 @@ struct AstCloner : public AstVisitor
 		auto it = statements.rbegin();		
 		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
 		++it;
-		static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		if (dynamic_cast<Expression*>(it->get())) {
+			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		}
+		else {
+			// TODO handle label statement
+			++it;
+			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		}
 		statements.erase(it.base(), statements.end());
 		statements.push_back(ifstmt);
 	}
@@ -78,7 +91,14 @@ struct AstCloner : public AstVisitor
 		auto it = statements.rbegin();
 		static_cast<IfStatement*>(loop.get())->statements.push_back(*it);
 		++it;
-		static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		if (dynamic_cast<Expression*>(it->get())) {
+			static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		}
+		else {
+			// TODO handle label statement
+			++it;
+			static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		}
 		statements.erase(it.base(), statements.end());
 		statements.push_back(loop);
 
@@ -99,6 +119,9 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const LabelStatement* stmt)
 	{
+		auto node = nodesStack.top();		
+		statements.push_back(node);
+		nodesStack.pop();
 	}
 	void visitPost(const GotoStatement* stmt)
 	{
