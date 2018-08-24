@@ -13,23 +13,25 @@ struct AstCloner : public AstVisitor
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl* stmt) 
 	{
-		auto node = makeNode<VarDecl>(stmt->scope, stmt->var_name);
+		auto node = makeNode<VarDecl>(scope, stmt->var_name);
 		nodesStack.push(node);
 	}
 	void visitPre(const Expression* stmt) 
 	{
-		auto node = makeNode<Expression>(Expression(stmt->scope));
+		auto node = makeNode<Expression>(Expression(scope));
 		static_cast<Expression*>(node.get())->elements = stmt->elements;
 		nodesStack.push(node);
 
 	}
 	void visitPre(const IfStatement* stmt) 
 	{
+		auto node = makeNode<IfStatement>(IfStatement(scope));
+		nodesStack.push(node);
 	}
 	void visitPre(const WhileLoop*) {}
 	void visitPre(const BlockStatement* stmt) 
 	{
-		auto node = makeNode<BlockStatement>(BlockStatement(stmt->scope));
+		auto node = makeNode<BlockStatement>(BlockStatement(scope));
 		nodesStack.push(node);
 		++scope;
 	}
@@ -53,6 +55,15 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const IfStatement* stmt) 
 	{
+		auto ifstmt = nodesStack.top();
+		nodesStack.pop();
+		StatementList body;
+		auto it = statements.rbegin();		
+		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
+		++it;
+		static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		statements.erase(it.base(), statements.end());
+		statements.push_back(ifstmt);
 	}
 	void visitPost(const WhileLoop* stmt) 
 	{
