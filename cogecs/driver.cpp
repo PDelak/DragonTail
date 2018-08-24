@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 
     size_t depth = 0;
 	
-    DumpVisitor visitor(depth, std::cout);
+    NullVisitor visitor;
 
     auto statements = compile(argv[1], p.get(), visitor);
 

@@ -28,13 +28,7 @@ struct BasicStatement : public Statement
 	void traverse(AstVisitor& visitor) {}
 };
 
-std::string getTabs(size_t depth)
-{
-	std::string tab;
-	for (size_t i = 0; i < depth; ++i)
-		tab.append("\t");
-	return tab;
-}
+std::string getTabs(size_t depth);
 
 struct VarDecl : public Statement
 {
@@ -153,7 +147,8 @@ struct BlockStatement : public Statement
 	StatementList statements;
 	BlockStatement() {}
 	BlockStatement(size_t scope) :Statement(scope) {}
-
+	void setStatements(const StatementList& stmts);
+	
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "BlockStatement" << std::endl;
@@ -213,30 +208,11 @@ struct GotoStatement : public Statement
 
 typedef std::vector<std::string> StatementStack;
 
-void printAST(const StatementList& statementList)
-{
-	size_t depth = 1;
-	auto begin = statementList.begin();
-	for (; begin != statementList.end(); ++begin) {
-		(*begin)->dump(depth, std::cout);
-	}
-}
+void printAST(const StatementList& statementList);
 
-void dumpAST(const StatementList& statementList, std::ostream& out)
-{
-	size_t depth = 1;
-	auto begin = statementList.begin();
-	for (; begin != statementList.end(); ++begin) {
-		(*begin)->dump(depth, out);
-	}
-}
+void dumpAST(const StatementList& statementList, std::ostream& out);
 
-void traverse(const StatementList& statementList, AstVisitor& visitor)
-{
-	for (auto stmt : statementList) {
-		stmt->traverse(visitor);
-	}
-}
+void traverse(const StatementList& statementList, AstVisitor& visitor);
 
 template<typename Node, typename... Params>
 StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(Node(params...));}

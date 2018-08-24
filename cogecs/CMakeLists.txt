@@ -29,6 +29,7 @@ SET_SOURCE_FILES_PROPERTIES(
 set(CPPFILES
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
 	driver.cpp
+	ast.cpp
 	dparser/arg.c
 	dparser/dparse_tree.c
 	dparser/gram.c
