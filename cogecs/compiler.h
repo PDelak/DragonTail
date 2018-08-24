@@ -182,7 +182,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 void
 print_parsetree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementList& statementList, size_t& scope, AstVisitor& visitor) {        
 	StatementStack stmtStack;
-    traverse_tree(pt, pn, 0, pre, post, stmtStack, statementList, scope, visitor);
+	traverse_tree(pt, pn, 0, pre, post, stmtStack, statementList, scope, visitor);
 }
 
 
@@ -207,27 +207,27 @@ StatementList parse(D_Parser *p, char* begin, char* end, AstVisitor& visitor)
 
 StatementList compile(const std::string& file, D_Parser *p, AstVisitor& visitor)
 {
-    std::ifstream in(file);
-    if (!in.is_open()) throw FileNotFoundException("FileNotFound");
-    in.unsetf(std::ios::skipws);
-    std::istream_iterator<char> begin(in);
-    std::istream_iterator<char> end;
+	std::ifstream in(file);
+	if (!in.is_open()) throw FileNotFoundException("FileNotFound");
+	in.unsetf(std::ios::skipws);
+	std::istream_iterator<char> begin(in);
+	std::istream_iterator<char> end;
 
-    std::vector<char> buffer;
-    std::copy(begin, end, std::back_inserter(buffer));
-    char* b = &buffer[0];
-    char* e = &buffer[0] + buffer.size();
-    return parse(p, b, e, visitor);
+	std::vector<char> buffer;
+	std::copy(begin, end, std::back_inserter(buffer));
+	char* b = &buffer[0];
+	char* e = &buffer[0] + buffer.size();
+	return parse(p, b, e, visitor);
 }
 
 typedef std::unique_ptr<D_Parser, std::function<void(D_Parser*)>> ParserPtr;
 
 ParserPtr initialize_parser(const std::string& filename)
 {
-    ParserPtr parser(new_D_Parser(&parser_tables_gram, 1), [](D_Parser* p) { free_D_Parser(p);});
-    parser->save_parse_tree = 1;
-    parser->loc.pathname = const_cast<char*>(filename.c_str());
-    return parser;
+	ParserPtr parser(new_D_Parser(&parser_tables_gram, 1), [](D_Parser* p) { free_D_Parser(p);});
+	parser->save_parse_tree = 1;
+	parser->loc.pathname = const_cast<char*>(filename.c_str());
+	return parser;
 }
 
 ParserPtr initialize_parser()
