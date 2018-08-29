@@ -77,7 +77,9 @@ struct AstCloner : public AstVisitor
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 		}
 		else {
-			// TODO handle label statement
+			// handle label statement
+			auto labelPtr = static_cast<IfStatement*>(ifstmt.get())->statements.begin();
+			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr ,*it);
 			++it;
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 		}
@@ -89,15 +91,17 @@ struct AstCloner : public AstVisitor
 		auto loop = nodesStack.top();
 		nodesStack.pop();
 		auto it = statements.rbegin();
-		static_cast<IfStatement*>(loop.get())->statements.push_back(*it);
+		static_cast<WhileLoop*>(loop.get())->statements.push_back(*it);
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
-			static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 		}
 		else {
-			// TODO handle label statement
+			// handle label statement
+			auto labelPtr = static_cast<WhileLoop*>(loop.get())->statements.begin();
+			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
 			++it;
-			static_cast<IfStatement*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 		}
 		statements.erase(it.base(), statements.end());
 		statements.push_back(loop);
