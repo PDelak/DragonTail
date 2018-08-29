@@ -54,11 +54,11 @@ int main(int argc, char* argv[])
 
     auto statements = compile(argv[1], p.get(), visitor);
 
-    AstCloner astCloner;
+    CFGFlattener cfgFlattener;
 
-    traverse(statements, astCloner);
+    traverse(statements, cfgFlattener);
 
-    dumpAST(astCloner.getStatements(), std::cout);
+    dumpAST(cfgFlattener.getStatements(), std::cout);
 
     return 0;
 }
