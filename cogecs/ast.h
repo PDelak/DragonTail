@@ -199,6 +199,7 @@ struct BlockStatement : public Statement
 struct LabelStatement : public Statement
 {
 	explicit LabelStatement(size_t scope) :Statement(scope) {}
+	LabelStatement(size_t scope, const std::string& label) :Statement(scope), label(label) {}
 	void dump(size_t& depth, std::ostream& out) const 
 	{
 		out << getTabs(depth);
@@ -221,6 +222,7 @@ struct LabelStatement : public Statement
 struct GotoStatement : public Statement
 {
 	explicit GotoStatement(size_t scope) :Statement(scope) {}
+	GotoStatement(size_t scope, const std::string& label) :Statement(scope), label(label) {}
 	void dump(size_t& depth, std::ostream& out) const
 	{
 		out << getTabs(depth);

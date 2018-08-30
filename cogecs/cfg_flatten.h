@@ -84,20 +84,16 @@ struct CFGFlattener : public AstVisitor
 		auto statement = *it;
 		++it;
 		Expression condition;
-		if (dynamic_cast<Expression*>(it->get())) {
-			condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
-		}
-		else {
+		auto ifStatementPtr = static_cast<IfStatement*>(ifstmt.get());
+
+		if (!dynamic_cast<Expression*>(it->get())) {
 			// handle label statement
-			auto labelPtr = static_cast<IfStatement*>(ifstmt.get())->statements.begin();
-			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr, *it);
+			auto labelPtr = ifStatementPtr->statements.begin();
+			ifStatementPtr->statements.insert(labelPtr, *it);
 			++it;
-			condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		condition.elements = static_cast<Expression*>(it->get())->elements;
+		ifStatementPtr->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
 		std::string temp = "__temp__";
@@ -106,35 +102,26 @@ struct CFGFlattener : public AstVisitor
 
 		// create vardecl
 		// ...
-		auto tempVar = makeNode<VarDecl>(VarDecl(scope));
-		static_cast<VarDecl*>(tempVar.get())->var_name = temp;
-		statements.push_back(tempVar);
+		
+		statements.push_back(makeNode<VarDecl>(VarDecl(scope, temp)));
 
 		// create reverse condition expression
-		auto reverseCondition = makeNode<Expression>(Expression(scope));
-		static_cast<Expression*>(reverseCondition.get())->elements.push_back(temp);
-		static_cast<Expression*>(reverseCondition.get())->elements.push_back("=");
+		auto reverseCondition = makeNode<Expression>(Expression(scope, {temp, "="}));
 		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
 		statements.push_back(reverseCondition);
 
-		static_cast<IfStatement*>(ifstmt.get())->condition.elements.clear();
-		static_cast<IfStatement*>(ifstmt.get())->condition.elements.push_back("!");
-		static_cast<IfStatement*>(ifstmt.get())->condition.elements.push_back(temp);
+		ifStatementPtr->condition.elements.insert(ifStatementPtr->condition.elements.end(), { "!", temp });
 
 		std::string label = "__label__";
 		label.append(std::to_string(id));
 		id++;
 
 		// create goto statement
-		auto gotoStmt = makeNode<GotoStatement>(GotoStatement(scope));
-		static_cast<GotoStatement*>(gotoStmt.get())->label = label;
-		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(gotoStmt);
-
+		ifStatementPtr->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
 		statements.push_back(ifstmt);
-		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
+
 		statements.push_back(statement);
-		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
-		statements.push_back(labelAfterStatement);
+		statements.push_back(makeNode<LabelStatement>(LabelStatement(scope, label)));
 	}
 	void visitPost(const WhileLoop* stmt)
 	{
@@ -143,18 +130,14 @@ struct CFGFlattener : public AstVisitor
 		auto it = statements.rbegin();
 		static_cast<WhileLoop*>(loop.get())->statements.push_back(*it);
 		++it;
-		if (dynamic_cast<Expression*>(it->get())) {
-			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
-		}
-		else {
+		if (!dynamic_cast<Expression*>(it->get())) {
 			// handle label statement
 			auto labelPtr = static_cast<WhileLoop*>(loop.get())->statements.begin();
 			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
 			++it;
-			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
-			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+		static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
 		
