@@ -52,7 +52,12 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.push(node);
 	}
 
-	void visitPre(const GotoStatement*) {}
+	void visitPre(const GotoStatement* stmt) 
+	{
+		auto node = makeNode<GotoStatement>(GotoStatement(scope));
+		static_cast<GotoStatement*>(node.get())->label = stmt->label;
+		nodesStack.push(node);
+	}
 
 	void visitPost(const BasicStatement* stmt)
 	{
@@ -151,6 +156,9 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const GotoStatement* stmt)
 	{
+		auto node = nodesStack.top();
+		statements.push_back(node);
+		nodesStack.pop();
 	}
 	StatementList getStatements() const { return statements; }
 private:
