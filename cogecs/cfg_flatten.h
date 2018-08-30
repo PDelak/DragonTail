@@ -80,9 +80,12 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.pop();
 
 		auto it = statements.rbegin();
-		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
+		// get statement that is connected to if
+		auto statement = *it;
 		++it;
+		Expression condition;
 		if (dynamic_cast<Expression*>(it->get())) {
+			condition.elements = static_cast<Expression*>(it->get())->elements;
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
@@ -91,16 +94,45 @@ struct CFGFlattener : public AstVisitor
 			auto labelPtr = static_cast<IfStatement*>(ifstmt.get())->statements.begin();
 			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr, *it);
 			++it;
+			condition.elements = static_cast<Expression*>(it->get())->elements;
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
 			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		++it;
 		statements.erase(it.base(), statements.end());
-		statements.push_back(ifstmt);
-		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
+		std::string temp = "__temp__";
+		temp.append(std::to_string(id));
+		id++;
+
+		// create vardecl
+		// ...
+		auto tempVar = makeNode<VarDecl>(VarDecl(scope));
+		static_cast<VarDecl*>(tempVar.get())->var_name = temp;
+		statements.push_back(tempVar);
+
+		// create reverse condition expression
+		auto reverseCondition = makeNode<Expression>(Expression(scope));
+		static_cast<Expression*>(reverseCondition.get())->elements.push_back(temp);
+		static_cast<Expression*>(reverseCondition.get())->elements.push_back("=");
+		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
+		statements.push_back(reverseCondition);
+
+		static_cast<IfStatement*>(ifstmt.get())->condition.elements.clear();
+		static_cast<IfStatement*>(ifstmt.get())->condition.elements.push_back("!");
+		static_cast<IfStatement*>(ifstmt.get())->condition.elements.push_back(temp);
+
 		std::string label = "__label__";
 		label.append(std::to_string(id));
 		id++;
+
+		// create goto statement
+		auto gotoStmt = makeNode<GotoStatement>(GotoStatement(scope));
+		static_cast<GotoStatement*>(gotoStmt.get())->label = label;
+		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(gotoStmt);
+
+		statements.push_back(ifstmt);
+		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
+		statements.push_back(statement);
 		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
 		statements.push_back(labelAfterStatement);
 	}
@@ -146,7 +178,7 @@ struct CFGFlattener : public AstVisitor
 		static_cast<BlockStatement*>(block.get())->statements = blockStatements;
 		statements.erase(it.base(), statements.end());
 		statements.push_back(block);
-		--scope;
+		--scope;				
 	}
 	void visitPost(const LabelStatement* stmt)
 	{
