@@ -22,6 +22,7 @@ struct CFGFlattener : public AstVisitor
 	{
 		auto node = makeNode<Expression>(Expression(scope));
 		static_cast<Expression*>(node.get())->elements = stmt->elements;
+		static_cast<Expression*>(node.get())->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
 		nodesStack.push(node);
 
 	}
@@ -72,16 +73,13 @@ struct CFGFlattener : public AstVisitor
 	{
 		auto ifstmt = nodesStack.top();
 		nodesStack.pop();
-		auto labelStatement = makeNode<LabelStatement>(LabelStatement(scope));
-		std::string label = "__label__";
-		label.append(std::to_string(id));
-		static_cast<LabelStatement*>(labelStatement.get())->label = label;
 
 		auto it = statements.rbegin();
 		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		else {
 			// handle label statement
@@ -89,24 +87,28 @@ struct CFGFlattener : public AstVisitor
 			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr, *it);
 			++it;
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		++it;
 		statements.erase(it.base(), statements.end());
 		statements.push_back(ifstmt);
-		statements.push_back(labelStatement);
+		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
+		std::string label = "__label__";
+		label.append(std::to_string(id));
+		id++;
+		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
+		statements.push_back(labelAfterStatement);
 	}
 	void visitPost(const WhileLoop* stmt)
 	{
 		auto loop = nodesStack.top();
 		nodesStack.pop();
-		auto labelStatement = makeNode<LabelStatement>(LabelStatement(scope));
-		std::string label = "__label__";
-		label.append(std::to_string(id));
-		static_cast<LabelStatement*>(labelStatement.get())->label = label;
 		auto it = statements.rbegin();
 		static_cast<WhileLoop*>(loop.get())->statements.push_back(*it);
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
 			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		else {
 			// handle label statement
@@ -114,10 +116,18 @@ struct CFGFlattener : public AstVisitor
 			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
 			++it;
 			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		++it;
 		statements.erase(it.base(), statements.end());
+		
 		statements.push_back(loop);
-		statements.push_back(labelStatement);
+		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
+		std::string label = "__label__";
+		label.append(std::to_string(id));
+		id++;
+		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
+		statements.push_back(labelAfterStatement);
 	}
 	void visitPost(const BlockStatement* stmt)
 	{

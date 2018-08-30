@@ -20,6 +20,7 @@ struct AstCloner : public AstVisitor
 	{
 		auto node = makeNode<Expression>(Expression(scope));
 		static_cast<Expression*>(node.get())->elements = stmt->elements;
+		static_cast<Expression*>(node.get())->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
 		nodesStack.push(node);
 
 	}
@@ -75,6 +76,7 @@ struct AstCloner : public AstVisitor
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		else {
 			// handle label statement
@@ -82,7 +84,9 @@ struct AstCloner : public AstVisitor
 			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr ,*it);
 			++it;
 			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		++it;
 		statements.erase(it.base(), statements.end());
 		statements.push_back(ifstmt);
 	}
@@ -95,6 +99,8 @@ struct AstCloner : public AstVisitor
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
 			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
+
 		}
 		else {
 			// handle label statement
@@ -102,7 +108,9 @@ struct AstCloner : public AstVisitor
 			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
 			++it;
 			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
+		++it;
 		statements.erase(it.base(), statements.end());
 		statements.push_back(loop);
 

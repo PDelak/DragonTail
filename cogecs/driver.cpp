@@ -50,15 +50,17 @@ int main(int argc, char* argv[])
 
     size_t depth = 0;
 	
-    NullVisitor visitor;
+    NullVisitor nvisitor;
 
-    auto statements = compile(argv[1], p.get(), visitor);
+    auto statements = compile(argv[1], p.get(), nvisitor);
 
-    CFGFlattener cfgFlattener;
+    CFGFlattener visitor;
 
-    traverse(statements, cfgFlattener);
+    traverse(statements, visitor);
 
-    dumpAST(cfgFlattener.getStatements(), std::cout);
+    dumpAST(visitor.getStatements(), std::cout);
+
+    dumpCode(visitor.getStatements(), std::cout);
 
     return 0;
 }
