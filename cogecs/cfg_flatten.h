@@ -74,6 +74,24 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(node);
 		nodesStack.pop();
 	}
+
+	std::string getNextLabel() 
+	{
+		std::string label = "__label__";
+		label.append(std::to_string(id));
+		id++;
+		return label;
+	}
+
+	std::string getNextTempVariable()
+	{
+		std::string label = "__temp__";
+		label.append(std::to_string(id));
+		id++;
+		return label;
+	}
+
+
 	void visitPost(const IfStatement* stmt)
 	{
 		auto ifstmt = nodesStack.top();
@@ -96,13 +114,9 @@ struct CFGFlattener : public AstVisitor
 		ifStatementPtr->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
-		std::string temp = "__temp__";
-		temp.append(std::to_string(id));
-		id++;
 
-		// create vardecl
-		// ...
-		
+		std::string temp = getNextTempVariable();
+
 		statements.push_back(makeNode<VarDecl>(VarDecl(scope, temp)));
 
 		// create reverse condition expression
@@ -112,9 +126,7 @@ struct CFGFlattener : public AstVisitor
 
 		ifStatementPtr->condition.elements.insert(ifStatementPtr->condition.elements.end(), { "!", temp });
 
-		std::string label = "__label__";
-		label.append(std::to_string(id));
-		id++;
+		std::string label = getNextLabel();
 
 		// create goto statement
 		ifStatementPtr->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
@@ -143,9 +155,7 @@ struct CFGFlattener : public AstVisitor
 		
 		statements.push_back(loop);
 		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
-		std::string label = "__label__";
-		label.append(std::to_string(id));
-		id++;
+		std::string label = getNextLabel();
 		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
 		statements.push_back(labelAfterStatement);
 	}
