@@ -6,7 +6,17 @@
 #include <vector>
 #include <string>
 #include <initializer_list>
+#include <algorithm>
 #include "astvisitor.h"
+
+std::ostream& operator << (std::ostream& stream, const VarDecl& varDecl);
+std::ostream& operator << (std::ostream& stream, const Expression& expression);
+std::ostream& operator << (std::ostream& stream, const IfStatement& ifStatement);
+std::ostream& operator << (std::ostream& stream, const WhileLoop& loop);
+std::ostream& operator << (std::ostream& stream, const BlockStatement& block);
+std::ostream& operator << (std::ostream& stream, const LabelStatement& label);
+std::ostream& operator << (std::ostream& stream, const GotoStatement& gotoStatement);
+
 
 struct Statement
 {
@@ -15,6 +25,7 @@ struct Statement
 	explicit Statement(size_t scope):scope(scope) {}
 	virtual ~Statement() {}
 	virtual void dump(size_t& depth, std::ostream& out) const = 0;
+	virtual void text(std::ostream& out) const = 0;
 	// traverses whole ast tree 
 	// accept visitor as parameter
 	virtual void traverse(AstVisitor& visitor) = 0;
@@ -25,6 +36,7 @@ struct BasicStatement : public Statement
 {
 	explicit BasicStatement(size_t scope):Statement(scope) {}
 	void dump(size_t& depth, std::ostream& out) const {}
+	virtual void text(std::ostream& out) const {}
 	void traverse(AstVisitor& visitor) {}
 };
 
@@ -40,6 +52,9 @@ struct VarDecl : public Statement
 		out << "Variable declaration" << std::endl;
 		out << getTabs(depth + 1);
 		out << "name:" << var_name << std::endl;
+	}
+	virtual void text(std::ostream& out) const {
+		out << *this;
 	}
 	void traverse(AstVisitor& visitor) 
 	{
@@ -73,11 +88,15 @@ struct Expression : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) 
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
+	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);
 		visitor.visitPost(this);
 	}
+	bool isPartOfCompoundStmt = false;
 };
 
 using StatementPtr = std::shared_ptr<Statement>;
@@ -94,6 +113,9 @@ struct IfStatement : public Statement
 		,condition(expr)
 		,statements(stmt)
 	{}
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "IfStatement" << std::endl;
@@ -131,7 +153,10 @@ struct WhileLoop : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) 
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
+	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);
 		condition.traverse(visitor);
@@ -158,7 +183,10 @@ struct BlockStatement : public Statement
 		}
 		--depth;
 	}
-	void traverse(AstVisitor& visitor) 
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
+	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);		
 		for (auto stmt : statements) {
@@ -179,7 +207,10 @@ struct LabelStatement : public Statement
 		out << "name:" << label << std::endl;
 
 	}
-	void traverse(AstVisitor& visitor) 
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
+	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);
 		visitor.visitPost(this);
@@ -198,6 +229,9 @@ struct GotoStatement : public Statement
 		out << "name:" << label << std::endl;
 
 	}
+	virtual void text(std::ostream& out) const {
+		out << *this;
+	}
 	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);
@@ -212,9 +246,12 @@ void printAST(const StatementList& statementList);
 
 void dumpAST(const StatementList& statementList, std::ostream& out);
 
+void dumpCode(const StatementList& statementList, std::ostream& out);
+
 void traverse(const StatementList& statementList, AstVisitor& visitor);
 
 template<typename Node, typename... Params>
 StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(Node(params...));}
+
 
 #endif

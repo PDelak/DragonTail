@@ -158,6 +158,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	}
 	if (name == "if_statement") {
 		auto node = std::make_shared<IfStatement>(scope - 1);
+		node->condition.isPartOfCompoundStmt = true;
 		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
 		addAstCompoundNode<IfStatement>(statementList, stmtStack, scope, "if_statement", node);
 		visitor.visitPost(node.get());
@@ -171,6 +172,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 	}
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
+		node->condition.isPartOfCompoundStmt = true;
 		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
 		visitor.visitPost(node.get());
