@@ -8,6 +8,19 @@
 #include "astvisitor.h"
 #include "ast.h"
 
+template<typename T>
+bool is(const StatementPtr& p)
+{
+	return dynamic_cast<T*>(p.get());
+}
+
+template<typename T>
+T* cast(const StatementPtr& p)
+{
+	return static_cast<T*>(p.get());
+}
+
+
 struct CFGFlattener : public AstVisitor
 {	
 	CFGFlattener() {}
@@ -20,9 +33,11 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPre(const Expression* stmt)
 	{
-		auto node = makeNode<Expression>(Expression(scope));
-		static_cast<Expression*>(node.get())->elements = stmt->elements;
-		static_cast<Expression*>(node.get())->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
+		auto node = makeNode<Expression>(Expression(scope));		
+		if (is<Expression>(node)) {
+			cast<Expression>(node)->elements = stmt->elements;
+			cast<Expression>(node)->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
+		}
 		nodesStack.push(node);
 
 	}
@@ -48,14 +63,14 @@ struct CFGFlattener : public AstVisitor
 	void visitPre(const LabelStatement* stmt)
 	{
 		auto node = makeNode<LabelStatement>(LabelStatement(scope));
-		static_cast<LabelStatement*>(node.get())->label = stmt->label;
+		cast<LabelStatement>(node)->label = stmt->label;
 		nodesStack.push(node);
 	}
 
 	void visitPre(const GotoStatement* stmt) 
 	{
 		auto node = makeNode<GotoStatement>(GotoStatement(scope));
-		static_cast<GotoStatement*>(node.get())->label = stmt->label;
+		cast<GotoStatement>(node)->label = stmt->label;
 		nodesStack.push(node);
 	}
 
@@ -102,16 +117,16 @@ struct CFGFlattener : public AstVisitor
 		auto statement = *it;
 		++it;
 		Expression condition;
-		auto ifStatementPtr = static_cast<IfStatement*>(ifstmt.get());
+		auto ifStatementPtr = cast<IfStatement>(ifstmt);
 
-		if (!dynamic_cast<Expression*>(it->get())) {
+		if (!is<Expression>(*it)) {
 			// handle label statement
 			auto labelPtr = ifStatementPtr->statements.begin();
 			ifStatementPtr->statements.insert(labelPtr, *it);
 			++it;
 		}
-		condition.elements = static_cast<Expression*>(it->get())->elements;
-		ifStatementPtr->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
+		condition.elements = cast<Expression>(*it)->elements;
+		ifStatementPtr->condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
 
@@ -135,43 +150,47 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(statement);
 		statements.push_back(makeNode<LabelStatement>(LabelStatement(scope, label)));
 	}
+
 	void visitPost(const WhileLoop* stmt)
 	{
 		auto loop = nodesStack.top();
 		nodesStack.pop();
 		auto it = statements.rbegin();
-		static_cast<WhileLoop*>(loop.get())->statements.push_back(*it);
+		cast<WhileLoop>(loop)->statements.push_back(*it);
 		++it;
-		if (!dynamic_cast<Expression*>(it->get())) {
+		if (!is<Expression>(*it)) {
 			// handle label statement
-			auto labelPtr = static_cast<WhileLoop*>(loop.get())->statements.begin();
-			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
+			auto labelPtr = cast<WhileLoop>(loop)->statements.begin();
+			cast<WhileLoop>(loop)->statements.insert(labelPtr, *it);
 			++it;
 		}
-		static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
-		static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
+		cast<WhileLoop>(loop)->condition.elements = cast<Expression>(*it)->elements;
+		cast<WhileLoop>(loop)->condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
 		
 		statements.push_back(loop);
 		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
 		std::string label = getNextLabel();
-		static_cast<LabelStatement*>(labelAfterStatement.get())->label = label;
+		cast<LabelStatement>(labelAfterStatement)->label = label;
 		statements.push_back(labelAfterStatement);
 	}
 	void visitPost(const BlockStatement* stmt)
-	{
+	{		
+		// TODO reduce all blocks except most outer one
 		auto block = nodesStack.top();
 		nodesStack.pop();
+	
 		StatementList blockStatements;
 		auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
 			return s->scope != scope;
 		});
 		std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
-		static_cast<BlockStatement*>(block.get())->statements = blockStatements;
+		cast<BlockStatement>(block)->statements = blockStatements;
 		statements.erase(it.base(), statements.end());
 		statements.push_back(block);
-		--scope;				
+		
+		--scope;								
 	}
 	void visitPost(const LabelStatement* stmt)
 	{
