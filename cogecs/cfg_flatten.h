@@ -177,7 +177,10 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const BlockStatement* stmt)
 	{		
-		// TODO reduce all blocks except most outer one
+		// TODO go up stack and check if there is if statement
+		// or while at the top and if so
+		// reduce all blocks except most outer one
+		// otherwise reduce all
 		auto block = nodesStack.top();
 		nodesStack.pop();
 	
