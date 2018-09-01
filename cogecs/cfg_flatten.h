@@ -7,19 +7,7 @@
 #include <stack>
 #include "astvisitor.h"
 #include "ast.h"
-
-template<typename T>
-bool is(const StatementPtr& p)
-{
-	return dynamic_cast<T*>(p.get());
-}
-
-template<typename T>
-T* cast(const StatementPtr& p)
-{
-	return static_cast<T*>(p.get());
-}
-
+#include "tools.h"
 
 struct CFGFlattener : public AstVisitor
 {	
