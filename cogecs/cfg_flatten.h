@@ -179,17 +179,29 @@ struct CFGFlattener : public AstVisitor
 		auto begin = nodesStack.rbegin();
 		auto block = *begin;
 		auto previous = nodesStack.erase(std::next(begin).base());
-		// if previous is block statement as well
-		// update all statements that are part of current block 
-		// with --scope
-		StatementList blockStatements;
-		auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
-			return s->scope != scope;
-		});
-		std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
-		cast<BlockStatement>(block)->statements = blockStatements;
-		statements.erase(it.base(), statements.end());
-		statements.push_back(block);
+				
+		if (nodesStack.size() > 1 && previous != nodesStack.end() && is<BlockStatement>(*previous)) {
+			// if previous is block statement as well
+			// update all statements that are part of current block 
+			StatementList blockStatements;
+			auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
+				return s->scope != scope;
+			});
+			std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
+			cast<BlockStatement>(block)->statements = blockStatements;
+			statements.erase(it.base(), statements.end());
+			statements.push_back(block);
+		}
+		else {
+			StatementList blockStatements;
+			auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
+				return s->scope != scope;
+			});
+			std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
+			cast<BlockStatement>(block)->statements = blockStatements;
+			statements.erase(it.base(), statements.end());
+			statements.push_back(block);
+		}
 		--scope;
 									
 	}
