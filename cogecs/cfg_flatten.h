@@ -107,6 +107,15 @@ struct CFGFlattener : public AstVisitor
 		auto it = statements.rbegin();
 		// get statement that is connected to if
 		auto statement = *it;
+		std::vector<StatementPtr> if_children;
+		if (is<BlockStatement>(statement)) {
+			auto block = cast<BlockStatement>(statement);
+			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(if_children));
+		}
+		else {
+			if_children.push_back(statement);
+		}
+
 		++it;
 		Expression condition;
 		auto ifStatementPtr = cast<IfStatement>(ifstmt);
@@ -139,7 +148,8 @@ struct CFGFlattener : public AstVisitor
 		ifStatementPtr->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
 		statements.push_back(ifstmt);
 
-		statements.push_back(statement);
+		std::copy(if_children.begin(), if_children.end(), std::back_inserter(statements));
+		
 		statements.push_back(makeNode<LabelStatement>(LabelStatement(scope, label)));
 	}
 
@@ -150,6 +160,11 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.erase(std::next(begin).base());
 
 		auto it = statements.rbegin();
+
+		if (is<BlockStatement>(*it)) {
+
+		}
+
 		cast<WhileLoop>(loop)->statements.push_back(*it);
 		++it;
 		if (!is<Expression>(*it)) {
@@ -158,11 +173,25 @@ struct CFGFlattener : public AstVisitor
 			cast<WhileLoop>(loop)->statements.insert(labelPtr, *it);
 			++it;
 		}
+		Expression condition;
+
 		cast<WhileLoop>(loop)->condition.elements = cast<Expression>(*it)->elements;
+		condition.elements = cast<WhileLoop>(loop)->condition.elements;
+
 		cast<WhileLoop>(loop)->condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
 		++it;
 		statements.erase(it.base(), statements.end());
 		
+		std::string temp = getNextTempVariable();
+		statements.push_back(makeNode<VarDecl>(VarDecl(scope, temp)));
+		// create reverse condition expression
+		
+		auto reverseCondition = makeNode<Expression>(Expression(scope, { temp, "=" }));
+		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
+		statements.push_back(reverseCondition);
+		cast<WhileLoop>(loop)->condition.elements.clear();
+		cast<WhileLoop>(loop)->condition.elements.insert(cast<WhileLoop>(loop)->condition.elements.end(), { "!", temp });
+
 		statements.push_back(loop);
 		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
 		std::string label = getNextLabel();
@@ -189,8 +218,7 @@ struct CFGFlattener : public AstVisitor
 		}
 		else {
 			// if previous is block statement as well
-			// update all statements that are part of current block 
-			StatementList blockStatements;
+			// update all statements that are part of current block 			
 			auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
 				return s->scope != scope;
 			});
