@@ -193,6 +193,10 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(makeNode<VarDecl>(VarDecl(scope, temp)));
 		// create reverse condition expression
 		
+		auto labelBeforeIfNode = makeNode<LabelStatement>(LabelStatement(scope));
+		cast<LabelStatement>(labelBeforeIfNode)->label = getNextLabel();
+		statements.push_back(labelBeforeIfNode);
+
 		auto reverseCondition = makeNode<Expression>(Expression(scope, { temp, "=" }));
 		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
 		statements.push_back(reverseCondition);
@@ -202,10 +206,6 @@ struct CFGFlattener : public AstVisitor
 		std::string label = getNextLabel();
 		cast<IfStatement>(if_statement)->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
 		
-		auto labelBeforeIfNode = makeNode<LabelStatement>(LabelStatement(scope));
-		cast<LabelStatement>(labelBeforeIfNode)->label = getNextLabel();
-		statements.push_back(labelBeforeIfNode);
-
 		statements.push_back(if_statement);
 		std::copy(while_children.begin(), while_children.end(), std::back_inserter(statements));
 		statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, cast<LabelStatement>(labelBeforeIfNode)->label)));
