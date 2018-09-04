@@ -110,6 +110,7 @@ struct CFGFlattener : public AstVisitor
 		std::vector<StatementPtr> if_children;
 		if (is<BlockStatement>(statement)) {
 			auto block = cast<BlockStatement>(statement);
+			std::for_each(block->statements.begin(), block->statements.end(), [](const StatementPtr& stmt) {stmt->scope = stmt->scope - 1; });
 			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(if_children));
 		}
 		else {
@@ -165,6 +166,7 @@ struct CFGFlattener : public AstVisitor
 		std::vector<StatementPtr> while_children;
 		if (is<BlockStatement>(statement)) {
 			auto block = cast<BlockStatement>(statement);
+			std::for_each(block->statements.begin(), block->statements.end(), [](const StatementPtr& stmt) {stmt->scope = stmt->scope - 1; });
 			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(while_children));
 		}
 		else {
