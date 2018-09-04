@@ -122,7 +122,10 @@ struct CFGFlattener : public AstVisitor
 		auto ifStatementPtr = cast<IfStatement>(ifstmt);
 
 		if (!is<Expression>(*it)) {
-			// handle label statement
+			// handle label statement, that's follow case
+			// if (a) 
+			// label_0: {}
+
 			auto labelPtr = ifStatementPtr->statements.begin();
 			ifStatementPtr->statements.insert(labelPtr, *it);
 			++it;
@@ -157,63 +160,60 @@ struct CFGFlattener : public AstVisitor
 	void visitPost(const WhileLoop* stmt)
 	{
 		auto begin = nodesStack.rbegin();
-		//auto loop = *begin;
 		nodesStack.erase(std::next(begin).base());
 		auto if_statement = makeNode<IfStatement>(IfStatement(scope));
 
-		auto it = statements.rbegin();
-		auto statement = *it;
+		auto currentStatementIterator = statements.rbegin();
+		
 		std::vector<StatementPtr> while_children;
-		if (is<BlockStatement>(statement)) {
-			auto block = cast<BlockStatement>(statement);
+		if (is<BlockStatement>(*currentStatementIterator)) {
+			auto block = cast<BlockStatement>(*currentStatementIterator);
 			std::for_each(block->statements.begin(), block->statements.end(), [](const StatementPtr& stmt) {stmt->scope = stmt->scope - 1; });
 			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(while_children));
 		}
-		else {
-			while_children.push_back(statement);
+		else { while_children.push_back(*currentStatementIterator); }
+
+		++currentStatementIterator;
+		
+		if (!is<Expression>(*currentStatementIterator)) {
+			// handle label statement, that's follow case
+			// if (a) 
+			// label_0: {}
+			while_children.insert(while_children.begin(), *currentStatementIterator);
+			++currentStatementIterator;
+			
 		}
+		
+		Expression condition = *cast<Expression>(*currentStatementIterator);
+			
+		cast<IfStatement>(if_statement)->scope = cast<Expression>(*currentStatementIterator)->scope;
+		cast<IfStatement>(if_statement)->condition.isPartOfCompoundStmt = cast<Expression>(*currentStatementIterator)->isPartOfCompoundStmt;
 
-		cast<IfStatement>(if_statement)->statements.push_back(*it);
-		++it;
-		if (!is<Expression>(*it)) {
-			// handle label statement
-			auto labelPtr = cast<IfStatement>(if_statement)->statements.begin();
-			cast<IfStatement>(if_statement)->statements.insert(labelPtr, *it);
-			++it;
-		}
-		Expression condition;
-
-		cast<IfStatement>(if_statement)->condition.elements = cast<Expression>(*it)->elements;
-		condition.elements = cast<IfStatement>(if_statement)->condition.elements;
-
-		cast<IfStatement>(if_statement)->condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
-		condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
-		++it;
-		statements.erase(it.base(), statements.end());
+		++currentStatementIterator;
+		statements.erase(currentStatementIterator.base(), statements.end());
 		
 		std::string temp = getNextTempVariable();
 		statements.push_back(makeNode<VarDecl>(VarDecl(scope, temp)));
-		// create reverse condition expression
-		
+
+		// create reverse condition expression		
 		auto labelBeforeIfNode = makeNode<LabelStatement>(LabelStatement(scope));
 		cast<LabelStatement>(labelBeforeIfNode)->label = getNextLabel();
 		statements.push_back(labelBeforeIfNode);
 
 		auto reverseCondition = makeNode<Expression>(Expression(scope, { temp, "=" }));
 		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
+		
 		statements.push_back(reverseCondition);
-		cast<IfStatement>(if_statement)->condition.elements.clear();
+		
 		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
-		cast<IfStatement>(if_statement)->statements.clear();
+		
 		std::string label = getNextLabel();
 		cast<IfStatement>(if_statement)->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
 		
 		statements.push_back(if_statement);
 		std::copy(while_children.begin(), while_children.end(), std::back_inserter(statements));
 		statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, cast<LabelStatement>(labelBeforeIfNode)->label)));
-		auto labelAfterStatement = makeNode<LabelStatement>(LabelStatement(scope));
-		cast<LabelStatement>(labelAfterStatement)->label = label;
-		statements.push_back(labelAfterStatement);
+		statements.push_back(makeNode<LabelStatement>(LabelStatement(scope, label)));
 	}
 	void visitPost(const BlockStatement* stmt)
 	{		
