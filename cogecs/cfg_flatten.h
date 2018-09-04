@@ -101,39 +101,36 @@ struct CFGFlattener : public AstVisitor
 	void visitPost(const IfStatement* stmt)
 	{
 		auto begin = nodesStack.rbegin();
-		auto ifstmt = *begin;
+		auto if_statement = *begin;
 		nodesStack.erase(std::next(begin).base());
 
-		auto it = statements.rbegin();
+		auto currentStatementIterator = statements.rbegin();
 		// get statement that is connected to if
-		auto statement = *it;
+		
 		std::vector<StatementPtr> if_children;
-		if (is<BlockStatement>(statement)) {
-			auto block = cast<BlockStatement>(statement);
+		if (is<BlockStatement>(*currentStatementIterator)) {
+			auto block = cast<BlockStatement>(*currentStatementIterator);
 			std::for_each(block->statements.begin(), block->statements.end(), [](const StatementPtr& stmt) {stmt->scope = stmt->scope - 1; });
 			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(if_children));
 		}
 		else {
-			if_children.push_back(statement);
+			if_children.push_back(*currentStatementIterator);
 		}
 
-		++it;
-		Expression condition;
-		auto ifStatementPtr = cast<IfStatement>(ifstmt);
-
-		if (!is<Expression>(*it)) {
+		++currentStatementIterator;
+		
+		if (!is<Expression>(*currentStatementIterator)) {
 			// handle label statement, that's follow case
-			// if (a) 
-			// label_0: {}
-
-			auto labelPtr = ifStatementPtr->statements.begin();
-			ifStatementPtr->statements.insert(labelPtr, *it);
-			++it;
+			// if (a) label_0: {}
+			if_children.insert(if_children.begin(), *currentStatementIterator);
+			++currentStatementIterator;
 		}
-		condition.elements = cast<Expression>(*it)->elements;
-		ifStatementPtr->condition.isPartOfCompoundStmt = cast<Expression>(*it)->isPartOfCompoundStmt;
-		++it;
-		statements.erase(it.base(), statements.end());
+
+		Expression condition;
+		condition.elements = cast<Expression>(*currentStatementIterator)->elements;
+		cast<IfStatement>(if_statement)->condition.isPartOfCompoundStmt = cast<Expression>(*currentStatementIterator)->isPartOfCompoundStmt;
+		++currentStatementIterator;
+		statements.erase(currentStatementIterator.base(), statements.end());
 
 		std::string temp = getNextTempVariable();
 
@@ -144,13 +141,13 @@ struct CFGFlattener : public AstVisitor
 		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
 		statements.push_back(reverseCondition);
 
-		ifStatementPtr->condition.elements.insert(ifStatementPtr->condition.elements.end(), { "!", temp });
+		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
 
 		std::string label = getNextLabel();
 
 		// create goto statement
-		ifStatementPtr->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
-		statements.push_back(ifstmt);
+		cast<IfStatement>(if_statement)->statements.push_back(makeNode<GotoStatement>(GotoStatement(scope, label)));
+		statements.push_back(if_statement);
 
 		std::copy(if_children.begin(), if_children.end(), std::back_inserter(statements));
 		
@@ -177,11 +174,9 @@ struct CFGFlattener : public AstVisitor
 		
 		if (!is<Expression>(*currentStatementIterator)) {
 			// handle label statement, that's follow case
-			// if (a) 
-			// label_0: {}
+			// while (a) label_0: {}
 			while_children.insert(while_children.begin(), *currentStatementIterator);
-			++currentStatementIterator;
-			
+			++currentStatementIterator;			
 		}
 		
 		Expression condition = *cast<Expression>(*currentStatementIterator);
