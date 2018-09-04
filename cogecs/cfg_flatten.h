@@ -83,7 +83,7 @@ struct CFGFlattener : public AstVisitor
 
 	std::string getNextLabel() 
 	{
-		std::string label = "__label__";
+		std::string label = "label__";
 		label.append(std::to_string(id));
 		id++;
 		return label;
@@ -91,7 +91,7 @@ struct CFGFlattener : public AstVisitor
 
 	std::string getNextTempVariable()
 	{
-		std::string label = "__temp__";
+		std::string label = "temp__";
 		label.append(std::to_string(id));
 		id++;
 		return label;
