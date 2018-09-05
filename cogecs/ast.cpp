@@ -1,10 +1,5 @@
 #include "ast.h"
 
-void BlockStatement::setStatements(const StatementList& stmts)
-{
-	statements = stmts;
-}
-
 void printAST(const StatementList& statementList)
 {
 	size_t depth = 1;

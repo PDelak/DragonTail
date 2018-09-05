@@ -143,6 +143,12 @@ struct WhileLoop : public Statement
 	StatementList statements;
 	WhileLoop() {}
 	WhileLoop(size_t scope) :Statement(scope) {}
+	WhileLoop(size_t scope, Expression expr, StatementList stmt)
+		:Statement(scope)
+		, condition(expr)
+		, statements(stmt)
+	{}
+
 	void dump(size_t& depth, std::ostream& out) const {
 		std::cout << getTabs(depth);
 		std::cout << "WhileLoop" << std::endl;
@@ -172,8 +178,11 @@ struct BlockStatement : public Statement
 	StatementList statements;
 	BlockStatement() {}
 	BlockStatement(size_t scope) :Statement(scope) {}
-	void setStatements(const StatementList& stmts);
-	
+	BlockStatement(size_t scope, StatementList stmt)
+		:Statement(scope)
+		,statements(stmt)
+	{}
+
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "BlockStatement" << std::endl;

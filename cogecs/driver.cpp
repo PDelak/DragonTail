@@ -40,6 +40,7 @@ bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
 
 int main(int argc, char* argv[])
 {    
+
     if (argc < 2) {
         std::cerr << "syntax: language filename" << std::endl;
         return -1;
