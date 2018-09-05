@@ -3,6 +3,7 @@
 #include "ast.h"
 #include "nullvisitor.h"
 #include "astcloner.h"
+#include "cfg_flatten.h"
 #include "gtest/gtest.h"
 
 template<typename Visitor>
@@ -86,6 +87,18 @@ TEST(CoGeCs, test6)
 
 }
 
+TEST(CoGeCs, test7)
+{
+	testProgram<CFGFlattener>("if(1) {}",
+	{
+		makeNode(VarDecl(0, "temp__0")),
+		makeNode(Expression(0, {"temp__0", "=", "1"})),
+		makeNode(IfStatement(0,
+				 Expression(0,{ "!","temp__0" }),
+				 { makeNode(GotoStatement(0, "label__1")) })),
+		makeNode(LabelStatement(0, "label__1"))
+	});
+}
 
 int main(int argc, char* argv[]) 
 {    

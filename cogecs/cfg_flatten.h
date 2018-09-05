@@ -66,6 +66,7 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const VarDecl* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto node = *begin;
 		statements.push_back(node);
@@ -73,6 +74,7 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const Expression* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto node = *begin;
 		statements.push_back(node);
@@ -98,6 +100,7 @@ struct CFGFlattener : public AstVisitor
 
 	void visitPost(const IfStatement* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto if_statement = *begin;
 		nodesStack.erase(std::next(begin).base());
@@ -154,6 +157,7 @@ struct CFGFlattener : public AstVisitor
 
 	void visitPost(const WhileLoop* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		nodesStack.erase(std::next(begin).base());
 		auto if_statement = makeNode(IfStatement(scope));
@@ -212,6 +216,7 @@ struct CFGFlattener : public AstVisitor
 	{		
 		// reduce all blocks except most outer one
 		// otherwise reduce all		
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto block = *begin;
 		auto previous = nodesStack.erase(std::next(begin).base());
@@ -242,6 +247,7 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const LabelStatement* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto node = *begin;
 		statements.push_back(node);
@@ -250,6 +256,7 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPost(const GotoStatement* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto node = *begin;
 		statements.push_back(node);
