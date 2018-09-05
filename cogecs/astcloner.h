@@ -13,7 +13,7 @@ struct AstCloner : public AstVisitor
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl* stmt) 
 	{
-		auto node = makeNode<VarDecl>(scope, stmt->var_name);
+		auto node = makeNode(VarDecl(scope, stmt->var_name));
 		nodesStack.push(node);
 	}
 	void visitPre(const Expression* stmt) 
@@ -45,15 +45,13 @@ struct AstCloner : public AstVisitor
 
 	void visitPre(const LabelStatement* stmt) 
 	{
-		auto node = makeNode<LabelStatement>(LabelStatement(scope));		
-		static_cast<LabelStatement*>(node.get())->label = stmt->label;
+		auto node = makeNode(LabelStatement(scope, stmt->label));		
 		nodesStack.push(node);
 	}
 
 	void visitPre(const GotoStatement* stmt) 
 	{
-		auto node = makeNode<GotoStatement>(GotoStatement(scope));
-		static_cast<GotoStatement*>(node.get())->label = stmt->label;
+		auto node = makeNode(GotoStatement(scope, stmt->label));
 		nodesStack.push(node);
 	}
 

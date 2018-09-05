@@ -29,7 +29,7 @@ TEST(CoGeCs, test1)
 {
 	testProgram("var a;",
 	{
-		makeNode<VarDecl>(0, "a")
+		makeNode(VarDecl(0, "a"))
 	});
 }
 
@@ -37,7 +37,7 @@ TEST(CoGeCs, test2)
 {
 	testProgram("a = 1;",
 	{
-		makeNode<Expression>(Expression(0,{ "a", "=", "1" }))
+		makeNode(Expression(0,{ "a", "=", "1" }))
 	});
 }
 
@@ -45,8 +45,8 @@ TEST(CoGeCs, test3)
 {
 	testProgram("a = 1; a = a - 1;", 
 	{
-		makeNode<Expression>(Expression(0,{ "a", "=", "1" })),
-		makeNode<Expression>(Expression(0,{ "a", "=", "a", "-", "1" })),
+		makeNode(Expression(0,{ "a", "=", "1" })),
+		makeNode(Expression(0,{ "a", "=", "a", "-", "1" })),
 	});
 }
 
@@ -55,7 +55,7 @@ TEST(CoGeCs, test4)
 	
 	testProgram("{}",
 	{
-		makeNode<BlockStatement>(0)
+		makeNode(BlockStatement(0))
 	});
 }
 
@@ -64,9 +64,9 @@ TEST(CoGeCs, test5)
 		
 	testProgram("if(1) {}",
 	{
-		makeNode<IfStatement>(IfStatement(0, 
-                                          Expression(0,{ "1" }),
-                                          { makeNode<BlockStatement>(BlockStatement(0)) }))
+		makeNode(IfStatement(0, 
+                             Expression(0,{ "1" }),
+                             { makeNode(BlockStatement(0)) }))
 	});
 
 }
@@ -76,11 +76,11 @@ TEST(CoGeCs, test6)
 
 	testProgram("var a; if(1) {} var b;",
 	{
-		makeNode<VarDecl>(0, "a"),
-		makeNode<IfStatement>(IfStatement(0,
-		Expression(0,{ "1" }),
-		{ makeNode<BlockStatement>(BlockStatement(0)) })),
-		makeNode<VarDecl>(0, "b")
+		makeNode(VarDecl(0, "a")),
+		makeNode(IfStatement(0,
+				 Expression(0,{ "1" }),
+				 { makeNode(BlockStatement(0)) })),
+				 makeNode(VarDecl(0, "b"))
 	});
 
 }

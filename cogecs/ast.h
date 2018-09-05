@@ -261,8 +261,8 @@ void dumpCode(const StatementList& statementList, std::ostream& out);
 
 void traverse(const StatementList& statementList, AstVisitor& visitor);
 
-template<typename Node, typename... Params>
-StatementPtr makeNode(Params&&... params) { return std::make_shared<Node>(Node(params...));}
+template<typename Node>
+StatementPtr makeNode(Node&& node) { return std::make_shared<Node>(Node(node));}
 
 
 #endif
