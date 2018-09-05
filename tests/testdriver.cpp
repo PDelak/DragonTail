@@ -5,9 +5,10 @@
 #include "astcloner.h"
 #include "gtest/gtest.h"
 
+template<typename Visitor>
 void testProgram(std::string text, StatementList result)
 {
-	AstCloner visitor;
+	Visitor visitor;
 	auto parser = initialize_parser();
 	auto stmts = parse(parser.get(), &text[0], &text[0] + text.size(), visitor);
 	traverse(stmts, visitor);
@@ -27,7 +28,7 @@ void testProgram(std::string text, StatementList result)
 
 TEST(CoGeCs, test1)
 {
-	testProgram("var a;",
+	testProgram<AstCloner>("var a;",
 	{
 		makeNode(VarDecl(0, "a"))
 	});
@@ -35,7 +36,7 @@ TEST(CoGeCs, test1)
 
 TEST(CoGeCs, test2)
 {
-	testProgram("a = 1;",
+	testProgram<AstCloner>("a = 1;",
 	{
 		makeNode(Expression(0,{ "a", "=", "1" }))
 	});
@@ -43,7 +44,7 @@ TEST(CoGeCs, test2)
 
 TEST(CoGeCs, test3)
 {
-	testProgram("a = 1; a = a - 1;", 
+	testProgram<AstCloner>("a = 1; a = a - 1;", 
 	{
 		makeNode(Expression(0,{ "a", "=", "1" })),
 		makeNode(Expression(0,{ "a", "=", "a", "-", "1" })),
@@ -53,7 +54,7 @@ TEST(CoGeCs, test3)
 TEST(CoGeCs, test4)
 {
 	
-	testProgram("{}",
+	testProgram<AstCloner>("{}",
 	{
 		makeNode(BlockStatement(0))
 	});
@@ -62,7 +63,7 @@ TEST(CoGeCs, test4)
 TEST(CoGeCs, test5)
 {
 		
-	testProgram("if(1) {}",
+	testProgram<AstCloner>("if(1) {}",
 	{
 		makeNode(IfStatement(0, 
                              Expression(0,{ "1" }),
@@ -74,7 +75,7 @@ TEST(CoGeCs, test5)
 TEST(CoGeCs, test6)
 {
 
-	testProgram("var a; if(1) {} var b;",
+	testProgram<AstCloner>("var a; if(1) {} var b;",
 	{
 		makeNode(VarDecl(0, "a")),
 		makeNode(IfStatement(0,
