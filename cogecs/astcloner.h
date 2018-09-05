@@ -62,18 +62,21 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const VarDecl* stmt) 
 	{
+		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();
 		statements.push_back(node);
 		nodesStack.pop();
 	}
 	void visitPost(const Expression* stmt) 
 	{
+		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();
 		statements.push_back(node);
 		nodesStack.pop();
 	}
 	void visitPost(const IfStatement* stmt) 
 	{
+		if (nodesStack.empty()) return;
 		auto ifstmt = nodesStack.top();
 		nodesStack.pop();
 		auto it = statements.rbegin();		
@@ -97,6 +100,7 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const WhileLoop* stmt) 
 	{
+		if (nodesStack.empty()) return;
 		auto loop = nodesStack.top();
 		nodesStack.pop();
 		auto it = statements.rbegin();
@@ -122,6 +126,7 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const BlockStatement* stmt) 
 	{
+		if (nodesStack.empty()) return;
 		auto block = nodesStack.top();
 		nodesStack.pop();
 		StatementList blockStatements;
@@ -136,12 +141,14 @@ struct AstCloner : public AstVisitor
 	}
 	void visitPost(const LabelStatement* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();		
 		statements.push_back(node);
 		nodesStack.pop();
 	}
 	void visitPost(const GotoStatement* stmt)
 	{
+		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();
 		statements.push_back(node);
 		nodesStack.pop();

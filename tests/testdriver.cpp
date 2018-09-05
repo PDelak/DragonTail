@@ -2,13 +2,16 @@
 #include "compiler.h"
 #include "ast.h"
 #include "nullvisitor.h"
+#include "astcloner.h"
 #include "gtest/gtest.h"
 
 void testProgram(std::string text, StatementList result)
 {
-	NullVisitor visitor;
+	AstCloner visitor;
 	auto parser = initialize_parser();
-	auto statements = parse(parser.get(), &text[0], &text[0] + text.size(), visitor);
+	auto stmts = parse(parser.get(), &text[0], &text[0] + text.size(), visitor);
+	traverse(stmts, visitor);
+	auto statements = visitor.getStatements();
 	EXPECT_EQ(statements.size(), result.size());
 
 	std::ostringstream expected;
