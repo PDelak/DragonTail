@@ -149,6 +149,31 @@ TEST(CoGeCs, test12)
 	});
 }
 
+TEST(CoGeCs, test13)
+{	
+	testProgram<CFGFlattener>("if (1) {2; if(3) {4;} 5; } 6;",
+	{
+		makeNode(VarDecl(0, "temp__2")),
+		makeNode(Expression(0,{ "temp__2", "=", "1" })),
+		makeNode(IfStatement(0,
+				Expression(0,{ "!","temp__2" }),
+				{ makeNode(GotoStatement(0, "label__3")) })),
+		makeNode(Expression(0,{ "2" })),
+		makeNode(VarDecl(0, "temp__0")),
+		makeNode(Expression(0,{ "temp__0", "=", "3" })),
+		makeNode(IfStatement(0,
+				Expression(0,{ "!","temp__0" }),
+				{ makeNode(GotoStatement(0, "label__1")) })),
+		makeNode(Expression(0,{ "4" })),
+		makeNode(LabelStatement(0, "label__1")),
+		makeNode(Expression(0,{ "5" })),
+		makeNode(LabelStatement(0, "label__3")),
+		makeNode(Expression(0,{ "6" })),
+
+	});
+}
+
+
 int main(int argc, char* argv[]) 
 {    
     ::testing::InitGoogleTest(&argc, argv);
