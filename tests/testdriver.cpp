@@ -173,6 +173,22 @@ TEST(CoGeCs, test13)
 	});
 }
 
+TEST(CoGeCs, test14)
+{
+	testProgram<CFGFlattener>("1+1;1-1;1*1;1/1;!1;1==1;1!=1;1<2;1<=1;2>1;",
+	{
+		makeNode(Expression(0, {"1", "+", "1"})),
+		makeNode(Expression(0,{ "1", "-", "1" })),
+		makeNode(Expression(0,{ "1", "*", "1" })),
+		makeNode(Expression(0,{ "1", "/", "1" })),
+		makeNode(Expression(0,{ "!", "1" })),
+		makeNode(Expression(0,{ "1", "==", "1" })),
+		makeNode(Expression(0,{ "1", "!=", "1" })),
+		makeNode(Expression(0,{ "1", "<", "2" })),
+		makeNode(Expression(0,{ "1", "<=", "1" })),
+		makeNode(Expression(0,{ "2", ">", "1" })),
+	});
+}
 
 int main(int argc, char* argv[]) 
 {    
