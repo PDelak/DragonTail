@@ -1,9 +1,8 @@
-#ifndef MACHINE_CODE_EMITTER_H
-#define MACHINE_CODE_EMITTER_H
+#pragma once
 
 #include "ast.h"
 
-auto emit_machine_code(std::vector<int>* v, const StatementList& statementList)
+auto emitMachineCode(const StatementList& statementList)
 {
     X86InstrVector i_vector;
     i_vector.push_function_prolog();
@@ -13,4 +12,3 @@ auto emit_machine_code(std::vector<int>* v, const StatementList& statementList)
     return jit.compile();
 }
 
-#endif
