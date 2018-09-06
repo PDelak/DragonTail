@@ -140,6 +140,15 @@ TEST(CoGeCs, test11)
 	});
 }
 
+TEST(CoGeCs, test12)
+{
+	testProgram<CFGFlattener>("{label_0:{2;}}",
+	{
+		makeNode(LabelStatement(0,{ "label_0" })),
+		makeNode(Expression(0,{ "2" }))
+	});
+}
+
 int main(int argc, char* argv[]) 
 {    
     ::testing::InitGoogleTest(&argc, argv);
