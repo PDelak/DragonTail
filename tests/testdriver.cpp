@@ -100,6 +100,22 @@ TEST(CoGeCs, test7)
 	});
 }
 
+TEST(CoGeCs, test8)
+{
+	testProgram<CFGFlattener>("while(1) {}",
+	{
+		makeNode(VarDecl(0, "temp__0")),
+		makeNode(LabelStatement(0, "label__1")),
+		makeNode(Expression(0,{ "temp__0", "=", "1" })),
+		makeNode(IfStatement(0,
+		Expression(0,{ "!","temp__0" }),
+		{ makeNode(GotoStatement(0, "label__2")) })),
+		makeNode(GotoStatement(0, "label__1")),
+		makeNode(LabelStatement(0, "label__2"))
+	});
+}
+
+
 int main(int argc, char* argv[]) 
 {    
     ::testing::InitGoogleTest(&argc, argv);
