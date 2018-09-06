@@ -115,6 +115,14 @@ TEST(CoGeCs, test8)
 	});
 }
 
+TEST(CoGeCs, test9)
+{
+	testProgram<CFGFlattener>("{1;}",
+	{
+		makeNode(Expression(0,{ "1" }))
+	});
+}
+
 
 int main(int argc, char* argv[]) 
 {    
