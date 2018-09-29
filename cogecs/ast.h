@@ -251,6 +251,15 @@ struct GotoStatement : public Statement
 	std::string label;
 };
 
+struct FunctionCall : public Statement
+{
+	std::string name;
+	std::vector<std::string> parameters;
+	FunctionCall() {}
+	FunctionCall(size_t scope) :Statement(scope) {}
+
+};
+
 typedef std::vector<std::string> StatementStack;
 
 void printAST(const StatementList& statementList);
