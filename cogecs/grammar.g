@@ -14,7 +14,7 @@ block_statement : '{' statement* '}';
 label : id ':' ;
 goto_statement : 'goto' id;
 function_call : id '(' param* ')';
-param : id | number;
+param : expr;
 op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>';
 id : "[a-zA-Z]*" "[_0-9]*";
 number : "[0-9]*";
