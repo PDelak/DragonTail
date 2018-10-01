@@ -3,9 +3,6 @@ statement : label? basic_statement;
 basic_statement : var_statement ';' | expr_statement ';' | if_statement | block_statement | while_loop | goto_statement ';' ;
 expr_statement : expr;
 expr : expr op expr | 
-		   expr op expr | 
-		   expr op expr |
-		   expr op expr |		   
 		   not expr |
 		   function_call |
 		   id | 
