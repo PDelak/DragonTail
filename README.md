@@ -7,6 +7,7 @@ CoGeCs - Low level language for JIT
 * `pointer type`
 
 #### Stack frame
+~~~~~~~~~~~~~~~~~~~~~~~~none
 +---------------------+
 | Return value address|
 +---------------------+
@@ -18,3 +19,4 @@ CoGeCs - Low level language for JIT
 +---------------------+
 | Parameter 1         |
 +---------------------+
+~~~~~~~~~~~~~~~~~~~~~~~~
