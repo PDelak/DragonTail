@@ -5,6 +5,7 @@ expr_statement : expr;
 expr : expr op expr | 
 		   not expr |
 		   function_call |
+		   addr id |
 		   id | 
 		   number;
 var_statement : 'var' id;
@@ -14,8 +15,9 @@ block_statement : '{' statement* '}';
 label : id ':' ;
 goto_statement : 'goto' id;
 function_call : id '(' param* ')';
-param : expr;
+param : id | number;
 op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>';
 id : "[a-zA-Z]*" "[_0-9]*";
 number : "[0-9]*";
 not : '!';
+addr : '&';
