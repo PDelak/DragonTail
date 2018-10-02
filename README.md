@@ -5,3 +5,16 @@ CoGeCs - Low level language for JIT
 
 * `store and load builtin functions for stack operations`
 * `pointer type`
+
+#### Stack frame
++---------------------+
+| Return value address|
++---------------------+
+| Return address      |
++---------------------+
+| Parameter n         |
++---------------------+
+| Paremeter n-1       |
++---------------------+
+| Parameter 1         |
++---------------------+
