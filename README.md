@@ -1,2 +1,7 @@
-# CoGeCs - code generation case studies (different ways of code generation and optimization)
+CoGeCs - Low level language for JIT
 
+
+### Function support 
+
+* `store and load builtin functions for stack operations`
+* `pointer type`
