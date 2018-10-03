@@ -6,6 +6,7 @@ expr : expr op expr |
 		   not expr |
 		   function_call |
 		   addr id |
+		   dereference id |
 		   id | 
 		   number;
 var_statement : 'var' id;
@@ -21,3 +22,4 @@ id : "[a-zA-Z]*" "[_0-9]*";
 number : "[0-9]*";
 not : '!';
 addr : '&';
+dereference : '*';
