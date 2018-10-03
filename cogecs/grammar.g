@@ -18,7 +18,7 @@ goto_statement : 'goto' id;
 function_call : id '(' param* ')';
 param : id | number;
 op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>';
-id : "[a-zA-Z]*" "[_0-9]*";
+id : "[a-zA-Z]" "[a-zA-Z0-9_]*";
 number : "[0-9]*";
 not : '!';
 addr : '&';
