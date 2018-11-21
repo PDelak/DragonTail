@@ -4,6 +4,7 @@ CoGeCs - Low level language for JIT
 
 * `if statement`
 if statement is transformed in the following way
+
 from 
 ~~~~~~~~~~~~~~~~~~~~~~~~none
 var x;
