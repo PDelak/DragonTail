@@ -21,6 +21,16 @@ var y;
 label__1:
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `while statement`
+while statement is transformed in the following way
+
+from 
+~~~~~~~~~~~~~~~~~~~~~~~~none
+~~~~~~~~~~~~~~~~~~~~~~~~
+to 
+~~~~~~~~~~~~~~~~~~~~~~~~none
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 ### Function support 
 
 * `store and load builtin functions for stack operations`
