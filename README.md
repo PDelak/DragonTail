@@ -14,6 +14,7 @@ if (x) {
 ~~~~~~~~~~~~~~~~~~~~~~~~
 to 
 ~~~~~~~~~~~~~~~~~~~~~~~~none
+var x;
 var temp__0;
 temp__0 = x;
 if (!temp__0) goto label__1;
@@ -26,9 +27,20 @@ while statement is transformed in the following way
 
 from 
 ~~~~~~~~~~~~~~~~~~~~~~~~none
+var x;
+while (x) {
+	var y;
+}
 ~~~~~~~~~~~~~~~~~~~~~~~~
 to 
 ~~~~~~~~~~~~~~~~~~~~~~~~none
+var temp__0;
+label__1:
+temp__0=x;
+if (!temp__0) goto label__2;
+var y;
+goto label__1;
+label__2:
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Function support 
