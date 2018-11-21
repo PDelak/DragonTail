@@ -1,6 +1,19 @@
 ## CoGeCs - Low level language for JIT
 
+Currently language supports only few primitives that can be used to build
+higher level language features
+* `var`
+* `if`
+* `while`
+* `label`
+* `goto` 
+
 ### Transformations
+
+Blocks are reduced to labels and gotos
+While loop is reduced to if with labels and gotos
+
+To represent functions there are store/load stack primitive operations needed
 
 * `if statement`
 if statement is transformed in the following way
