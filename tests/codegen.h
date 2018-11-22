@@ -21,7 +21,7 @@ void testProgram(std::string text, StatementList result)
 	EXPECT_EQ(lhs, rhs);
 }
 
-TEST(CoGeCs, test1)
+TEST(codegen, test1)
 {
 	testProgram<AstCloner>("var a;",
 	{
@@ -29,7 +29,7 @@ TEST(CoGeCs, test1)
 	});
 }
 
-TEST(CoGeCs, test2)
+TEST(codegen, test2)
 {
 	testProgram<AstCloner>("a = 1;",
 	{
@@ -37,7 +37,7 @@ TEST(CoGeCs, test2)
 	});
 }
 
-TEST(CoGeCs, test3)
+TEST(codegen, test3)
 {
 	testProgram<AstCloner>("a = 1; a = a - 1;", 
 	{
@@ -46,7 +46,7 @@ TEST(CoGeCs, test3)
 	});
 }
 
-TEST(CoGeCs, test4)
+TEST(codegen, test4)
 {
 	
 	testProgram<AstCloner>("{}",
@@ -55,7 +55,7 @@ TEST(CoGeCs, test4)
 	});
 }
 
-TEST(CoGeCs, test5)
+TEST(codegen, test5)
 {
 		
 	testProgram<AstCloner>("if(1) {}",
@@ -67,7 +67,7 @@ TEST(CoGeCs, test5)
 
 }
 
-TEST(CoGeCs, test6)
+TEST(codegen, test6)
 {
 
 	testProgram<AstCloner>("var a; if(1) {} var b;",
@@ -81,7 +81,7 @@ TEST(CoGeCs, test6)
 
 }
 
-TEST(CoGeCs, test7)
+TEST(codegen, test7)
 {
 	testProgram<CFGFlattener>("if(1) {}",
 	{
@@ -94,7 +94,7 @@ TEST(CoGeCs, test7)
 	});
 }
 
-TEST(CoGeCs, test8)
+TEST(codegen, test8)
 {
 	testProgram<CFGFlattener>("while(1) {}",
 	{
@@ -109,7 +109,7 @@ TEST(CoGeCs, test8)
 	});
 }
 
-TEST(CoGeCs, test9)
+TEST(codegen, test9)
 {
 	testProgram<CFGFlattener>("{1;}",
 	{
@@ -117,7 +117,7 @@ TEST(CoGeCs, test9)
 	});
 }
 
-TEST(CoGeCs, test10)
+TEST(codegen, test10)
 {
 	testProgram<CFGFlattener>("{{1;}}",
 	{
@@ -125,7 +125,7 @@ TEST(CoGeCs, test10)
 	});
 }
 
-TEST(CoGeCs, test11)
+TEST(codegen, test11)
 {
 	testProgram<CFGFlattener>("{1;{2;}}",
 	{
@@ -134,7 +134,7 @@ TEST(CoGeCs, test11)
 	});
 }
 
-TEST(CoGeCs, test12)
+TEST(codegen, test12)
 {
 	testProgram<CFGFlattener>("{label_0:{2;}}",
 	{
@@ -143,7 +143,7 @@ TEST(CoGeCs, test12)
 	});
 }
 
-TEST(CoGeCs, test13)
+TEST(codegen, test13)
 {	
 	testProgram<CFGFlattener>("if (1) {2; if(3) {4;} 5; } 6;",
 	{
@@ -167,7 +167,7 @@ TEST(CoGeCs, test13)
 	});
 }
 
-TEST(CoGeCs, test14)
+TEST(codegen, test14)
 {
 	testProgram<CFGFlattener>("1+1;1-1;1*1;1/1;!1;1==1;1!=1;1<2;1<=1;2>1;",
 	{

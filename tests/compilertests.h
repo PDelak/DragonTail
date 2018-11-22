@@ -4,7 +4,7 @@
 #include "nullvisitor.h"
 #include "compiler.h"
 
-TEST(Compiler, test1)
+TEST(compiler, test1)
 {
 	StatementStack stmtStack;
 	StatementList statementList;
