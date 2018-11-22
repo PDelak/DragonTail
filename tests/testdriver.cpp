@@ -5,6 +5,7 @@
 #include "astcloner.h"
 #include "cfg_flatten.h"
 #include "gtest/gtest.h"
+#include "compilertests.h"
 
 template<typename Visitor>
 void testProgram(std::string text, StatementList result)
