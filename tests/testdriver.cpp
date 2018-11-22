@@ -5,8 +5,8 @@
 #include "astcloner.h"
 #include "cfg_flatten.h"
 #include "gtest/gtest.h"
-#include "compilertests.h"
-#include "codegen.h"
+#include "../tests/compiler.h"
+#include "../tests/codegen.h"
 
 int main(int argc, char* argv[]) 
 {    

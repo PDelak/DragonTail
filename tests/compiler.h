@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "nullvisitor.h"
-#include "compiler.h"
+#include "../cogecs/compiler.h"
 
 TEST(compiler, test1)
 {
