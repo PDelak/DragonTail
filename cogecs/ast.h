@@ -49,7 +49,7 @@ struct VarDecl : public Statement
 	VarDecl(size_t scope, std::string var) :Statement(scope), var_name(var) {}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
-		out << "Variable declaration" << std::endl;
+		out << "Variable declaration(" << "scope:" << scope << ")" << std::endl;
 		out << getTabs(depth + 1);
 		out << "name:" << var_name << std::endl;
 	}
@@ -72,7 +72,7 @@ struct Expression : public Statement
 	
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
-		out << "Expression" << std::endl;
+		out << "Expression(" << "scope:" << scope << ")" << std::endl;
 		++depth;
 		out << getTabs(depth);
 		out << "elements size:" << elements.size() << std::endl;
@@ -118,7 +118,7 @@ struct IfStatement : public Statement
 	}
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
-		out << "IfStatement" << std::endl;
+		out << "IfStatement" << "(" << "scope:" << scope << ")" << std::endl;
 		++depth;
 		condition.dump(depth, out);
 		for (auto const e : statements) {
@@ -151,7 +151,7 @@ struct WhileLoop : public Statement
 
 	void dump(size_t& depth, std::ostream& out) const {
 		std::cout << getTabs(depth);
-		std::cout << "WhileLoop" << std::endl;
+		std::cout << "WhileLoop" << "(" << "scope:" << scope << ")" << std::endl;
 		++depth;
 		condition.dump(depth, out);
 		for (auto const e : statements) {
@@ -185,7 +185,7 @@ struct BlockStatement : public Statement
 
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
-		out << "BlockStatement" << std::endl;
+		out << "BlockStatement" << "(" << "scope:" << scope << ")" << std::endl;
 		++depth;
 		for (auto const e : statements) {
 			e->dump(depth, out);
@@ -212,7 +212,7 @@ struct LabelStatement : public Statement
 	void dump(size_t& depth, std::ostream& out) const 
 	{
 		out << getTabs(depth);
-		out << "Label" << std::endl;
+		out << "Label" << "(" << "scope:" << scope << ")" << std::endl;
 		out << getTabs(depth + 1);
 		out << "name:" << label << std::endl;
 
@@ -235,7 +235,7 @@ struct GotoStatement : public Statement
 	void dump(size_t& depth, std::ostream& out) const
 	{
 		out << getTabs(depth);
-		out << "Goto" << std::endl;
+		out << "Goto" << "(" << "scope:" << scope << ")" << std::endl; 
 		out << getTabs(depth + 1);
 		out << "name:" << label << std::endl;
 
