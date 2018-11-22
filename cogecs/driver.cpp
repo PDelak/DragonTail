@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
     auto statements = compile(argv[1], p.get(), nvisitor);
 
-    AstCloner visitor;
+    CFGFlattener visitor;
 
     traverse(statements, visitor);
 

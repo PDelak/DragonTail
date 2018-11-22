@@ -185,6 +185,7 @@ post_visit_node(const std::string& name, const std::string& value, StatementStac
 		visitor.visitPost(node.get());
 		--scope;
 	}
+	
 }
 
 

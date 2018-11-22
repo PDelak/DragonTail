@@ -147,11 +147,13 @@ struct CFGFlattener : public AstVisitor
 		std::string label = getNextLabel();
 
 		// create goto statement
-		cast<IfStatement>(if_statement)->statements.push_back(makeNode(GotoStatement(scope, label)));
+		// goto statements scope needs to be 0 as everything is flatten
+		constexpr size_t gotoStatementScope = 0;
+		cast<IfStatement>(if_statement)->statements.push_back(makeNode(GotoStatement(gotoStatementScope, label)));
 		statements.push_back(if_statement);
 
 		std::copy(if_children.begin(), if_children.end(), std::back_inserter(statements));
-		
+
 		statements.push_back(makeNode(LabelStatement(scope, label)));
 	}
 
@@ -205,7 +207,9 @@ struct CFGFlattener : public AstVisitor
 		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
 		
 		std::string label = getNextLabel();
-		cast<IfStatement>(if_statement)->statements.push_back(makeNode(GotoStatement(scope, label)));
+		// goto statements scope needs to be 0 as everything is flatten
+		constexpr size_t gotoStatementScope = 0;
+		cast<IfStatement>(if_statement)->statements.push_back(makeNode(GotoStatement(gotoStatementScope, label)));
 		
 		statements.push_back(if_statement);
 		std::copy(while_children.begin(), while_children.end(), std::back_inserter(statements));
