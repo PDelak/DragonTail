@@ -1,4 +1,5 @@
 #pragma once
+#include "../cogecs/compiler.h"
 
 void checkASTs(const StatementList& ast1, const StatementList& ast2)
 {
