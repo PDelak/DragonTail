@@ -11,29 +11,27 @@
 #include "ast.h"
 #include "astvisitor.h"
 
-const size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
-const size_t INDENT_SPACES = 4;
+constexpr size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
+constexpr size_t INDENT_SPACES = 4;
 extern D_ParserTables parser_tables_gram;
 
-typedef void (visit_node_fn_t)(int depth, const std::string& token_name, const std::string& token_value, StatementStack&, StatementList& statementList, size_t& scope, AstVisitor& visitor);
+typedef void (visit_node_fn_t)(const std::string& token_name, const std::string& token_value, StatementStack&, StatementList& statementList, size_t& scope, AstVisitor& visitor);
 
 static void
-traverse_tree(D_ParserTables pt, D_ParseNode *pn, int depth, visit_node_fn_t pre, visit_node_fn_t post, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
+traverse_tree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
     
     int len = pn->end - pn->start_loc.s;
     std::string val = std::string(pn->start_loc.s, pn->start_loc.s + len);
     std::string name = std::string(pt.symbols[pn->symbol].name);
 
-    pre(depth, name.c_str(), const_cast<char*>(val.c_str()), stmtStack, statementList, scope, visitor);
-    
-    depth++;
-    
+    pre(name.c_str(), const_cast<char*>(val.c_str()), stmtStack, statementList, scope, visitor);
+         
     int nch = d_get_number_of_children(pn);
     for (int i = 0; i < nch; i++) {
         D_ParseNode *xpn = d_get_child(pn, i);
-        traverse_tree(pt, xpn, depth, pre, post, stmtStack, statementList, scope, visitor);        
+        traverse_tree(pt, xpn, pre, post, stmtStack, statementList, scope, visitor);        
     }
-    post(depth, name, val, stmtStack, statementList, scope, visitor);
+    post(name, val, stmtStack, statementList, scope, visitor);
 	
 }
 static char *
@@ -52,14 +50,14 @@ change_newline2space(char *s) {
 }
 
 void
-visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
-    printf("%*s", depth*INDENT_SPACES, "");
+visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
+    printf("%*s", scope*INDENT_SPACES, "");
     printf("%s  %s.\n", name.c_str(), change_newline2space(const_cast<char*>(value.c_str())));
 }
 
 
 void
-pre_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
+pre_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
 	if (name == "id" || name == "op" || name == "number" || name == "not")
 	{
 		std::string temp = value;
@@ -124,7 +122,7 @@ void addAstCompoundNode(StatementList& statementList, StatementStack& stmtStack,
 }
 
 void
-post_visit_node(int depth, const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
+post_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
 	
 	if (name == "goto_statement") {
 		auto begin = stmtStack.rbegin();
@@ -193,7 +191,7 @@ post_visit_node(int depth, const std::string& name, const std::string& value, St
 void
 print_parsetree(D_ParserTables pt, D_ParseNode *pn, visit_node_fn_t pre, visit_node_fn_t post, StatementList& statementList, size_t& scope, AstVisitor& visitor) {        
 	StatementStack stmtStack;
-	traverse_tree(pt, pn, 0, pre, post, stmtStack, statementList, scope, visitor);
+	traverse_tree(pt, pn, pre, post, stmtStack, statementList, scope, visitor);
 }
 
 
