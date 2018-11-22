@@ -58,7 +58,7 @@ visit_node(const std::string& name, const std::string& value, StatementStack& st
 
 void
 pre_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
-	if (name == "id" || name == "op" || name == "number" || name == "not" || name == "addr")
+	if (name == "id" || name == "op" || name == "number" || name == "not" || name == "addr" || name == "dereference")
 	{
 		std::string temp = value;
 		auto it = std::remove_if(temp.begin(), temp.end(), std::isspace);
