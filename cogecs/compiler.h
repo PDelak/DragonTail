@@ -74,7 +74,8 @@ pre_visit_node(const std::string& name, const std::string& value, StatementStack
 			"block_statement",	
 			"while_loop",
 			"label",
-			"goto_statement"
+			"goto_statement",
+			"function_call"
 		};
 		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
@@ -184,6 +185,10 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
 		visitor.visitPost(node.get());
 		--scope;
+	}
+	if (name == "function_call") {
+		auto node = std::make_shared<FunctionCall>(scope);
+		std::cout << "function call" << std::endl;
 	}
 	
 }

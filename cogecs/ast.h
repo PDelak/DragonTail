@@ -257,6 +257,12 @@ struct FunctionCall : public Statement
 	std::vector<std::string> parameters;
 	FunctionCall() {}
 	FunctionCall(size_t scope) :Statement(scope) {}
+	virtual void dump(size_t&, std::ostream&) const 
+	{}
+	virtual void text(std::ostream&) const 
+	{}
+	virtual void traverse(AstVisitor&) 
+	{}
 
 };
 
