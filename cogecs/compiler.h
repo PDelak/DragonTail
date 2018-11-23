@@ -187,8 +187,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 		--scope;
 	}
 	if (name == "function_call") {
-		auto node = std::make_shared<FunctionCall>(scope);
-		std::cout << "function call" << std::endl;
+		auto node = std::make_shared<FunctionCall>(scope);		
 	}
 	
 }
