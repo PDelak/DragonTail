@@ -75,3 +75,11 @@ label__2:
 | Return address      |
 +---------------------+
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Building
+* `MSVC`
+In order to build using MSVC run Configure_MSVC.bat or Configure_MSVCx64.bat depending on platform then
+cmake --build ./build-msvc
+* `MinGW`
+In order to build using MinGW run Configure_Make.bat 
+cmake --build ./build-make
