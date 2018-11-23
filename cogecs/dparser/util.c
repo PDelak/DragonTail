@@ -16,13 +16,14 @@ int d_debug_level = 0;
 int test_level = 0;
 int d_rdebug_grammar_level = 0;
 
-FILE _iob[] = { *stdin, *stdout, *stderr };
+#ifdef MSVS
+  FILE _iob[] = { *stdin, *stdout, *stderr };
 
-extern "C" FILE * __cdecl __iob_func(void)
-{
-	return _iob;
-}
-
+  FILE * __cdecl __iob_func(void)
+  {
+  	return _iob;
+  }
+#endif
 
 char *
 d_dup_pathname_str(const char *s) {

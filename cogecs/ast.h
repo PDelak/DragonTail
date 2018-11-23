@@ -35,9 +35,9 @@ struct Statement
 struct BasicStatement : public Statement
 {
 	explicit BasicStatement(size_t scope):Statement(scope) {}
-	void dump(size_t& depth, std::ostream& out) const {}
-	virtual void text(std::ostream& out) const {}
-	void traverse(AstVisitor& visitor) {}
+	void dump(size_t&, std::ostream&) const {}
+	virtual void text(std::ostream&) const {}
+	void traverse(AstVisitor&) {}
 };
 
 std::string getTabs(size_t depth);

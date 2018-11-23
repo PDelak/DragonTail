@@ -30,7 +30,7 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.push_back(node);
 
 	}
-	void visitPre(const IfStatement* stmt)
+	void visitPre(const IfStatement*)
 	{
 		auto node = makeNode(IfStatement(scope));
 		nodesStack.push_back(node);
@@ -42,7 +42,7 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.push_back(node);
 	}
 
-	void visitPre(const BlockStatement* stmt)
+	void visitPre(const BlockStatement*)
 	{
 		auto node = makeNode(BlockStatement(scope));
 		nodesStack.push_back(node);
@@ -61,10 +61,10 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.push_back(node);
 	}
 
-	void visitPost(const BasicStatement* stmt)
+	void visitPost(const BasicStatement*)
 	{
 	}
-	void visitPost(const VarDecl* stmt)
+	void visitPost(const VarDecl*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
@@ -72,7 +72,7 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(node);
 		nodesStack.erase(std::next(begin).base());
 	}
-	void visitPost(const Expression* stmt)
+	void visitPost(const Expression*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
@@ -98,7 +98,7 @@ struct CFGFlattener : public AstVisitor
 	}
 
 
-	void visitPost(const IfStatement* stmt)
+	void visitPost(const IfStatement*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
@@ -157,7 +157,7 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(makeNode(LabelStatement(scope, label)));
 	}
 
-	void visitPost(const WhileLoop* stmt)
+	void visitPost(const WhileLoop*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
@@ -216,7 +216,7 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(makeNode(GotoStatement(scope, cast<LabelStatement>(labelBeforeIfNode)->label)));
 		statements.push_back(makeNode(LabelStatement(scope, label)));
 	}
-	void visitPost(const BlockStatement* stmt)
+	void visitPost(const BlockStatement*)
 	{		
 		// reduce all blocks except most outer one
 		// otherwise reduce all		
@@ -249,7 +249,7 @@ struct CFGFlattener : public AstVisitor
 		--scope;
 									
 	}
-	void visitPost(const LabelStatement* stmt)
+	void visitPost(const LabelStatement*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
@@ -258,7 +258,7 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.erase(std::next(begin).base());
 
 	}
-	void visitPost(const GotoStatement* stmt)
+	void visitPost(const GotoStatement*)
 	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();

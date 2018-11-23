@@ -1,23 +1,43 @@
-
-SET_SOURCE_FILES_PROPERTIES( 	
-	make_dparser.c
-	../cogecs/dparser/grammar.g.d_parser.c
-	../cogecs/dparser/arg.c
-	../cogecs/dparser/dparse_tree.c
-	../cogecs/dparser/gram.c
-	../cogecs/dparser/grammar.g.c
-	../cogecs/dparser/lex.c
-	../cogecs/dparser/lr.c
-	../cogecs/dparser/mkdparse.c
-	../cogecs/dparser/parse.c
-	../cogecs/dparser/read_binary.c
-	../cogecs/dparser/scan.c
-	../cogecs/dparser/symtab.c
-	../cogecs/dparser/util.c
-	../cogecs/dparser/version.c
-	../cogecs/dparser/write_tables.c	
-	PROPERTIES LANGUAGE CXX 
-	)
+if(MSVC)
+	SET_SOURCE_FILES_PROPERTIES( 	
+		make_dparser.c
+		../cogecs/dparser/grammar.g.d_parser.c
+		../cogecs/dparser/arg.c
+		../cogecs/dparser/dparse_tree.c
+		../cogecs/dparser/gram.c
+		../cogecs/dparser/grammar.g.c
+		../cogecs/dparser/lex.c
+		../cogecs/dparser/lr.c
+		../cogecs/dparser/mkdparse.c
+		../cogecs/dparser/parse.c
+		../cogecs/dparser/read_binary.c
+		../cogecs/dparser/scan.c
+		../cogecs/dparser/symtab.c
+		../cogecs/dparser/util.c
+		../cogecs/dparser/version.c
+		../cogecs/dparser/write_tables.c	
+		PROPERTIES LANGUAGE CXX 
+		)
+else()
+	SET_SOURCE_FILES_PROPERTIES( 	
+		make_dparser.c
+		../cogecs/dparser/grammar.g.d_parser.c
+		../cogecs/dparser/arg.c
+		../cogecs/dparser/dparse_tree.c
+		../cogecs/dparser/gram.c
+		../cogecs/dparser/grammar.g.c
+		../cogecs/dparser/lex.c
+		../cogecs/dparser/lr.c
+		../cogecs/dparser/mkdparse.c
+		../cogecs/dparser/parse.c
+		../cogecs/dparser/read_binary.c
+		../cogecs/dparser/scan.c
+		../cogecs/dparser/symtab.c
+		../cogecs/dparser/util.c
+		../cogecs/dparser/version.c
+		../cogecs/dparser/write_tables.c	
+		)
+endif()
 
 set(CPPFILES
 	make_dparser.c

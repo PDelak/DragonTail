@@ -184,7 +184,8 @@ static SNode *
 new_SNode(Parser *p, D_State *state, d_loc_t *loc, D_Scope *sc, void *g) {
   SNode *sn = p->free_snodes;
   if (!sn)
-    sn = reinterpret_cast<SNode*>(MALLOC(sizeof *sn));
+    //sn = reinterpret_cast<SNode*>(MALLOC(sizeof *sn));
+    sn = (SNode*)(MALLOC(sizeof *sn));
   else
     p->free_snodes = sn->all_next;
   sn->depth = 0;
@@ -217,7 +218,8 @@ static ZNode *
 new_ZNode(Parser *p, PNode *pn) {
   ZNode *z = p->free_znodes;
   if (!z)
-    z = reinterpret_cast<ZNode*>(MALLOC(sizeof *z));
+    //z = reinterpret_cast<ZNode*>(MALLOC(sizeof *z));
+    z = (ZNode*)(MALLOC(sizeof *z));
   else
     p->free_znodes = znode_next(z);
   z->pn = pn;
@@ -497,7 +499,8 @@ add_Reduction(Parser *p, ZNode *z, SNode *sn, D_Reduction *reduction) {
   {
     Reduction *r = p->free_reductions;
     if (!r)
-      r = reinterpret_cast<Reduction*>(MALLOC(sizeof *r));
+      //r = reinterpret_cast<Reduction*>(MALLOC(sizeof *r));
+      r = (Reduction*)(MALLOC(sizeof *r));
     else
       p->free_reductions = r->next;
     r->znode = z;
@@ -516,7 +519,8 @@ add_Shift(Parser *p, SNode *snode) {
   Shift *x, **l = &p->shifts_todo;
   Shift *s = p->free_shifts;
   if (!s)
-    s = reinterpret_cast<Shift*>(MALLOC(sizeof *s));
+    //s = reinterpret_cast<Shift*>(MALLOC(sizeof *s));
+    s = (Shift*)(MALLOC(sizeof *s));
   else
     p->free_shifts = s->next;
   s->snode = snode;
@@ -1012,7 +1016,8 @@ make_PNode(Parser *p, uint hash, int symbol, d_loc_t *start_loc, char *e, PNode 
   int i, l = sizeof(PNode) - sizeof(d_voidp) + p->user.sizeof_user_parse_node;
   PNode *new_pn = p->free_pnodes;
   if (!new_pn)
-    new_pn = reinterpret_cast<PNode*>(MALLOC(l));
+    //new_pn = reinterpret_cast<PNode*>(MALLOC(l));
+    new_pn = (PNode*)(MALLOC(l));
   else
     p->free_pnodes = new_pn->all_next;
   p->pnodes++;
@@ -1218,12 +1223,14 @@ set_add_znode_hash(VecZNode *v, ZNode *z) {
     vv.v = NULL;
     v->i = INITIAL_SET_SIZE_INDEX;
   } else {
-    vv.v = reinterpret_cast<ZNode**>(v->v);
+    //vv.v = reinterpret_cast<ZNode**>(v->v);
+    vv.v = (ZNode**)(v->v);
     vv.n = v->n;
     v->i = v->i + 2;
   }
   v->n = d_prime2[v->i];
-  v->v = reinterpret_cast<ZNode**>(MALLOC(v->n * sizeof(void *)));
+  //v->v = reinterpret_cast<ZNode**>(MALLOC(v->n * sizeof(void *)));
+  v->v = (ZNode**)(MALLOC(v->n * sizeof(void *)));
   memset(v->v, 0, v->n * sizeof(void *));
   if (vv.v) {
     set_union_znode(v, &vv);
@@ -1342,7 +1349,8 @@ shift_all(Parser *p, char *pos) {
   for (; (s = p->shifts_todo) && s->snode->loc.s == pos;) {
     if (p->nshift_results - nshifts < p->t->nsymbols * 2) {
       p->nshift_results = nshifts + p->t->nsymbols * 3;
-      p->shift_results = reinterpret_cast<ShiftResult*>(REALLOC(p->shift_results, p->nshift_results * sizeof(ShiftResult)));
+      //p->shift_results = reinterpret_cast<ShiftResult*>(REALLOC(p->shift_results, p->nshift_results * sizeof(ShiftResult)));
+      p->shift_results = (ShiftResult*)(REALLOC(p->shift_results, p->nshift_results * sizeof(ShiftResult)));
     }
     p->shifts_todo = p->shifts_todo->next;
     p->scans++;
@@ -1350,7 +1358,8 @@ shift_all(Parser *p, char *pos) {
     if (state->scanner_code) {
       if (p->ncode_shifts < ncode + 1) {
 	p->ncode_shifts = ncode + 2;
-	p->code_shifts = reinterpret_cast<D_Shift*>(REALLOC(p->code_shifts, p->ncode_shifts * sizeof(D_Shift)));
+	//p->code_shifts = reinterpret_cast<D_Shift*>(REALLOC(p->code_shifts, p->ncode_shifts * sizeof(D_Shift)));
+  p->code_shifts = (D_Shift*)(REALLOC(p->code_shifts, p->ncode_shifts * sizeof(D_Shift)));
       }
       p->code_shifts[ncode].shift_kind = D_SCAN_ALL;
       p->code_shifts[ncode].term_priority = 0;
@@ -1449,7 +1458,8 @@ new_VecZNode(VecVecZNode *paths, int n, int parent) {
   if (!paths->n)
     pv = &path1;
   else
-    pv = reinterpret_cast<VecZNode*>(MALLOC(sizeof *pv));
+    //pv = reinterpret_cast<VecZNode*>(MALLOC(sizeof *pv));
+    pv = (VecZNode*)(MALLOC(sizeof *pv));
   vec_clear(pv);
   if (parent >= 0)
     for (i = 0; i < n; i++)
@@ -1908,7 +1918,8 @@ error_recovery(Parser *p) {
   p->user.loc = p->snode_hash.last_all->loc;
   if (!p->user.error_recovery)
     return res;
-  q = reinterpret_cast<SNode**>(MALLOC(ERROR_RECOVERY_QUEUE_SIZE * sizeof(SNode*)));
+  //q = reinterpret_cast<SNode**>(MALLOC(ERROR_RECOVERY_QUEUE_SIZE * sizeof(SNode*)));
+  q = (SNode**)(MALLOC(ERROR_RECOVERY_QUEUE_SIZE * sizeof(SNode*)));
   if (p->user.loc.line > p->last_syntax_error_line) {
     p->last_syntax_error_line = p->user.loc.line;
     p->user.syntax_errors++;
@@ -1946,8 +1957,10 @@ error_recovery(Parser *p) {
 	}
   }
   if (best_sn) {
-    D_Reduction *rr = reinterpret_cast<D_Reduction*>(MALLOC(sizeof(*rr)));
-    Reduction *r = reinterpret_cast<Reduction*>(MALLOC(sizeof(*r)));
+    //D_Reduction *rr = reinterpret_cast<D_Reduction*>(MALLOC(sizeof(*rr)));
+    D_Reduction *rr = (D_Reduction*)(MALLOC(sizeof(*rr)));
+    //Reduction *r = reinterpret_cast<Reduction*>(MALLOC(sizeof(*r)));
+    Reduction *r = (Reduction*)(MALLOC(sizeof(*r)));
     d_loc_t best_loc = p->user.loc;
     PNode *new_pn;
     SNode *new_sn;
@@ -2211,7 +2224,8 @@ void null_white_space(D_Parser *p, d_loc_t *loc, void **p_globals) { }
 
 D_Parser *
 new_D_Parser(D_ParserTables *t, int sizeof_ParseNode_User) {
-  Parser *p = reinterpret_cast<Parser*>(MALLOC(sizeof(Parser)));
+  //Parser *p = reinterpret_cast<Parser*>(MALLOC(sizeof(Parser)));
+  Parser *p = (Parser*)(MALLOC(sizeof(Parser)));
   memset(p, 0, sizeof(Parser));
   p->t = t;
   p->user.loc.line = 1;

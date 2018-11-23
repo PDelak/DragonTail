@@ -6,7 +6,7 @@ add_custom_command(
     OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
 )
 
-
+if(MSVC)
 SET_SOURCE_FILES_PROPERTIES( 
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
 	dparser/arg.c
@@ -25,7 +25,26 @@ SET_SOURCE_FILES_PROPERTIES(
 	dparser/write_tables.c
 	PROPERTIES LANGUAGE CXX 
 	)
+else()
+SET_SOURCE_FILES_PROPERTIES( 
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
+	dparser/arg.c
+	dparser/dparse_tree.c
+	dparser/gram.c
+	dparser/grammar.g.c
+	dparser/lex.c
+	dparser/lr.c
+	dparser/mkdparse.c
+	dparser/parse.c
+	dparser/read_binary.c
+	dparser/scan.c
+	dparser/symtab.c
+	dparser/util.c
+	dparser/version.c
+	dparser/write_tables.c
+	)
 
+endif()
 set(CPPFILES
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/grammar.g.d_parser.c
 	driver.cpp

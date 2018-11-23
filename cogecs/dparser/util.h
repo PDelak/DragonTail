@@ -16,9 +16,9 @@
 
 #include <stdio.h>
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32) || defined(_WIN64) 
 
-extern "C" FILE * __cdecl __iob_func(void);
+//extern "C" FILE * __cdecl __iob_func(void);
 
 #define snprintf _snprintf
   #define vsnprintf _vsnprintf

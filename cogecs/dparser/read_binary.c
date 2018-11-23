@@ -17,12 +17,14 @@ read_binary_tables_internal(FILE *fp, unsigned char *str,
 {
   BinaryTablesHead tables;
   int i;
-  BinaryTables * binary_tables = reinterpret_cast<BinaryTables*>(MALLOC(sizeof(BinaryTables)));
+  //BinaryTables * binary_tables = reinterpret_cast<BinaryTables*>(MALLOC(sizeof(BinaryTables)));
+  BinaryTables * binary_tables = (BinaryTables*)(MALLOC(sizeof(BinaryTables)));
   char *tables_buf, *strings_buf;
 
   read_chk(&tables, sizeof(BinaryTablesHead), 1, fp, &str);
 
-  tables_buf = reinterpret_cast<char*>(MALLOC(tables.tables_size + tables.strings_size));
+  //tables_buf = reinterpret_cast<char*>(MALLOC(tables.tables_size + tables.strings_size));
+  tables_buf = (char*)(MALLOC(tables.tables_size + tables.strings_size));
   read_chk(tables_buf, sizeof(char), tables.tables_size, fp, &str);
   strings_buf = tables_buf + tables.tables_size;
   read_chk(strings_buf, sizeof(char), tables.strings_size, fp, &str);
@@ -42,7 +44,8 @@ read_binary_tables_internal(FILE *fp, unsigned char *str,
     } else if (*intptr == -3) {
       *ptr = (void*)final_code;
     } else {
-      *ptr = reinterpret_cast<intptr_t*>(*ptr) + (intptr_t)tables_buf;
+      //*ptr = reinterpret_cast<intptr_t*>(*ptr) + (intptr_t)tables_buf;
+      *ptr = (intptr_t*)(*ptr) + (intptr_t)tables_buf;
     }
   }
   for (i=0; i<tables.n_strings; i++) {

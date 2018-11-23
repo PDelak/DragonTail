@@ -24,7 +24,7 @@ struct AstCloner : public AstVisitor
 		nodesStack.push(node);
 
 	}
-	void visitPre(const IfStatement* stmt) 
+	void visitPre(const IfStatement*) 
 	{
 		auto node = makeNode<IfStatement>(IfStatement(scope));
 		nodesStack.push(node);
@@ -36,7 +36,7 @@ struct AstCloner : public AstVisitor
 		nodesStack.push(node);
 	}
 
-	void visitPre(const BlockStatement* stmt) 
+	void visitPre(const BlockStatement*) 
 	{
 		auto node = makeNode<BlockStatement>(BlockStatement(scope));
 		nodesStack.push(node);
@@ -55,24 +55,24 @@ struct AstCloner : public AstVisitor
 		nodesStack.push(node);
 	}
 
-	void visitPost(const BasicStatement* stmt) 
+	void visitPost(const BasicStatement*) 
 	{
 	}
-	void visitPost(const VarDecl* stmt) 
-	{
-		if (nodesStack.empty()) return;
-		auto node = nodesStack.top();
-		statements.push_back(node);
-		nodesStack.pop();
-	}
-	void visitPost(const Expression* stmt) 
+	void visitPost(const VarDecl*) 
 	{
 		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();
 		statements.push_back(node);
 		nodesStack.pop();
 	}
-	void visitPost(const IfStatement* stmt) 
+	void visitPost(const Expression*) 
+	{
+		if (nodesStack.empty()) return;
+		auto node = nodesStack.top();
+		statements.push_back(node);
+		nodesStack.pop();
+	}
+	void visitPost(const IfStatement*) 
 	{
 		if (nodesStack.empty()) return;
 		auto ifstmt = nodesStack.top();
@@ -96,7 +96,7 @@ struct AstCloner : public AstVisitor
 		statements.erase(it.base(), statements.end());
 		statements.push_back(ifstmt);
 	}
-	void visitPost(const WhileLoop* stmt) 
+	void visitPost(const WhileLoop*) 
 	{
 		if (nodesStack.empty()) return;
 		auto loop = nodesStack.top();
@@ -122,7 +122,7 @@ struct AstCloner : public AstVisitor
 		statements.push_back(loop);
 
 	}
-	void visitPost(const BlockStatement* stmt) 
+	void visitPost(const BlockStatement*) 
 	{
 		if (nodesStack.empty()) return;
 		auto block = nodesStack.top();
@@ -137,14 +137,14 @@ struct AstCloner : public AstVisitor
 		statements.push_back(block);
 		--scope;
 	}
-	void visitPost(const LabelStatement* stmt)
+	void visitPost(const LabelStatement*)
 	{
 		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();		
 		statements.push_back(node);
 		nodesStack.pop();
 	}
-	void visitPost(const GotoStatement* stmt)
+	void visitPost(const GotoStatement*)
 	{
 		if (nodesStack.empty()) return;
 		auto node = nodesStack.top();

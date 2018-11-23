@@ -50,18 +50,18 @@ change_newline2space(char *s) {
 }
 
 void
-visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope) {
-    printf("%*s", scope*INDENT_SPACES, "");
+visit_node(const std::string& name, const std::string& value, StatementStack&, StatementList&, size_t& scope) {
+    printf("%*s", static_cast<int>(scope*INDENT_SPACES), "");
     printf("%s  %s.\n", name.c_str(), change_newline2space(const_cast<char*>(value.c_str())));
 }
 
 
 void
-pre_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
+pre_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList&, size_t& scope, AstVisitor&) {
 	if (name == "id" || name == "op" || name == "number" || name == "not" || name == "addr" || name == "dereference")
 	{
 		std::string temp = value;
-		auto it = std::remove_if(temp.begin(), temp.end(), std::isspace);
+		auto it = std::remove_if(temp.begin(), temp.end(), isspace);
 		temp.erase(it, temp.end());
 		stmtStack.push_back(temp);
 	}
@@ -122,7 +122,7 @@ void addAstCompoundNode(StatementList& statementList, StatementStack& stmtStack,
 }
 
 void
-post_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
+post_visit_node(const std::string& name, const std::string&, StatementStack& stmtStack, StatementList& statementList, size_t& scope, AstVisitor& visitor) {
 	
 	if (name == "goto_statement") {
 		auto begin = stmtStack.rbegin();

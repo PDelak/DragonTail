@@ -13,9 +13,6 @@
 #include <windows.h>
 #include "dparse.h"
 #include "ast.h"
-#include "jitcompiler.h"
-#include "interpreter.h"
-#include "code_emitter.h"
 #include "compiler.h"
 #include "nullvisitor.h"
 #include "dumpvisitor.h"
@@ -49,8 +46,6 @@ int main(int argc, char* argv[])
     std::vector<int> v = { 4,2,6 };
 
     auto p = initialize_parser(argv[1]);
-
-    size_t depth = 0;
 	
     NullVisitor nvisitor;
 
@@ -64,9 +59,9 @@ int main(int argc, char* argv[])
 
     dumpCode(visitor.getStatements(), std::cout);
 
-    auto x86_text = emitMachineCode(visitor.getStatements());
+    //auto x86_text = emitMachineCode(visitor.getStatements());
 	
-    x86_text();
+    //x86_text();
 
     return 0;
 }
