@@ -55,6 +55,11 @@ struct AstCloner : public AstVisitor
 		nodesStack.push(node);
 	}
 
+	void visitPre(const FunctionCall*)
+	{
+
+	}
+
 	void visitPost(const BasicStatement*) 
 	{
 	}
@@ -151,6 +156,11 @@ struct AstCloner : public AstVisitor
 		statements.push_back(node);
 		nodesStack.pop();
 	}
+	
+	void visitPost(const FunctionCall*)
+	{
+	}
+
 	StatementList getStatements() const { return statements; }
 private:
 	size_t scope = 0;

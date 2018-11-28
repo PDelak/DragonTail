@@ -61,6 +61,11 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.push_back(node);
 	}
 
+	void visitPre(const FunctionCall*)
+	{
+
+	}
+
 	void visitPost(const BasicStatement*)
 	{
 	}
@@ -266,6 +271,11 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(node);
 		nodesStack.erase(std::next(begin).base());
 	}
+	void visitPost(const FunctionCall*)
+	{
+
+	}
+
 	StatementList getStatements() const { return statements; }
 private:
 	size_t scope = 0;

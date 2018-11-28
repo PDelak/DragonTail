@@ -13,6 +13,7 @@ struct WhileLoop;
 struct BlockStatement;
 struct LabelStatement;
 struct GotoStatement;
+struct FunctionCall;
 
 using StatementPtr = std::shared_ptr<Statement>;
 using StatementList = std::vector<StatementPtr>;
@@ -37,6 +38,8 @@ struct AstVisitor
 	virtual void visitPost(const LabelStatement*) = 0;
 	virtual void visitPre(const GotoStatement*) = 0;
 	virtual void visitPost(const GotoStatement*) = 0;
+	virtual void visitPre(const FunctionCall*) = 0;
+	virtual void visitPost(const FunctionCall*) = 0;
 };
 
 #endif

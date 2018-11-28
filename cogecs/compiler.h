@@ -188,6 +188,15 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	}
 	if (name == "function_call") {
 		auto node = std::make_shared<FunctionCall>(scope);		
+		auto lastParam = stmtStack.rbegin();
+		auto functionCall = std::find(lastParam, stmtStack.rend(), "function_call");
+		auto functionName = functionCall.base();
+		node->name = *functionName;
+		if (distance(functionName, lastParam.base()) > 0) {
+			auto firstParam = std::next(functionName);
+			std::copy(firstParam, lastParam.base(), std::back_inserter(node->parameters));
+		}
+		visitor.visitPost(node.get());
 	}
 	
 }
