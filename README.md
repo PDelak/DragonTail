@@ -8,6 +8,12 @@ higher level language features
 * `label`
 * `goto` 
 
+builtin functions
+* `load`
+* `store`
+* `alloc`
+* `free`
+
 ### Transformations
 
 Blocks are reduced to labels and gotos
