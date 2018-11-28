@@ -1,6 +1,6 @@
 start : statement*;
 statement : label? basic_statement;
-basic_statement : var_statement ';' | expr_statement ';' | if_statement | block_statement | while_loop | function_decl | goto_statement ';' ;
+basic_statement : var_statement ';' | expr_statement ';' | if_statement | block_statement | while_loop | function_decl | goto_statement ';' | return_statement ';';
 expr_statement : expr;
 expr : expr op expr | 
 		   not expr |
@@ -24,3 +24,4 @@ number : "[0-9]*";
 not : '!';
 addr : '&';
 dereference : '*';
+return_statement : 'return' param;
