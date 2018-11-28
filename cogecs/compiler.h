@@ -196,6 +196,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 			auto firstParam = std::next(functionName);
 			std::copy(firstParam, lastParam.base(), std::back_inserter(node->parameters));
 		}
+		statementList.push_back(node);
 		visitor.visitPost(node.get());
 	}
 	
