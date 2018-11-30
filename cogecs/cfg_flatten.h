@@ -143,12 +143,12 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(makeNode(VarDecl(scope, temp)));
 
 		// create reverse condition expression
-		auto reverseCondition = makeNode(Expression(scope, {temp, "="}));
+		auto reverseCondition = makeNode(Expression(scope, {makeNode(BasicExpression(scope, temp)), makeNode(BasicExpression(scope, "="))}));
 		
 		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		statements.push_back(reverseCondition);
 
-		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { "!", temp });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { makeNode(BasicExpression(scope, "!")), makeNode(BasicExpression(scope, temp)) });
 
 		std::string label = getNextLabel();
 
@@ -205,13 +205,12 @@ struct CFGFlattener : public AstVisitor
 		cast<LabelStatement>(labelBeforeIfNode)->label = getNextLabel();
 		statements.push_back(labelBeforeIfNode);
 
-		auto reverseCondition = makeNode(Expression(scope, { temp, "=" }));
+		auto reverseCondition = makeNode(Expression(scope, { makeNode(BasicExpression(scope, temp)), makeNode(BasicExpression(scope, "=")) }));
 		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		
 		statements.push_back(reverseCondition);
 		
-//		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
-		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { "!", temp });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { makeNode(BasicExpression(scope, "!")), makeNode(BasicExpression(scope, temp)) });
 
 		std::string label = getNextLabel();
 		// goto statements scope needs to be 0 as everything is flatten

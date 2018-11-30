@@ -34,6 +34,8 @@ struct Statement
 using StatementPtr = std::shared_ptr<Statement>;
 using StatementList = std::vector<StatementPtr>;
 
+std::string getTabs(size_t depth);
+
 struct BasicStatement : public Statement
 {
 	explicit BasicStatement(size_t scope):Statement(scope) {}
@@ -44,14 +46,17 @@ struct BasicStatement : public Statement
 
 struct BasicExpression : public BasicStatement
 {
-	explicit BasicExpression(size_t scope) :BasicStatement(scope) {}
-	void dump(size_t&, std::ostream&) const {}
+	BasicExpression(size_t scope, const std::string& v) :BasicStatement(scope), value(v) {}
+	void dump(size_t& depth,  std::ostream& out) const 
+	{
+		out << getTabs(depth);
+		out << value;
+	}
 	virtual void text(std::ostream&) const {}
 	void traverse(AstVisitor&) {}
 	std::string value;
 };
 
-std::string getTabs(size_t depth);
 
 struct VarDecl : public Statement
 {
@@ -76,10 +81,10 @@ struct VarDecl : public Statement
 
 struct Expression : public Statement
 {
-	using ElementType = std::string;
+	using ElementType = StatementPtr;
 	using ElementsType = std::vector<ElementType>;
-	using ElementIterator = std::vector<std::string>::iterator;
-	using ElementConstIterator = std::vector<std::string>::const_iterator;
+	using ElementIterator = std::vector<ElementType>::iterator;
+	using ElementConstIterator = std::vector<ElementType>::const_iterator;
 private:
 	ElementsType elements;
 public:
@@ -95,7 +100,7 @@ public:
 
 	Expression() {}
 	Expression(size_t scope):Statement(scope) {}
-	Expression(size_t scope, const std::initializer_list<std::string>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
+	Expression(size_t scope, const std::initializer_list<ElementType>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
 	
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
@@ -106,11 +111,14 @@ public:
 		int index = 0;
 		for (const auto e : elements) {
 			out << getTabs(depth);
-			if (!(index % 2))
-				out << "var : " << e << std::endl;
-			else
-				out << "op  : " << e << std::endl;
-
+			if (!(index % 2)) {
+				out << "var : ";
+				e->dump(depth, out);
+			}
+			else {
+				out << "op  : ";
+				e->dump(depth, out);
+			}
 			++index;
 		}
 		--depth;

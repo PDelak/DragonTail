@@ -52,8 +52,8 @@ std::ostream& operator << (std::ostream& stream, const VarDecl& varDecl)
 
 std::ostream& operator << (std::ostream& stream, const Expression& expression)
 {	
-	std::for_each(expression.child_begin(), expression.child_end(), [&](const std::string& e) {		
-		stream << e;
+	std::for_each(expression.child_begin(), expression.child_end(), [&](const StatementPtr& stmt) {		
+		stream << static_cast<BasicExpression*>(stmt.get())->value;
 	});
 	if (!expression.isPartOfCompoundStmt) stream << ";\n";
 	return stream;
