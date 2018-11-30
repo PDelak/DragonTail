@@ -19,7 +19,7 @@ struct AstCloner : public AstVisitor
 	void visitPre(const Expression* stmt) 
 	{
 		auto node = makeNode<Expression>(Expression(scope));
-		static_cast<Expression*>(node.get())->elements = stmt->elements;
+		static_cast<Expression*>(node.get())->setElements(stmt->getChilds());
 		static_cast<Expression*>(node.get())->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
 		nodesStack.push(node);
 
@@ -86,7 +86,7 @@ struct AstCloner : public AstVisitor
 		static_cast<IfStatement*>(ifstmt.get())->statements.push_back(*it);
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
-			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.setElements(static_cast<Expression*>(it->get())->getChilds());
 			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		else {
@@ -94,7 +94,7 @@ struct AstCloner : public AstVisitor
 			auto labelPtr = static_cast<IfStatement*>(ifstmt.get())->statements.begin();
 			static_cast<IfStatement*>(ifstmt.get())->statements.insert(labelPtr ,*it);
 			++it;
-			static_cast<IfStatement*>(ifstmt.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<IfStatement*>(ifstmt.get())->condition.setElements(static_cast<Expression*>(it->get())->getChilds());
 			static_cast<IfStatement*>(ifstmt.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		++it;
@@ -110,7 +110,7 @@ struct AstCloner : public AstVisitor
 		static_cast<WhileLoop*>(loop.get())->statements.push_back(*it);
 		++it;
 		if (dynamic_cast<Expression*>(it->get())) {
-			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.setElements(static_cast<Expression*>(it->get())->getChilds());
 			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 
 		}
@@ -119,7 +119,7 @@ struct AstCloner : public AstVisitor
 			auto labelPtr = static_cast<WhileLoop*>(loop.get())->statements.begin();
 			static_cast<WhileLoop*>(loop.get())->statements.insert(labelPtr, *it);
 			++it;
-			static_cast<WhileLoop*>(loop.get())->condition.elements = static_cast<Expression*>(it->get())->elements;
+			static_cast<WhileLoop*>(loop.get())->condition.setElements(static_cast<Expression*>(it->get())->getChilds());
 			static_cast<WhileLoop*>(loop.get())->condition.isPartOfCompoundStmt = static_cast<Expression*>(it->get())->isPartOfCompoundStmt;
 		}
 		++it;

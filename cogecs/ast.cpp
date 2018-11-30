@@ -52,7 +52,7 @@ std::ostream& operator << (std::ostream& stream, const VarDecl& varDecl)
 
 std::ostream& operator << (std::ostream& stream, const Expression& expression)
 {	
-	std::for_each(expression.elements.begin(), expression.elements.end(), [&](const std::string& e) {		
+	std::for_each(expression.child_begin(), expression.child_end(), [&](const std::string& e) {		
 		stream << e;
 	});
 	if (!expression.isPartOfCompoundStmt) stream << ";\n";

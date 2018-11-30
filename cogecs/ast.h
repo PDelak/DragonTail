@@ -31,6 +31,8 @@ struct Statement
 	virtual void traverse(AstVisitor& visitor) = 0;
 };
 
+using StatementPtr = std::shared_ptr<Statement>;
+using StatementList = std::vector<StatementPtr>;
 
 struct BasicStatement : public Statement
 {
@@ -38,6 +40,15 @@ struct BasicStatement : public Statement
 	void dump(size_t&, std::ostream&) const {}
 	virtual void text(std::ostream&) const {}
 	void traverse(AstVisitor&) {}
+};
+
+struct BasicExpression : public BasicStatement
+{
+	explicit BasicExpression(size_t scope) :BasicStatement(scope) {}
+	void dump(size_t&, std::ostream&) const {}
+	virtual void text(std::ostream&) const {}
+	void traverse(AstVisitor&) {}
+	std::string value;
 };
 
 std::string getTabs(size_t depth);
@@ -65,7 +76,23 @@ struct VarDecl : public Statement
 
 struct Expression : public Statement
 {
-	std::vector<std::string> elements;
+	using ElementType = std::string;
+	using ElementsType = std::vector<ElementType>;
+	using ElementIterator = std::vector<std::string>::iterator;
+	using ElementConstIterator = std::vector<std::string>::const_iterator;
+private:
+	ElementsType elements;
+public:
+	const ElementsType& getChilds() const { return elements; }
+	ElementsType& getChilds() { return elements; }
+	void setElements(const ElementsType& elems) { elements = elems; }
+	ElementConstIterator child_begin() const { return elements.begin(); }
+	ElementConstIterator child_end()   const { return elements.end(); }
+	ElementIterator child_begin()  { return elements.begin(); }
+	ElementIterator child_end()    { return elements.end(); }
+
+	void insertChild(ElementIterator iterator, const std::initializer_list<ElementType>& childs) { elements.insert(iterator, childs); }
+
 	Expression() {}
 	Expression(size_t scope):Statement(scope) {}
 	Expression(size_t scope, const std::initializer_list<std::string>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
@@ -99,8 +126,6 @@ struct Expression : public Statement
 	bool isPartOfCompoundStmt = false;
 };
 
-using StatementPtr = std::shared_ptr<Statement>;
-using StatementList = std::vector<StatementPtr>;
 
 struct IfStatement : public Statement
 {

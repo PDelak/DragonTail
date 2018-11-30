@@ -89,10 +89,12 @@ pre_visit_node(const std::string& name, const std::string& value, StatementStack
 
 }
 
-void moveExpressionFromStackToNode(StatementStack& stmtStack, const std::string& statementName, std::vector<std::string>& elements)
+Expression::ElementsType moveExpressionFromStackToNode(StatementStack& stmtStack, const std::string& statementName)
 {
+	Expression::ElementsType elements;
 	auto statementIt = std::find(stmtStack.rbegin(), stmtStack.rend(), statementName);
 	std::copy(statementIt.base(), stmtStack.rbegin().base(), std::back_inserter(elements));
+	return elements;
 }
 
 void clearStmtStackFor(const std::string& statementName, StatementStack& stmtStack)
@@ -159,7 +161,8 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	}
 	if (name == "expr_statement") {
 		auto node = std::make_shared<Expression>(scope);		
-		moveExpressionFromStackToNode(stmtStack, "expr_statement", node->elements);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "expr_statement");
+		node->setElements(elems);
 		statementList.push_back(node);
 		clearStmtStackFor("expr_statement", stmtStack);
 		visitor.visitPost(node.get());
@@ -167,7 +170,8 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	if (name == "if_statement") {
 		auto node = std::make_shared<IfStatement>(scope - 1);
 		node->condition.isPartOfCompoundStmt = true;
-		moveExpressionFromStackToNode(stmtStack, "if_statement", node->condition.elements);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "if_statement");
+		node->condition.setElements(elems);
 		addAstCompoundNode<IfStatement>(statementList, stmtStack, scope, "if_statement", node);
 		visitor.visitPost(node.get());
 		--scope;
@@ -181,7 +185,8 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
 		node->condition.isPartOfCompoundStmt = true;
-		moveExpressionFromStackToNode(stmtStack, "while_loop", node->condition.elements);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "while_loop");
+		node->condition.setElements(elems);
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
 		visitor.visitPost(node.get());
 		--scope;

@@ -24,7 +24,7 @@ struct CFGFlattener : public AstVisitor
 	{
 		auto node = makeNode(Expression(scope));		
 		if (is<Expression>(node)) {
-			cast<Expression>(node)->elements = stmt->elements;
+			cast<Expression>(node)->setElements(stmt->getChilds());
 			cast<Expression>(node)->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
 		}
 		nodesStack.push_back(node);
@@ -133,7 +133,7 @@ struct CFGFlattener : public AstVisitor
 		}
 
 		Expression condition;
-		condition.elements = cast<Expression>(*currentStatementIterator)->elements;
+		condition.setElements(cast<Expression>(*currentStatementIterator)->getChilds());
 		cast<IfStatement>(if_statement)->condition.isPartOfCompoundStmt = cast<Expression>(*currentStatementIterator)->isPartOfCompoundStmt;
 		++currentStatementIterator;
 		statements.erase(currentStatementIterator.base(), statements.end());
@@ -144,10 +144,11 @@ struct CFGFlattener : public AstVisitor
 
 		// create reverse condition expression
 		auto reverseCondition = makeNode(Expression(scope, {temp, "="}));
-		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
+		
+		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		statements.push_back(reverseCondition);
 
-		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { "!", temp });
 
 		std::string label = getNextLabel();
 
@@ -205,12 +206,13 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(labelBeforeIfNode);
 
 		auto reverseCondition = makeNode(Expression(scope, { temp, "=" }));
-		std::copy(condition.elements.begin(), condition.elements.end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->elements));
+		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		
 		statements.push_back(reverseCondition);
 		
-		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
-		
+//		cast<IfStatement>(if_statement)->condition.elements.insert(cast<IfStatement>(if_statement)->condition.elements.end(), { "!", temp });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { "!", temp });
+
 		std::string label = getNextLabel();
 		// goto statements scope needs to be 0 as everything is flatten
 		constexpr size_t gotoStatementScope = 0;
