@@ -1,0 +1,13 @@
+alias Vector(T,E[]) = static_run (T,E[]) ()
+{
+   structName : string = T.stringOf;
+   structName += "Vector";
+   return static_compile("struct " + structName + "{}");
+}
+
+var myVector : Vector(int);
+
+alias IntVector = struct 
+{
+   int* begin; 
+}
