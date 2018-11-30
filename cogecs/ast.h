@@ -49,7 +49,6 @@ struct BasicExpression : public BasicStatement
 	BasicExpression(size_t scope, const std::string& v) :BasicStatement(scope), value(v) {}
 	void dump(size_t& depth,  std::ostream& out) const 
 	{
-		out << getTabs(depth);
 		out << value;
 	}
 	virtual void text(std::ostream&) const {}
@@ -114,10 +113,12 @@ public:
 			if (!(index % 2)) {
 				out << "var : ";
 				e->dump(depth, out);
+				out << std::endl;
 			}
 			else {
 				out << "op  : ";
 				e->dump(depth, out);
+				out << std::endl;
 			}
 			++index;
 		}
