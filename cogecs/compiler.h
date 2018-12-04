@@ -94,7 +94,7 @@ Expression::ElementsType moveExpressionFromStackToNode(StatementStack& stmtStack
 	Expression::ElementsType elements;
 	auto statementIt = std::find(stmtStack.rbegin(), stmtStack.rend(), statementName);
 	std::for_each(statementIt.base(), stmtStack.rbegin().base(), [&](const std::string& s) {
-		elements.push_back(makeNode(BasicExpression(scope, s)));
+		elements.push_back(makeNode(BasicExpression(scope, s)));		
 	});
 	return elements;
 }
@@ -203,7 +203,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 			auto firstParam = std::next(functionName);
 			std::copy(firstParam, lastParam.base(), std::back_inserter(node->parameters));
 		}
-		stmtStack.erase(--functionName, lastParam.base());
+		stmtStack.erase(functionName, lastParam.base());
 		statementList.push_back(node);
 		visitor.visitPost(node.get());
 	}
