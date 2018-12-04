@@ -47,7 +47,7 @@ struct BasicStatement : public Statement
 struct BasicExpression : public BasicStatement
 {
 	BasicExpression(size_t scope, const std::string& v) :BasicStatement(scope), value(v) {}
-	void dump(size_t& depth,  std::ostream& out) const 
+	void dump(size_t&,  std::ostream& out) const 
 	{
 		out << value;
 	}
