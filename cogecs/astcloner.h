@@ -57,6 +57,13 @@ struct AstCloner : public AstVisitor
 	}
 
 	void visitPre(const FunctionCall*) {}
+
+	void visitPre(const ReturnStatement* stmt) 
+	{
+		auto node = makeNode(ReturnStatement(scope, stmt->param));
+		nodesStack.push(node);
+	}
+
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const BasicExpression*) {}
 
@@ -155,6 +162,14 @@ struct AstCloner : public AstVisitor
 	}
 	
 	void visitPost(const FunctionCall*) {}
+
+	void visitPost(const ReturnStatement*) 
+	{
+		if (nodesStack.empty()) return;
+		auto node = nodesStack.top();
+		statements.push_back(node);
+		nodesStack.pop();
+	}
 
 	StatementList getStatements() const { return statements; }
 private:

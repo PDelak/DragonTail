@@ -18,6 +18,7 @@ std::ostream& operator << (std::ostream& stream, const LabelStatement& label);
 std::ostream& operator << (std::ostream& stream, const GotoStatement& gotoStatement);
 std::ostream& operator << (std::ostream& stream, const FunctionCall& functionCall);
 std::ostream& operator << (std::ostream& stream, const BasicExpression& basicExpression);
+std::ostream& operator << (std::ostream& stream, const ReturnStatement& returnStatement);
 
 struct Statement
 {
@@ -318,7 +319,29 @@ struct FunctionCall : public Statement
 		visitor.visitPre(this);
 		visitor.visitPost(this);
 	}
+};
 
+struct ReturnStatement : public Statement
+{
+	std::string param;
+	ReturnStatement() {}
+	ReturnStatement(size_t scope) :Statement(scope) {}
+	ReturnStatement(size_t scope, std::string p) :Statement(scope), param(p) {}
+	virtual void dump(size_t& depth, std::ostream& out) const
+	{
+		out << "Return Statement" << "(" << "scope:" << scope << ")" << std::endl;
+		out << getTabs(depth + 1);
+		out << "param:" << param.c_str() << std::endl;
+	}
+	virtual void text(std::ostream& out) const
+	{
+		out << *this;
+	}
+	virtual void traverse(AstVisitor& visitor)
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
 };
 
 typedef std::vector<std::string> StatementStack;

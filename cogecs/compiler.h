@@ -75,7 +75,8 @@ pre_visit_node(const std::string& name, const std::string& value, StatementStack
 			"while_loop",
 			"label",
 			"goto_statement",
-			"function_call"
+			"function_call",
+			"return_statement"
 		};
 		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
@@ -225,6 +226,16 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 		visitor.visitPost(node.get());
 	}
 	
+	if (name == "return_statement") {
+		auto begin = stmtStack.rbegin();
+		auto param = *begin;
+		auto i = stmtStack.erase(std::next(begin).base());
+		stmtStack.erase(--i);
+		auto node = std::make_shared<ReturnStatement>(scope);
+		node->param = param;
+		statementList.push_back(node);
+		visitor.visitPost(node.get());
+	}
 }
 
 

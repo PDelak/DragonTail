@@ -15,6 +15,7 @@ struct BlockStatement;
 struct LabelStatement;
 struct GotoStatement;
 struct FunctionCall;
+struct ReturnStatement;
 
 using StatementPtr = std::shared_ptr<Statement>;
 using StatementList = std::vector<StatementPtr>;
@@ -43,6 +44,9 @@ struct AstVisitor
 	virtual void visitPost(const GotoStatement*) = 0;
 	virtual void visitPre(const FunctionCall*) = 0;
 	virtual void visitPost(const FunctionCall*) = 0;
+	virtual void visitPre(const ReturnStatement*) = 0;
+	virtual void visitPost(const ReturnStatement*) = 0;
+
 };
 
 #endif

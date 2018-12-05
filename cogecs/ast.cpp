@@ -128,3 +128,11 @@ std::ostream& operator << (std::ostream& stream, const FunctionCall& functionCal
 	stream << ")";
 	return stream;
 }
+
+std::ostream& operator << (std::ostream& stream, const ReturnStatement& returnStatement)
+{
+	stream << "return ";
+	stream << returnStatement.param;
+	stream << ";\n";
+	return stream;
+}

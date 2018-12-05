@@ -15,6 +15,7 @@ struct NullVisitor : public AstVisitor
 	void visitPre(const LabelStatement*) {}
 	void visitPre(const GotoStatement*) {}
 	void visitPre(const FunctionCall*) {}
+	void visitPre(const ReturnStatement*) {}
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl*) {}
 	void visitPost(const BasicExpression*) {}
@@ -25,7 +26,7 @@ struct NullVisitor : public AstVisitor
 	void visitPost(const LabelStatement*) {}
 	void visitPost(const GotoStatement*) {}
 	void visitPost(const FunctionCall*) {}
-
+	void visitPost(const ReturnStatement*) {}
 };
 
 #endif

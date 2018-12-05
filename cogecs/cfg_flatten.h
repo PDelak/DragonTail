@@ -20,10 +20,9 @@ struct CFGFlattener : public AstVisitor
 		auto node = makeNode(VarDecl(scope, stmt->var_name));
 		nodesStack.push_back(node);
 	}
-	void visitPre(const BasicExpression*)
-	{
+	
+	void visitPre(const BasicExpression*) {}
 
-	}
 	void visitPre(const Expression* stmt)
 	{
 		auto node = makeNode(Expression(scope));		
@@ -66,6 +65,12 @@ struct CFGFlattener : public AstVisitor
 	}
 
 	void visitPre(const FunctionCall*) {}
+	void visitPre(const ReturnStatement* stmt) 
+	{
+		auto node = makeNode(ReturnStatement(scope, stmt->param));
+		nodesStack.push_back(node);
+	}
+
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const BasicExpression*) {}
 
@@ -274,6 +279,14 @@ struct CFGFlattener : public AstVisitor
 	}
 
 	void visitPost(const FunctionCall*) {}
+
+	void visitPost(const ReturnStatement*) {
+		if (nodesStack.empty()) return;
+		auto begin = nodesStack.rbegin();
+		auto node = *begin;
+		statements.push_back(node);
+		nodesStack.erase(std::next(begin).base());
+	}
 
 	StatementList getStatements() const { return statements; }
 private:
