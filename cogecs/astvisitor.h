@@ -6,6 +6,7 @@
 
 struct Statement;
 struct BasicStatement;
+struct BasicExpression;
 struct VarDecl;
 struct Expression;
 struct IfStatement;
@@ -26,6 +27,8 @@ struct AstVisitor
 	virtual void visitPost(const BasicStatement*) = 0;
 	virtual void visitPre(const VarDecl*) = 0;
 	virtual void visitPost(const VarDecl*) = 0;
+	virtual void visitPre(const BasicExpression*) = 0;
+	virtual void visitPost(const BasicExpression*) = 0;
 	virtual void visitPre(const Expression*) = 0;
 	virtual void visitPost(const Expression*) = 0;
 	virtual void visitPre(const IfStatement*) = 0;

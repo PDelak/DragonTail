@@ -20,6 +20,10 @@ struct CFGFlattener : public AstVisitor
 		auto node = makeNode(VarDecl(scope, stmt->var_name));
 		nodesStack.push_back(node);
 	}
+	void visitPre(const BasicExpression*)
+	{
+
+	}
 	void visitPre(const Expression* stmt)
 	{
 		auto node = makeNode(Expression(scope));		
@@ -67,6 +71,10 @@ struct CFGFlattener : public AstVisitor
 	}
 
 	void visitPost(const BasicStatement*)
+	{
+	}
+
+	void visitPost(const BasicExpression*)
 	{
 	}
 	void visitPost(const VarDecl*)

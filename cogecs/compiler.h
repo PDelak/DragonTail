@@ -89,12 +89,29 @@ pre_visit_node(const std::string& name, const std::string& value, StatementStack
 
 }
 
-Expression::ElementsType moveExpressionFromStackToNode(StatementStack& stmtStack, const std::string& statementName, size_t scope)
+Expression::ElementsType moveExpressionFromStackToNode(StatementStack& stmtStack, const std::string& statementName, size_t scope, StatementList& statementList)
 {
 	Expression::ElementsType elements;
+	StatementList fCalls;
+
+	for (const auto& statement : statementList) {
+		if (dynamic_cast<FunctionCall*>(statement.get())) {
+			fCalls.push_back(statement);
+		}
+	}
+
 	auto statementIt = std::find(stmtStack.rbegin(), stmtStack.rend(), statementName);
 	std::for_each(statementIt.base(), stmtStack.rbegin().base(), [&](const std::string& s) {
-		elements.push_back(makeNode(BasicExpression(scope, s)));		
+		if (s == "function_call") {
+			auto fcall = fCalls.begin();			
+			elements.push_back(*fcall);
+			fCalls.erase(fcall);			
+			statementList.erase(--statementList.rbegin().base());
+		}
+		else {
+			elements.push_back(makeNode(BasicExpression(scope, s)));
+		}
+		
 	});
 	return elements;
 }
@@ -163,7 +180,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	}
 	if (name == "expr_statement") {
 		auto node = std::make_shared<Expression>(scope);		
-		auto elems = moveExpressionFromStackToNode(stmtStack, "expr_statement", scope);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "expr_statement", scope, statementList);
 		node->setElements(elems);
 		statementList.push_back(node);
 		clearStmtStackFor("expr_statement", stmtStack);
@@ -172,7 +189,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	if (name == "if_statement") {
 		auto node = std::make_shared<IfStatement>(scope - 1);
 		node->condition.isPartOfCompoundStmt = true;
-		auto elems = moveExpressionFromStackToNode(stmtStack, "if_statement", scope);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "if_statement", scope, statementList);
 		node->condition.setElements(elems);
 		addAstCompoundNode<IfStatement>(statementList, stmtStack, scope, "if_statement", node);
 		visitor.visitPost(node.get());
@@ -187,7 +204,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	if (name == "while_loop") {
 		auto node = std::make_shared<WhileLoop>(scope - 1);
 		node->condition.isPartOfCompoundStmt = true;
-		auto elems = moveExpressionFromStackToNode(stmtStack, "while_loop", scope);
+		auto elems = moveExpressionFromStackToNode(stmtStack, "while_loop", scope, statementList);
 		node->condition.setElements(elems);
 		addAstCompoundNode<WhileLoop>(statementList, stmtStack, scope, "while_loop", node);
 		visitor.visitPost(node.get());

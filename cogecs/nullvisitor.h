@@ -7,6 +7,7 @@ struct NullVisitor : public AstVisitor
 {	
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl*) {}
+	void visitPre(const BasicExpression*) {}
 	void visitPre(const Expression*) {}
 	void visitPre(const IfStatement*) {}
 	void visitPre(const WhileLoop*) {}
@@ -16,6 +17,7 @@ struct NullVisitor : public AstVisitor
 	void visitPre(const FunctionCall*) {}
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl*) {}
+	void visitPost(const BasicExpression*) {}
 	void visitPost(const Expression*) {}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}

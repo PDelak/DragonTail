@@ -11,6 +11,7 @@ struct AstCloner : public AstVisitor
 	AstCloner() {}
 	
 	void visitPre(const BasicStatement*) {}
+	void visitPre(const BasicExpression*) {}
 	void visitPre(const VarDecl* stmt) 
 	{
 		auto node = makeNode(VarDecl(scope, stmt->var_name));
@@ -61,6 +62,9 @@ struct AstCloner : public AstVisitor
 	}
 
 	void visitPost(const BasicStatement*) 
+	{
+	}
+	void visitPost(const BasicExpression*)
 	{
 	}
 	void visitPost(const VarDecl*) 

@@ -50,10 +50,16 @@ std::ostream& operator << (std::ostream& stream, const VarDecl& varDecl)
 	return stream;
 }
 
+std::ostream& operator << (std::ostream& stream, const BasicExpression& expression)
+{
+	stream << expression.value;
+	return stream;
+}
+
 std::ostream& operator << (std::ostream& stream, const Expression& expression)
 {	
 	std::for_each(expression.child_begin(), expression.child_end(), [&](const StatementPtr& stmt) {		
-		stream << static_cast<BasicExpression*>(stmt.get())->value;
+		static_cast<Statement*>(stmt.get())->text(stream);
 	});
 	if (!expression.isPartOfCompoundStmt) stream << ";\n";
 	return stream;
@@ -103,5 +109,22 @@ std::ostream& operator << (std::ostream& stream, const BlockStatement& block)
 		stmt->text(stream);
 	});
 	stream << "}\n";
+	return stream;
+}
+
+
+std::ostream& operator << (std::ostream& stream, const FunctionCall& functionCall)
+{
+	bool first = false;
+	stream << functionCall.name;
+	stream << "(";
+	std::for_each(functionCall.parameters.begin(), functionCall.parameters.end(), [&](const std::string& param) {
+		if (first) {
+			stream << " ";
+		}
+		first = true;
+		stream << param;
+	});
+	stream << ")";
 	return stream;
 }

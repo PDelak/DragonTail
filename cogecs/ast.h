@@ -16,7 +16,8 @@ std::ostream& operator << (std::ostream& stream, const WhileLoop& loop);
 std::ostream& operator << (std::ostream& stream, const BlockStatement& block);
 std::ostream& operator << (std::ostream& stream, const LabelStatement& label);
 std::ostream& operator << (std::ostream& stream, const GotoStatement& gotoStatement);
-
+std::ostream& operator << (std::ostream& stream, const FunctionCall& functionCall);
+std::ostream& operator << (std::ostream& stream, const BasicExpression& basicExpression);
 
 struct Statement
 {
@@ -51,8 +52,15 @@ struct BasicExpression : public BasicStatement
 	{
 		out << value;
 	}
-	virtual void text(std::ostream&) const {}
-	void traverse(AstVisitor&) {}
+	virtual void text(std::ostream& out) const 
+	{
+		out << *this;
+	}
+	void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
 	std::string value;
 };
 
@@ -291,12 +299,25 @@ struct FunctionCall : public Statement
 	std::vector<std::string> parameters;
 	FunctionCall() {}
 	FunctionCall(size_t scope) :Statement(scope) {}
-	virtual void dump(size_t&, std::ostream&) const 
-	{}
-	virtual void text(std::ostream&) const 
-	{}
-	virtual void traverse(AstVisitor&) 
-	{}
+	virtual void dump(size_t& depth, std::ostream& out) const 
+	{
+		out << "FunctionCall" << "(" << "scope:" << scope << ")" << std::endl;
+		out << getTabs(depth + 1);
+		out << "name:" << name.c_str() << std::endl;
+		
+		for (auto param : parameters) {
+			out << getTabs(depth + 1) << "param : " << param << std::endl;
+		}
+	}
+	virtual void text(std::ostream& out) const 
+	{
+		out << *this;
+	}
+	virtual void traverse(AstVisitor& visitor) 
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
 
 };
 
