@@ -19,6 +19,7 @@ std::ostream& operator << (std::ostream& stream, const GotoStatement& gotoStatem
 std::ostream& operator << (std::ostream& stream, const FunctionCall& functionCall);
 std::ostream& operator << (std::ostream& stream, const BasicExpression& basicExpression);
 std::ostream& operator << (std::ostream& stream, const ReturnStatement& returnStatement);
+std::ostream& operator << (std::ostream& stream, const FunctionDecl& functionDecl);
 
 struct Statement
 {
@@ -329,9 +330,40 @@ struct ReturnStatement : public Statement
 	ReturnStatement(size_t scope, std::string p) :Statement(scope), param(p) {}
 	virtual void dump(size_t& depth, std::ostream& out) const
 	{
+		out << getTabs(depth);
 		out << "Return Statement" << "(" << "scope:" << scope << ")" << std::endl;
 		out << getTabs(depth + 1);
 		out << "param:" << param.c_str() << std::endl;
+	}
+	virtual void text(std::ostream& out) const
+	{
+		out << *this;
+	}
+	virtual void traverse(AstVisitor& visitor)
+	{
+		visitor.visitPre(this);
+		visitor.visitPost(this);
+	}
+};
+
+struct FunctionDecl : public Statement
+{
+	std::string name;
+	std::vector<std::string> parameters;
+	StatementList statements;
+	FunctionDecl() {}
+	FunctionDecl(size_t scope) :Statement(scope) {}
+	FunctionDecl(size_t scope, std::string name) :Statement(scope), name(name) {}
+	virtual void dump(size_t& depth, std::ostream& out) const
+	{
+		out << getTabs(depth);
+		out << "FunctionDecl" << "(" << "scope:" << scope << ")" << std::endl;
+		out << getTabs(depth + 1);
+		out << "name:" << name.c_str() << std::endl;
+
+		for (auto param : parameters) {
+			out << getTabs(depth + 1) << "param : " << param << std::endl;
+		}
 	}
 	virtual void text(std::ostream& out) const
 	{

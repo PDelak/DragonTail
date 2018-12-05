@@ -65,6 +65,16 @@ struct CFGFlattener : public AstVisitor
 	}
 
 	void visitPre(const FunctionCall*) {}
+
+	void visitPre(const FunctionDecl* fdecl) 
+	{
+		// TODO : this is shallow copy for now
+		auto node = makeNode(FunctionDecl(scope, fdecl->name));
+		cast<FunctionDecl>(node)->parameters = fdecl->parameters;
+		cast<FunctionDecl>(node)->statements = fdecl->statements;
+		nodesStack.push_back(node);
+	}
+
 	void visitPre(const ReturnStatement* stmt) 
 	{
 		auto node = makeNode(ReturnStatement(scope, stmt->param));
@@ -281,6 +291,15 @@ struct CFGFlattener : public AstVisitor
 	void visitPost(const FunctionCall*) {}
 
 	void visitPost(const ReturnStatement*) {
+		if (nodesStack.empty()) return;
+		auto begin = nodesStack.rbegin();
+		auto node = *begin;
+		statements.push_back(node);
+		nodesStack.erase(std::next(begin).base());
+	}
+
+	void visitPost(const FunctionDecl*) 
+	{
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		auto node = *begin;

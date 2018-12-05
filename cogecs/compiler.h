@@ -76,14 +76,16 @@ pre_visit_node(const std::string& name, const std::string& value, StatementStack
 			"label",
 			"goto_statement",
 			"function_call",
-			"return_statement"
+			"return_statement",
+			"function_decl"
 		};
 		if (rules.find(name) != rules.end()) stmtStack.push_back(name);
 	}
 	std::set<std::string> compound_rules = { 
 		"if_statement",
 		"block_statement",
-		"while_loop",		
+		"while_loop",	
+		"function_decl"
 	};
 	// increase scope number only for compound rules
 	if (compound_rules.find(name) != compound_rules.end()) ++scope;
@@ -235,6 +237,22 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 		node->param = param;
 		statementList.push_back(node);
 		visitor.visitPost(node.get());
+	}
+
+	if (name == "function_decl") {		
+		auto node = std::make_shared<FunctionDecl>(scope - 1);
+		auto lastParam = stmtStack.rbegin();
+		auto functionDecl = std::find(lastParam, stmtStack.rend(), "function_decl");
+		auto functionName = functionDecl.base();
+		node->name = *functionName;
+		if (distance(functionName, lastParam.base()) > 0) {
+			auto firstParam = std::next(functionName);
+			std::copy(firstParam, lastParam.base(), std::back_inserter(node->parameters));
+		}
+		stmtStack.erase(functionName, lastParam.base());
+		addAstCompoundNode<FunctionDecl>(statementList, stmtStack, scope, "function_decl", node);
+		visitor.visitPost(node.get());
+		--scope;
 	}
 }
 

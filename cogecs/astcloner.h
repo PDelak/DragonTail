@@ -57,6 +57,7 @@ struct AstCloner : public AstVisitor
 	}
 
 	void visitPre(const FunctionCall*) {}
+	void visitPre(const FunctionDecl*) {}
 
 	void visitPre(const ReturnStatement* stmt) 
 	{
@@ -162,6 +163,7 @@ struct AstCloner : public AstVisitor
 	}
 	
 	void visitPost(const FunctionCall*) {}
+	void visitPost(const FunctionDecl*) {}
 
 	void visitPost(const ReturnStatement*) 
 	{

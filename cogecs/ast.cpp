@@ -136,3 +136,19 @@ std::ostream& operator << (std::ostream& stream, const ReturnStatement& returnSt
 	stream << ";\n";
 	return stream;
 }
+
+std::ostream& operator << (std::ostream& stream, const FunctionDecl& functionDecl)
+{
+	bool first = false;
+	stream << functionDecl.name;
+	stream << "(";
+	std::for_each(functionDecl.parameters.begin(), functionDecl.parameters.end(), [&](const std::string& param) {
+		if (first) {
+			stream << " ";
+		}
+		first = true;
+		stream << param;
+	});
+	stream << ")";
+	return stream;
+}
