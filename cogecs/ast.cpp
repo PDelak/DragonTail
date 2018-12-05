@@ -140,6 +140,7 @@ std::ostream& operator << (std::ostream& stream, const ReturnStatement& returnSt
 std::ostream& operator << (std::ostream& stream, const FunctionDecl& functionDecl)
 {
 	bool first = false;
+	stream << "function ";
 	stream << functionDecl.name;
 	stream << "(";
 	std::for_each(functionDecl.parameters.begin(), functionDecl.parameters.end(), [&](const std::string& param) {
@@ -149,6 +150,9 @@ std::ostream& operator << (std::ostream& stream, const FunctionDecl& functionDec
 		first = true;
 		stream << param;
 	});
-	stream << ")";
+	stream << ")\n";
+	for (const auto& stmt : functionDecl.statements) {
+		stmt->text(stream);
+	}
 	return stream;
 }
