@@ -60,9 +60,9 @@ int main(int argc, char* argv[])
 
     dumpCode(visitor.getStatements(), std::cout);
 
-    //auto x86_text = emitMachineCode(visitor.getStatements());
+    auto x86_text = emitMachineCode(visitor.getStatements());
 	
-    //x86_text();
+    x86_text();
 
     return 0;
 }

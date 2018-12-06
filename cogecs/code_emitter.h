@@ -3,6 +3,7 @@
 #include <ostream>
 #include "ast.h"
 #include "astvisitor.h"
+#include "jitcompiler.h"
 
 struct Basicx86Emitter : public AstVisitor
 {
@@ -42,12 +43,11 @@ auto emitMachineCode(const StatementList& statements)
 
 	traverse(statements, visitor);
 	dumpCode(visitor.getStatements(), std::cout);
-    // X86InstrVector i_vector;
-    // i_vector.push_function_prolog();
+	X86InstrVector i_vector;
+	i_vector.push_function_prolog();
 
-    // i_vector.push_function_epilog();
-    // JitCompiler jit(i_vector);
-    // return jit.compile();
-	return 0;
+	i_vector.push_function_epilog();
+	JitCompiler jit(i_vector);
+	return jit.compile();
 }
 

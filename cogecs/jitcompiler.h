@@ -21,7 +21,7 @@ std::string to_hex(const std::byte* buffer, size_t size) {
 
     for (size_t i = 0; i<size; ++i) {
         str << "0x";
-        str << std::setw(2) << (unsigned short)(std::byte)buffer[i];
+        str << std::setw(2) << static_cast<unsigned short>(static_cast<std::byte>(buffer[i]));
         str << " ";
     }
     return str.str();
@@ -67,7 +67,7 @@ struct X86InstrVector
     std::vector<std::byte> get_address(void* addr)
     {
         std::vector<std::byte> result;
-        auto addrBytes = intToBytes(reinterpret_cast<int>(addr));
+        auto addrBytes = intToBytes(reinterpret_cast<size_t>(addr));
         std::copy(addrBytes.rbegin(), addrBytes.rend(), std::back_inserter(result));
         return result;
     }
@@ -107,7 +107,7 @@ struct JitCompiler
     JitCompiler(const X86InstrVector& i_vector) :buf(nullptr), instr_vector(i_vector) 
     {
         size = instr_vector.size();
-        buf = (std::byte*)VirtualAllocEx(GetCurrentProcess(), 0, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        buf = reinterpret_cast<std::byte*>(VirtualAllocEx(GetCurrentProcess(), 0, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
     }
 
     ~JitCompiler() { VirtualFreeEx(GetCurrentProcess(), buf, size, MEM_RELEASE); }
@@ -115,7 +115,7 @@ struct JitCompiler
     pfunc compile()
     {
         memcpy(buf, &instr_vector.instruction_vector()[0], size);
-        pfunc func = (pfunc)buf;
+        pfunc func = reinterpret_cast<pfunc>(buf);
         return func;
     }
 
