@@ -18,6 +18,7 @@
 #include "dumpvisitor.h"
 #include "astcloner.h"
 #include "cfg_flatten.h"
+#include "code_emitter.h"
 
 void print(const std::vector<int>& v)
 {
