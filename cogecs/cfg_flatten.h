@@ -125,12 +125,16 @@ struct CFGFlattener : public AstVisitor
 		statements.push_back(makeNode(VarDecl(scope, temp)));
 
 		// create reverse condition expression
-		auto reverseCondition = makeNode(Expression(scope, {makeNode(BasicExpression(scope, temp)), makeNode(BasicExpression(scope, "="))}));
+		auto reverseCondition = makeNode(Expression(scope, {makeNode(BasicExpression(scope, temp)), 
+                                                            makeNode(BasicExpression(scope, "="))}));
 		
-		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
+		std::copy(condition.child_begin(), condition.child_end(), 
+			      std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		statements.push_back(reverseCondition);
 
-		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { makeNode(BasicExpression(scope, "!")), makeNode(BasicExpression(scope, temp)) });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), 
+                                                               { makeNode(BasicExpression(scope, "!")), 
+                                                                 makeNode(BasicExpression(scope, temp)) });
 
 		std::string label = getNextLabel();
 
@@ -208,12 +212,16 @@ struct CFGFlattener : public AstVisitor
 		cast<LabelStatement>(labelBeforeIfNode)->label = getNextLabel();
 		statements.push_back(labelBeforeIfNode);
 
-		auto reverseCondition = makeNode(Expression(scope, { makeNode(BasicExpression(scope, temp)), makeNode(BasicExpression(scope, "=")) }));
-		std::copy(condition.child_begin(), condition.child_end(), std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
+		auto reverseCondition = makeNode(Expression(scope, { makeNode(BasicExpression(scope, temp)), 
+                                                             makeNode(BasicExpression(scope, "=")) }));
+		std::copy(condition.child_begin(), condition.child_end(), 
+				  std::back_inserter(static_cast<Expression*>(reverseCondition.get())->getChilds()));
 		
 		statements.push_back(reverseCondition);
 		
-		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), { makeNode(BasicExpression(scope, "!")), makeNode(BasicExpression(scope, temp)) });
+		cast<IfStatement>(if_statement)->condition.insertChild(cast<IfStatement>(if_statement)->condition.child_end(), 
+                                                              { makeNode(BasicExpression(scope, "!")), 
+                                                                makeNode(BasicExpression(scope, temp)) });
 
 		std::string label = getNextLabel();
 		// goto statements scope needs to be 0 as everything is flatten
@@ -292,17 +300,17 @@ struct CFGFlattener : public AstVisitor
 		auto load_call = makeNode(FunctionCall(scope));
 		std::vector<StatementPtr> load_expr_children;
 		load_expr_children.push_back(load_call);
-		static_cast<FunctionCall*>(load_call.get())->name = "load";
-		static_cast<Expression*>(load_call_expression.get())->setElements(load_expr_children);
-		static_cast<Expression*>(load_call_expression.get())->isPartOfCompoundStmt = false;
+		cast<FunctionCall>(load_call)->name = "load";
+		cast<Expression>(load_call_expression)->setElements(load_expr_children);
+		cast<Expression>(load_call_expression)->isPartOfCompoundStmt = false;
 
 		auto ret_call_expression = makeNode(Expression(scope));
 		auto ret_call = makeNode(FunctionCall(scope));
 		std::vector<StatementPtr> ret_expr_children;
 		ret_expr_children.push_back(ret_call);
-		static_cast<FunctionCall*>(ret_call.get())->name = "ret";
-		static_cast<Expression*>(ret_call_expression.get())->setElements(ret_expr_children);
-		static_cast<Expression*>(ret_call_expression.get())->isPartOfCompoundStmt = false;
+		cast<FunctionCall>(ret_call)->name = "ret";
+		cast<Expression>(ret_call_expression)->setElements(ret_expr_children);
+		cast<Expression>(ret_call_expression)->isPartOfCompoundStmt = false;
 
 		auto label = makeNode(LabelStatement(scope));
 		static_cast<LabelStatement*>(label.get())->label = static_cast<FunctionDecl*>(node.get())->name;
