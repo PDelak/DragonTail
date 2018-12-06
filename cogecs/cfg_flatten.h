@@ -17,14 +17,17 @@ struct CFGFlattener : public AstVisitor
 	~CFGFlattener()  { assert(nodesStack.empty()); }
 
 	void visitPre(const BasicStatement*) {}
+	void visitPre(const BasicExpression*) {}
+	void visitPre(const FunctionCall*) {}
+	void visitPost(const BasicStatement*) {}
+	void visitPost(const BasicExpression*) {}
+	void visitPost(const FunctionCall*) {}
+
 	void visitPre(const VarDecl* stmt)
 	{
-		auto node = makeNode(VarDecl(scope, stmt->var_name));
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(VarDecl(scope, stmt->var_name)));
 	}
 	
-	void visitPre(const BasicExpression*) {}
-
 	void visitPre(const Expression* stmt)
 	{
 		auto node = makeNode(Expression(scope));		
@@ -37,36 +40,28 @@ struct CFGFlattener : public AstVisitor
 	}
 	void visitPre(const IfStatement*)
 	{
-		auto node = makeNode(IfStatement(scope));
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(IfStatement(scope)));
 	}
 
 	void visitPre(const WhileLoop*)
 	{
-		auto node = makeNode(WhileLoop(scope));
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(WhileLoop(scope)));
 	}
 
 	void visitPre(const BlockStatement*)
 	{
-		auto node = makeNode(BlockStatement(scope));
-		nodesStack.push_back(node);
-		++scope;
+		nodesStack.push_back(makeNode(BlockStatement(scope++)));
 	}
 
 	void visitPre(const LabelStatement* stmt)
 	{
-		auto node = makeNode(LabelStatement(scope, stmt->label));
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(LabelStatement(scope, stmt->label)));
 	}
 
 	void visitPre(const GotoStatement* stmt) 
 	{
-		auto node = makeNode(GotoStatement(scope, stmt->label));
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(GotoStatement(scope, stmt->label)));
 	}
-
-	void visitPre(const FunctionCall*) {}
 
 	void visitPre(const FunctionDecl* fdecl) 
 	{
@@ -79,28 +74,7 @@ struct CFGFlattener : public AstVisitor
 
 	void visitPre(const ReturnStatement* stmt) 
 	{
-		auto node = makeNode(ReturnStatement(scope, stmt->param));
-		nodesStack.push_back(node);
-	}
-
-	void visitPost(const BasicStatement*) {}
-	void visitPost(const BasicExpression*) {}
-
-	void visitPost(const VarDecl*)
-	{
-		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
-	}
-	void visitPost(const Expression*)
-	{
-		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
+		nodesStack.push_back(makeNode(ReturnStatement(scope, stmt->param)));
 	}
 
 	std::string getNextLabel() 
@@ -118,7 +92,6 @@ struct CFGFlattener : public AstVisitor
 		id++;
 		return label;
 	}
-
 
 	void visitPost(const IfStatement*)
 	{
@@ -293,32 +266,30 @@ struct CFGFlattener : public AstVisitor
 		--scope;
 									
 	}
+
+	void visitPost(const VarDecl*)
+	{
+		popFromStackAndPushToStatements();
+	}
+
+	void visitPost(const Expression*)
+	{
+		popFromStackAndPushToStatements();
+	}
+
 	void visitPost(const LabelStatement*)
 	{
-		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
-
+		popFromStackAndPushToStatements();
 	}
+
 	void visitPost(const GotoStatement*)
 	{
-		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
+		popFromStackAndPushToStatements();
 	}
 
-	void visitPost(const FunctionCall*) {}
-
-	void visitPost(const ReturnStatement*) {
-		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;	
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
+	void visitPost(const ReturnStatement*) 
+	{
+		popFromStackAndPushToStatements();
 	}
 
 	void visitPost(const FunctionDecl*) 
@@ -360,6 +331,16 @@ struct CFGFlattener : public AstVisitor
 
 	StatementList getStatements() const { return statements; }
 private:
+
+	void popFromStackAndPushToStatements()
+	{
+		if (nodesStack.empty()) return;
+		auto begin = nodesStack.rbegin();
+		auto node = *begin;
+		statements.push_back(node);
+		nodesStack.erase(std::next(begin).base());
+	}
+
 	size_t scope = 0;
 	StatementList statements;
 	std::vector<StatementPtr> nodesStack;
