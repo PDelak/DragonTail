@@ -327,17 +327,34 @@ struct CFGFlattener : public AstVisitor
 		auto node = *nodesStack.rbegin();
 		auto load_call_expression = makeNode(Expression(scope));
 		auto load_call = makeNode(FunctionCall(scope));
-		std::vector<StatementPtr> expressions;
-		expressions.push_back(load_call);
+		std::vector<StatementPtr> load_expr_children;
+		load_expr_children.push_back(load_call);
 		static_cast<FunctionCall*>(load_call.get())->name = "load";
-		static_cast<Expression*>(load_call_expression.get())->setElements(expressions);
+		static_cast<Expression*>(load_call_expression.get())->setElements(load_expr_children);
 		static_cast<Expression*>(load_call_expression.get())->isPartOfCompoundStmt = false;
+
+		auto ret_call_expression = makeNode(Expression(scope));
+		auto ret_call = makeNode(FunctionCall(scope));
+		std::vector<StatementPtr> ret_expr_children;
+		ret_expr_children.push_back(ret_call);
+		static_cast<FunctionCall*>(ret_call.get())->name = "ret";
+		static_cast<Expression*>(ret_call_expression.get())->setElements(ret_expr_children);
+		static_cast<Expression*>(ret_call_expression.get())->isPartOfCompoundStmt = false;
+
+		auto label = makeNode(LabelStatement(scope));
+		static_cast<LabelStatement*>(label.get())->label = static_cast<FunctionDecl*>(node.get())->name;
+		
+		statements.push_back(label);
 		statements.push_back(load_call_expression);
+		
 		// traverse function block
 		for (const auto& stmt : static_cast<FunctionDecl*>(node.get())->statements)
 		{
 			stmt->traverse(*this);
 		}
+		
+		statements.push_back(ret_call_expression);
+
 		nodesStack.erase(std::next(nodesStack.rbegin()).base());
 	}
 
