@@ -180,6 +180,23 @@ struct CFGFlattener : public AstVisitor
 
 	void visitPost(const WhileLoop*)
 	{
+		
+		// while loop is a kind of a compound node 
+		// it can have one children which can be a basic statement
+		// or a block 
+		// 1) while -> ;
+		// 2) while -> {}
+		// below while loop 
+		// while(x) {}
+		// is transformed to if statement as follows
+		/*
+			var temp__0;
+			label__1:
+			temp__0=x;
+			if (!temp__0) goto label__2;
+			goto label__1;
+			label__2:
+		*/
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		nodesStack.erase(std::next(begin).base());
@@ -190,6 +207,11 @@ struct CFGFlattener : public AstVisitor
 		std::vector<StatementPtr> while_children;
 		if (is<BlockStatement>(*currentStatementIterator)) {
 			auto block = cast<BlockStatement>(*currentStatementIterator);
+			// every left bracket '{' starts a new block and increases a scope counter
+			// every right bracket '}' closes block and decreases a scope counter
+			// reducing while loop means that it is transformed to if statement with reversed condition
+			// and few jumps depending on condition value
+			// so next for_each statement is responsible for decreasing scope counter of all statements inside a block
 			std::for_each(block->statements.begin(), block->statements.end(), [](const StatementPtr& stmt) {stmt->scope = stmt->scope - 1; });
 			std::copy(block->statements.begin(), block->statements.end(), std::back_inserter(while_children));
 		}
