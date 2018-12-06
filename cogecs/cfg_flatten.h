@@ -6,6 +6,7 @@
 
 #include <stack>
 #include <vector>
+#include <cassert>
 #include "astvisitor.h"
 #include "ast.h"
 #include "tools.h"
@@ -13,7 +14,8 @@
 struct CFGFlattener : public AstVisitor
 {	
 	CFGFlattener() {}
-	
+	~CFGFlattener()  { assert(nodesStack.empty()); }
+
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl* stmt)
 	{
@@ -200,7 +202,6 @@ struct CFGFlattener : public AstVisitor
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
 		nodesStack.erase(std::next(begin).base());
-		auto if_statement = makeNode(IfStatement(scope));
 
 		auto currentStatementIterator = statements.rbegin();
 		
@@ -227,7 +228,7 @@ struct CFGFlattener : public AstVisitor
 		}
 		
 		Expression condition = *cast<Expression>(*currentStatementIterator);
-			
+		auto if_statement = makeNode(IfStatement(scope));			
 		cast<IfStatement>(if_statement)->scope = cast<Expression>(*currentStatementIterator)->scope;
 		cast<IfStatement>(if_statement)->condition.isPartOfCompoundStmt = cast<Expression>(*currentStatementIterator)->isPartOfCompoundStmt;
 
@@ -315,7 +316,7 @@ struct CFGFlattener : public AstVisitor
 	void visitPost(const ReturnStatement*) {
 		if (nodesStack.empty()) return;
 		auto begin = nodesStack.rbegin();
-		auto node = *begin;
+		auto node = *begin;	
 		statements.push_back(node);
 		nodesStack.erase(std::next(begin).base());
 	}
@@ -323,10 +324,21 @@ struct CFGFlattener : public AstVisitor
 	void visitPost(const FunctionDecl*) 
 	{
 		if (nodesStack.empty()) return;
-		auto begin = nodesStack.rbegin();
-		auto node = *begin;
-		statements.push_back(node);
-		nodesStack.erase(std::next(begin).base());
+		auto node = *nodesStack.rbegin();
+		auto load_call_expression = makeNode(Expression(scope));
+		auto load_call = makeNode(FunctionCall(scope));
+		std::vector<StatementPtr> expressions;
+		expressions.push_back(load_call);
+		static_cast<FunctionCall*>(load_call.get())->name = "load";
+		static_cast<Expression*>(load_call_expression.get())->setElements(expressions);
+		static_cast<Expression*>(load_call_expression.get())->isPartOfCompoundStmt = false;
+		statements.push_back(load_call_expression);
+		// traverse function block
+		for (const auto& stmt : static_cast<FunctionDecl*>(node.get())->statements)
+		{
+			stmt->traverse(*this);
+		}
+		nodesStack.erase(std::next(nodesStack.rbegin()).base());
 	}
 
 	StatementList getStatements() const { return statements; }

@@ -240,7 +240,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 	}
 
 	if (name == "function_decl") {		
-		auto node = std::make_shared<FunctionDecl>(scope - 1);
+		auto node = std::make_shared<FunctionDecl>(scope - 1);		
 		auto lastParam = stmtStack.rbegin();
 		auto functionDecl = std::find(lastParam, stmtStack.rend(), "function_decl");
 		auto functionName = functionDecl.base();
