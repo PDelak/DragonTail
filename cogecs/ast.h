@@ -110,7 +110,9 @@ public:
 	Expression() {}
 	Expression(size_t scope):Statement(scope) {}
 	Expression(size_t scope, const std::initializer_list<ElementType>& elems) :Statement(scope), elements(elems.begin(), elems.end()) {}
-	
+	Expression(size_t scope, const ElementsType& elems) :Statement(scope), elements(elems) {}
+	Expression(size_t scope, const ElementsType& elems, bool compound) :Statement(scope), elements(elems), isPartOfCompoundStmt(compound) {}
+
 	void dump(size_t& depth, std::ostream& out) const {
 		out << getTabs(depth);
 		out << "Expression(" << "scope:" << scope << ")" << std::endl;
@@ -354,6 +356,8 @@ struct FunctionDecl : public Statement
 	FunctionDecl() {}
 	FunctionDecl(size_t scope) :Statement(scope) {}
 	FunctionDecl(size_t scope, std::string name) :Statement(scope), name(name) {}
+	FunctionDecl(size_t scope, std::string name, const std::vector<std::string>& params, const StatementList& stmts) 
+		:Statement(scope), name(name), parameters(params), statements(stmts) {}
 	virtual void dump(size_t& depth, std::ostream& out) const
 	{
 		out << getTabs(depth);

@@ -30,12 +30,7 @@ struct CFGFlattener : public AstVisitor
 	
 	void visitPre(const Expression* stmt)
 	{
-		auto node = makeNode(Expression(scope));		
-		if (is<Expression>(node)) {
-			cast<Expression>(node)->setElements(stmt->getChilds());
-			cast<Expression>(node)->isPartOfCompoundStmt = stmt->isPartOfCompoundStmt;
-		}
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(Expression(scope, stmt->getChilds(), stmt->isPartOfCompoundStmt)));
 
 	}
 	void visitPre(const IfStatement*)
@@ -66,10 +61,7 @@ struct CFGFlattener : public AstVisitor
 	void visitPre(const FunctionDecl* fdecl) 
 	{
 		// TODO : this is shallow copy for now
-		auto node = makeNode(FunctionDecl(scope, fdecl->name));
-		cast<FunctionDecl>(node)->parameters = fdecl->parameters;
-		cast<FunctionDecl>(node)->statements = fdecl->statements;
-		nodesStack.push_back(node);
+		nodesStack.push_back(makeNode(FunctionDecl(scope, fdecl->name, fdecl->parameters, fdecl->statements)));
 	}
 
 	void visitPre(const ReturnStatement* stmt) 
