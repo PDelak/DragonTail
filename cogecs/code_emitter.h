@@ -4,6 +4,7 @@
 #include "ast.h"
 #include "astvisitor.h"
 #include "jitcompiler.h"
+#include "builtin.h"
 
 struct Basicx86Emitter : public AstVisitor
 {
