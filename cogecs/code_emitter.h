@@ -23,19 +23,45 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl*) {}
 	void visitPost(const BasicExpression*) {}
-	void visitPost(const Expression*) {}
+	void visitPost(const Expression* expr) 
+	{
+		for (const auto& elems : expr->getChilds()) 
+		{
+			elems->traverse(*this);
+		}
+	}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
 	void visitPost(const BlockStatement*) {}
 	void visitPost(const LabelStatement*) {}
 	void visitPost(const GotoStatement*) {}
-	void visitPost(const FunctionCall*) {}
+	void visitPost(const FunctionCall* fcall) 
+	{
+		i_vector.push_function_prolog();
+		
+		// push params
+		for (const auto& param : fcall->parameters) 
+		{
+			i_vector.push_back({ std::byte(0x68) }); // push
+			i_vector.push_back(i_vector.int_to_bytes(std::stoi(param)));
+		}
+
+		i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
+		i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
+		i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
+		i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (clean stack)
+
+		i_vector.push_function_epilog();
+	}
 	void visitPost(const ReturnStatement*) {}
 	void visitPost(const FunctionDecl*) {}
 
 	StatementList getStatements() const { return statements; }
+	X86InstrVector getCode() const { return i_vector; }
 private:
 	StatementList statements;
+	X86InstrVector i_vector;
+
 };
 
 auto emitMachineCode(const StatementList& statements)
@@ -43,18 +69,8 @@ auto emitMachineCode(const StatementList& statements)
 	Basicx86Emitter visitor;
 
 	traverse(statements, visitor);
-	dumpCode(visitor.getStatements(), std::cout);
-	X86InstrVector i_vector;
-	i_vector.push_function_prolog();
-	i_vector.push_back({ std::byte(0x68) }); // push
 	
-	i_vector.push_back(i_vector.int_to_bytes(55));
-	i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
-	i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
-	i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
-	i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (clean stack)
-
-	i_vector.push_function_epilog();
+	auto i_vector = visitor.getCode();
 	JitCompiler jit(i_vector);
 	return jit.compile();
 }
