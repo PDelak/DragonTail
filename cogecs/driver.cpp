@@ -22,64 +22,58 @@
 
 void print(const std::vector<int>& v)
 {
-	for (const auto e : v) std::cout << e << std::endl;    
+    for (const auto e : v) std::cout << e << std::endl;    
 }
 
 bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
 {
-	if (v1.size() != v2.size()) return false;
-	size_t index = 0;
-	for (const auto& e : v1) {
-		if (e != v2[index++]) return false;        
-	}
-	return true;
+    if (v1.size() != v2.size()) return false;
+    size_t index = 0;
+    for (const auto& e : v1) {
+        if (e != v2[index++]) return false;        
+    }
+    return true;
 }
 
 
 int main(int argc, char* argv[])
 {    
 
-	if (argc < 2) 
-	{
-		std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
-		return -1;
-	}
+    if (argc < 2) {
+        std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
+        return -1;
+    }
 
 	std::string command;
 
 	if (argc == 3) command = argv[2];
-
-	std::vector<int> v = { 4,2,6 };
+	
+    std::vector<int> v = { 4,2,6 };
 
 	auto inputFile = argv[1];
 
-	auto p = initialize_parser(inputFile);
+    auto p = initialize_parser(inputFile);
+	
+    NullVisitor nvisitor;
 
-	NullVisitor nvisitor;
+    auto statements = compile(argv[1], p.get(), nvisitor);
 
-	auto statements = compile(argv[1], p.get(), nvisitor);
+    CFGFlattener visitor;
 
-	CFGFlattener visitor;
+    traverse(statements, visitor);
 
-	traverse(statements, visitor);
-
-	if (command == "ast") 
-	{
-	    dumpAST(visitor.getStatements(), std::cout);
+	if (command == "ast") {
+		dumpAST(visitor.getStatements(), std::cout);
 	}
 
 	dumpCode(visitor.getStatements(), std::cout);
 
-	if (command == "run") 
-	{
+	if (command == "run") {
 		std::cout << "execute..." << std::endl;
-		std::vector<JitCompiler::pfunc> funcVector;
-		emitMachineCode(visitor.getStatements(), funcVector);
-		for (const auto& fun : funcVector) 
-		{
-			fun();
-		}
+
+		auto x86_text = emitMachineCode(visitor.getStatements());
+		x86_text();
 	}
 
-	return 0;
+    return 0;
 }

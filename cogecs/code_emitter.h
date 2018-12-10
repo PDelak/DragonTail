@@ -8,7 +8,7 @@
 
 struct Basicx86Emitter : public AstVisitor
 {
-	Basicx86Emitter(std::vector<JitCompiler::pfunc>& v):funcVector(v) {}
+	Basicx86Emitter(X86InstrVector& v):i_vector(v) {}
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl*) {}
 	void visitPre(const BasicExpression*) {}
@@ -37,10 +37,7 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const LabelStatement*) {}
 	void visitPost(const GotoStatement*) {}
 	void visitPost(const FunctionCall* fcall) 
-	{
-		X86InstrVector i_vector;
-		i_vector.push_function_prolog();
-		
+	{	
 		// push params
 		for (const auto& param : fcall->parameters) 
 		{
@@ -53,24 +50,29 @@ struct Basicx86Emitter : public AstVisitor
 		i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
 		i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (clean stack)
 
-		i_vector.push_function_epilog();
-		JitCompiler jitCompiler(i_vector);
-		funcVector.push_back(jitCompiler.compile());
 	}
 	void visitPost(const ReturnStatement*) {}
 	void visitPost(const FunctionDecl*) {}
 
 	StatementList getStatements() const { return statements; }
-	
+
 private:
 	StatementList statements;
-	std::vector<JitCompiler::pfunc>& funcVector;
+	X86InstrVector& i_vector;
 
 };
 
-void emitMachineCode(const StatementList& statements, std::vector<JitCompiler::pfunc>& funcVector)
-{	
-	Basicx86Emitter visitor(funcVector);	
-	traverse(statements, visitor);			
+auto emitMachineCode(const StatementList& statements)
+{
+	X86InstrVector i_vector;
+	i_vector.push_function_prolog();
+	Basicx86Emitter visitor(i_vector);
+
+	traverse(statements, visitor);
+	
+	i_vector.push_function_epilog();
+
+	JitCompiler jit(i_vector);
+	return jit.compile();
 }
 
