@@ -39,28 +39,28 @@ bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
 int main(int argc, char* argv[])
 {    
 
-    if (argc < 2) {
-        std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
-        return -1;
-    }
+	if (argc < 2) {
+		std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
+		return -1;
+	}
 
 	std::string command;
 
 	if (argc == 3) command = argv[2];
-	
-    std::vector<int> v = { 4,2,6 };
+
+	std::vector<int> v = { 4,2,6 };
 
 	auto inputFile = argv[1];
 
-    auto p = initialize_parser(inputFile);
-	
-    NullVisitor nvisitor;
+	auto p = initialize_parser(inputFile);
 
-    auto statements = compile(argv[1], p.get(), nvisitor);
+	NullVisitor nvisitor;
 
-    CFGFlattener visitor;
+	auto statements = compile(argv[1], p.get(), nvisitor);
 
-    traverse(statements, visitor);
+	CFGFlattener visitor;
+
+	traverse(statements, visitor);
 
 	if (command == "ast") {
 		dumpAST(visitor.getStatements(), std::cout);
@@ -75,5 +75,5 @@ int main(int argc, char* argv[])
 		x86_text();
 	}
 
-    return 0;
+	return 0;
 }
