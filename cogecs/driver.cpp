@@ -22,47 +22,64 @@
 
 void print(const std::vector<int>& v)
 {
-    for (const auto e : v) std::cout << e << std::endl;    
+	for (const auto e : v) std::cout << e << std::endl;    
 }
 
 bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
 {
-    if (v1.size() != v2.size()) return false;
-    size_t index = 0;
-    for (const auto& e : v1) {
-        if (e != v2[index++]) return false;        
-    }
-    return true;
+	if (v1.size() != v2.size()) return false;
+	size_t index = 0;
+	for (const auto& e : v1) {
+		if (e != v2[index++]) return false;        
+	}
+	return true;
 }
 
 
 int main(int argc, char* argv[])
 {    
 
-    if (argc < 2) {
-        std::cerr << "syntax: language filename" << std::endl;
-        return -1;
-    }
+	if (argc < 2) 
+	{
+		std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
+		return -1;
+	}
 
-    std::vector<int> v = { 4,2,6 };
+	std::string command;
 
-    auto p = initialize_parser(argv[1]);
-	
-    NullVisitor nvisitor;
+	if (argc == 3) command = argv[2];
 
-    auto statements = compile(argv[1], p.get(), nvisitor);
+	std::vector<int> v = { 4,2,6 };
 
-    CFGFlattener visitor;
+	auto inputFile = argv[1];
 
-    traverse(statements, visitor);
+	auto p = initialize_parser(inputFile);
 
-    dumpAST(visitor.getStatements(), std::cout);
+	NullVisitor nvisitor;
 
-    dumpCode(visitor.getStatements(), std::cout);
+	auto statements = compile(argv[1], p.get(), nvisitor);
 
-    auto x86_text = emitMachineCode(visitor.getStatements());
-	
-    x86_text();
+	CFGFlattener visitor;
 
-    return 0;
+	traverse(statements, visitor);
+
+	if (command == "ast") 
+	{
+	    dumpAST(visitor.getStatements(), std::cout);
+	}
+
+	dumpCode(visitor.getStatements(), std::cout);
+
+	if (command == "run") 
+	{
+		std::cout << "execute..." << std::endl;
+		std::vector<JitCompiler::pfunc> funcVector;
+		emitMachineCode(visitor.getStatements(), funcVector);
+		for (const auto& fun : funcVector) 
+		{
+			fun();
+		}
+	}
+
+	return 0;
 }
