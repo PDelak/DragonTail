@@ -5,6 +5,7 @@
 #include "astvisitor.h"
 #include "jitcompiler.h"
 #include "builtin.h"
+#include "symbol_table.h"
 
 struct Basicx86Emitter : public AstVisitor
 {
