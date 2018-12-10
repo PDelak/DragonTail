@@ -9,21 +9,27 @@
 
 struct Basicx86Emitter : public AstVisitor
 {
-	Basicx86Emitter(X86InstrVector& v):i_vector(v) {}
+	Basicx86Emitter(X86InstrVector& v):i_vector(v) 
+	{
+		symbolTable.insertSymbol("print", "function");
+	}
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl*) {}
 	void visitPre(const BasicExpression*) {}
 	void visitPre(const Expression*) {}
 	void visitPre(const IfStatement*) {}
 	void visitPre(const WhileLoop*) {}
-	void visitPre(const BlockStatement*) {}
+	void visitPre(const BlockStatement*) { symbolTable.enterScope();}
 	void visitPre(const LabelStatement*) {}
 	void visitPre(const GotoStatement*) {}
 	void visitPre(const FunctionCall*) {}
 	void visitPre(const FunctionDecl*) {}
 	void visitPre(const ReturnStatement*) {}
 	void visitPost(const BasicStatement*) {}
-	void visitPost(const VarDecl*) {}
+	void visitPost(const VarDecl* varDecl) 
+	{
+		symbolTable.insertSymbol(varDecl->var_name, "number");
+	}
 	void visitPost(const BasicExpression*) {}
 	void visitPost(const Expression* expr) 
 	{
@@ -34,11 +40,12 @@ struct Basicx86Emitter : public AstVisitor
 	}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
-	void visitPost(const BlockStatement*) {}
+	void visitPost(const BlockStatement*) { symbolTable.exitScope(); }
 	void visitPost(const LabelStatement*) {}
 	void visitPost(const GotoStatement*) {}
 	void visitPost(const FunctionCall* fcall) 
 	{	
+		symbolTable.dump();
 		// push params
 		for (const auto& param : fcall->parameters) 
 		{
@@ -59,6 +66,7 @@ struct Basicx86Emitter : public AstVisitor
 
 private:
 	StatementList statements;
+	BasicSymbolTable symbolTable;
 	X86InstrVector& i_vector;
 
 };

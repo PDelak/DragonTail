@@ -45,6 +45,17 @@ struct BasicSymbolTable
     symbol_table[symbol_table_id].push_back(std::make_pair(symbol, type));
   }
   
+  void dump()
+  {
+	  for (const auto& bucket : symbol_table)
+	  {
+		  for (const auto& symbol : bucket.second)
+		  {
+			  std::cout << bucket.first << " : " << "(" << symbol.first << "," << symbol.second << ")" << std::endl;
+		  }
+	  }
+  }
+
   std::pair<std::string, TypePtr> findSymbol(const std::string& symbol, size_t lineno)
   {
     size_t local_table_id = symbol_table_id;
