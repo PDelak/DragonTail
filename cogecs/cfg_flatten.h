@@ -13,7 +13,11 @@
 
 struct CFGFlattener : public AstVisitor
 {	
-	CFGFlattener() {}
+	CFGFlattener() 	
+	{
+		std::string label = getNextLabel();
+		statements.push_back(makeNode(LabelStatement(scope, label)));
+	}
 	~CFGFlattener()  { assert(nodesStack.empty()); }
 
 	void visitPre(const BasicStatement*) {}
@@ -247,9 +251,13 @@ struct CFGFlattener : public AstVisitor
 			auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
 				return s->scope != scope;
 			});
+
+			// insert label just before body of compound statement (if, while loop)
+			std::string label = getNextLabel();
+			blockStatements.push_back(makeNode(LabelStatement(scope, label)));
+
 			std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
 			cast<BlockStatement>(block)->statements = blockStatements;
-
 			statements.erase(it.base(), statements.end());
 			statements.push_back(block);
 		}
@@ -259,9 +267,17 @@ struct CFGFlattener : public AstVisitor
 			auto it = std::find_if(statements.rbegin(), statements.rend(), [&](const StatementPtr& s) {
 				return s->scope != scope;
 			});
+
+			// We can insert a label just before any block
+			// but right now it seems to be not neeeded
+			// insert label just before beginning of new scope
+			// std::string label = getNextLabel();
+			// auto first_statement_after_label = statements.insert(it.base(), makeNode(LabelStatement(scope, label)));
+
 			std::for_each(it.base(), statements.end(), [](const StatementPtr& stmt) {
 				stmt->scope = stmt->scope - 1;
 			});
+
 		}
 		--scope;
 									

@@ -12,6 +12,14 @@ void checkASTs(const StatementList& ast1, const StatementList& ast2)
 	lhs.erase(std::remove(lhs.begin(), lhs.end(), ' '), lhs.end());
 	rhs.erase(std::remove(rhs.begin(), rhs.end(), ' '), rhs.end());
 	EXPECT_EQ(lhs, rhs);
+	if (lhs == rhs) return;	
+	std::cout << "expected:" << '\n' << '\n';
+	std::cout << "--------------------------" << std::endl;
+	dumpCode(ast1, std::cout);
+	std::cout << '\n' << '\n';
+	std::cout << "actual:" << std::endl;
+	std::cout << "--------------------------" << std::endl;
+	dumpCode(ast2, std::cout);	
 }
 
 template<typename Visitor>
