@@ -44,36 +44,40 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	std::string command;
+	try {
+		std::string command;
 
-	if (argc == 3) command = argv[2];
+		if (argc == 3) command = argv[2];
 
-	std::vector<int> v = { 4,2,6 };
+		std::vector<int> v = { 4,2,6 };
 
-	auto inputFile = argv[1];
+		auto inputFile = argv[1];
 
-	auto p = initialize_parser(inputFile);
+		auto p = initialize_parser(inputFile);
 
-	NullVisitor nvisitor;
+		NullVisitor nvisitor;
 
-	auto statements = compile(argv[1], p.get(), nvisitor);
+		auto statements = compile(argv[1], p.get(), nvisitor);
 
-	CFGFlattener visitor;
+		CFGFlattener visitor;
 
-	traverse(statements, visitor);
+		traverse(statements, visitor);
 
-	if (command == "ast") {
-		dumpAST(visitor.getStatements(), std::cout);
+		if (command == "ast") {
+			dumpAST(visitor.getStatements(), std::cout);
+		}
+
+		dumpCode(visitor.getStatements(), std::cout);
+
+		if (command == "run") {
+			std::cout << "execute..." << std::endl;
+
+			auto x86_text = emitMachineCode(visitor.getStatements());
+			x86_text();
+		}
 	}
-
-	dumpCode(visitor.getStatements(), std::cout);
-
-	if (command == "run") {
-		std::cout << "execute..." << std::endl;
-
-		auto x86_text = emitMachineCode(visitor.getStatements());
-		x86_text();
+	catch (const std::runtime_error& err) {
+		std::cerr << err.what() << std::endl;
 	}
-
 	return 0;
 }
