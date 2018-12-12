@@ -1,11 +1,29 @@
 #pragma once
 
 #include <ostream>
+#include <map>
+#include <string>
 #include "ast.h"
 #include "astvisitor.h"
 #include "jitcompiler.h"
 #include "builtin.h"
 #include "symbol_table.h"
+#include "nullvisitor.h"
+
+struct AllocationPass : public NullVisitor
+{
+	void visitPre(const LabelStatement* label) { currentLabel = label->label; }	
+	void visitPre(const VarDecl*) { allocsPerLabel[currentLabel]++; }
+	void dump()
+	{
+		for (const auto& alloc : allocsPerLabel)
+		{
+			std::cout << "label:" << alloc.first << " allocs:" << alloc.second << std::endl;
+		}
+	}
+	std::string currentLabel;
+	std::map<std::string, size_t> allocsPerLabel;
+};
 
 struct Basicx86Emitter : public AstVisitor
 {
@@ -85,6 +103,12 @@ auto emitMachineCode(const StatementList& statements)
 {
 	X86InstrVector i_vector;
 	i_vector.push_function_prolog();
+	
+	AllocationPass allocPass;
+	traverse(statements, allocPass);
+
+	allocPass.dump();
+
 	Basicx86Emitter visitor(i_vector);
 
 	traverse(statements, visitor);

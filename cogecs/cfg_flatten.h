@@ -15,10 +15,13 @@ struct CFGFlattener : public AstVisitor
 {	
 	CFGFlattener() 	
 	{
-		std::string label = getNextLabel();
-		statements.push_back(makeNode(LabelStatement(scope, label)));
+		std::string label = getNextLabel();		
+		statements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__alloc__")) })));
 	}
-	~CFGFlattener()  { assert(nodesStack.empty()); }
+	~CFGFlattener()  
+	{ 
+		assert(nodesStack.empty());
+	}
 
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const BasicExpression*) {}
@@ -254,9 +257,12 @@ struct CFGFlattener : public AstVisitor
 
 			// insert label just before body of compound statement (if, while loop)
 			std::string label = getNextLabel();
-			blockStatements.push_back(makeNode(LabelStatement(scope, label)));
+			//blockStatements.push_back(makeNode(LabelStatement(scope, label)));
+			blockStatements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__alloc__")) })));
 
 			std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
+			blockStatements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__dealloc__")) })));
+
 			cast<BlockStatement>(block)->statements = blockStatements;
 			statements.erase(it.base(), statements.end());
 			statements.push_back(block);
@@ -345,7 +351,12 @@ struct CFGFlattener : public AstVisitor
 		nodesStack.erase(std::next(nodesStack.rbegin()).base());
 	}
 
-	StatementList getStatements() const { return statements; }
+	StatementList getStatements() 
+	{
+		// TODO this is workaround 
+		if (!closingDealloc) statements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__dealloc__")) })));
+		return statements; 
+	}
 private:
 
 	void popFromStackAndPushToStatements()
@@ -361,4 +372,5 @@ private:
 	StatementList statements;
 	std::vector<StatementPtr> nodesStack;
 	size_t id = 0;
+	bool closingDealloc = false;
 };
