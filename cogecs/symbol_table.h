@@ -59,14 +59,14 @@ struct BasicSymbolTable
   std::pair<std::string, TypePtr> findSymbol(const std::string& symbol, size_t lineno)
   {
     size_t local_table_id = symbol_table_id;
-    while (local_table_id > 0) {
+    do {
       symbol_iterator it = symbol_table[local_table_id].begin();
       while (it != symbol_table[local_table_id].end()) {
         if (it->first.compare(symbol) == 0) return *it;
         it++;
       }
       --local_table_id;
-    }
+	} while (local_table_id > 0);
     std::stringstream ss;
     ss << lineno;
     throw SymbolNotFound(symbol, ss.str());

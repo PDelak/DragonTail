@@ -20,7 +20,10 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPre(const IfStatement*) {}
 	void visitPre(const WhileLoop*) {}
 	void visitPre(const BlockStatement*) { symbolTable.enterScope();}
-	void visitPre(const LabelStatement*) {}
+	void visitPre(const LabelStatement* label) 
+	{
+		std::cout << "label:" << label->label << std::endl;
+	}
 	void visitPre(const GotoStatement*) {}
 	void visitPre(const FunctionCall*) {}
 	void visitPre(const FunctionDecl*) {}
@@ -29,6 +32,7 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const VarDecl* varDecl) 
 	{
 		symbolTable.insertSymbol(varDecl->var_name, "number");
+		std::cout << "var:" << varDecl->var_name << std::endl;
 	}
 	void visitPost(const BasicExpression*) {}
 	void visitPost(const Expression* expr) 
@@ -54,7 +58,13 @@ struct Basicx86Emitter : public AstVisitor
 		}
 
 		i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
-		i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
+		
+		symbolTable.findSymbol("print", 0);
+				
+		if (fcall->name == "print") 
+		{
+			i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
+		}
 		i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
 		i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (clean stack)
 
