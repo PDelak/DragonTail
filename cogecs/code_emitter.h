@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ostream>
-#include <map>
+#include <vector>
 #include <string>
 #include "ast.h"
 #include "astvisitor.h"
@@ -16,25 +16,29 @@ struct AllocationPass : public NullVisitor
 	{
 		if (expr->value == "__alloc__") 
 		{
-			std::cout << "allocation" << std::endl;
+			if (allocs.size() < index + 1)
+			{
+				allocs.push_back(0);
+			}
+			++index;
 		}
-
 		if (expr->value == "__dealloc__")
 		{
-			std::cout << "deallocation" << std::endl;
+			--index;
 		}
 	}
-	void visitPre(const VarDecl*) { allocsPerLabel[currentLabel]++; }
+	void visitPre(const VarDecl*) { allocs[index - 1]++; }
 
 	void dump()
 	{
-		for (const auto& alloc : allocsPerLabel)
+		for (const auto& alloc : allocs)
 		{
-			std::cout << "label:" << alloc.first << " allocs:" << alloc.second << std::endl;
+			std::cout << "allocation:" << alloc << std::endl;
 		}
 	}
-	std::string currentLabel;
-	std::map<std::string, size_t> allocsPerLabel;
+private:
+	size_t index = 0;
+	std::vector<size_t> allocs;
 };
 
 struct Basicx86Emitter : public AstVisitor
@@ -65,9 +69,7 @@ struct Basicx86Emitter : public AstVisitor
 		std::cout << "var:" << varDecl->var_name << std::endl;
 	}
 	void visitPost(const BasicExpression*) {}
-	void visitPost(const Expression* expr) 
-	{
-	}
+	void visitPost(const Expression*) {}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
 	void visitPost(const BlockStatement*) { symbolTable.exitScope(); }
