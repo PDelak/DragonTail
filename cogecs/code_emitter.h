@@ -12,8 +12,20 @@
 
 struct AllocationPass : public NullVisitor
 {
-	void visitPre(const LabelStatement* label) { currentLabel = label->label; }	
+	void visitPre(const BasicExpression* expr) 
+	{
+		if (expr->value == "__alloc__") 
+		{
+			std::cout << "allocation" << std::endl;
+		}
+
+		if (expr->value == "__dealloc__")
+		{
+			std::cout << "deallocation" << std::endl;
+		}
+	}
 	void visitPre(const VarDecl*) { allocsPerLabel[currentLabel]++; }
+
 	void dump()
 	{
 		for (const auto& alloc : allocsPerLabel)
@@ -55,10 +67,6 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const BasicExpression*) {}
 	void visitPost(const Expression* expr) 
 	{
-		for (const auto& elems : expr->getChilds()) 
-		{
-			elems->traverse(*this);
-		}
 	}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}

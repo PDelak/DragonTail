@@ -352,7 +352,10 @@ struct CFGFlattener : public AstVisitor
 	StatementList getStatements() 
 	{
 		// TODO this is workaround 
-		if (!closingDealloc) statements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__dealloc__")) })));
+		if (!closingDealloc) {
+			statements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__dealloc__")) })));
+			closingDealloc = true;
+		}
 		return statements; 
 	}
 private:

@@ -142,6 +142,10 @@ public:
 	void traverse(AstVisitor& visitor)
 	{
 		visitor.visitPre(this);
+		for (const auto& child : getChilds())
+		{
+			child->traverse(visitor);
+		}
 		visitor.visitPost(this);
 	}
 	bool isPartOfCompoundStmt = false;
