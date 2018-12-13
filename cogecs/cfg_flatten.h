@@ -256,8 +256,6 @@ struct CFGFlattener : public AstVisitor
 			});
 
 			// insert label just before body of compound statement (if, while loop)
-			std::string label = getNextLabel();
-			//blockStatements.push_back(makeNode(LabelStatement(scope, label)));
 			blockStatements.push_back(makeNode(Expression(scope, { makeNode(BasicExpression(scope,"__alloc__")) })));
 
 			std::copy(it.base(), statements.end(), std::back_inserter(blockStatements));
