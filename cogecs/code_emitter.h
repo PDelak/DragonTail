@@ -36,6 +36,7 @@ struct AllocationPass : public NullVisitor
 			std::cout << "allocation:" << alloc << std::endl;
 		}
 	}
+	std::vector<size_t> getAllocationVector() const { return allocs; }
 private:
 	size_t index = 0;
 	std::vector<size_t> allocs;
@@ -43,21 +44,32 @@ private:
 
 struct Basicx86Emitter : public AstVisitor
 {
-	Basicx86Emitter(X86InstrVector& v):i_vector(v) 
+	Basicx86Emitter(X86InstrVector& v, std::vector<size_t> allocsVector):i_vector(v), allocationVector(allocsVector)
 	{
 		symbolTable.insertSymbol("print", "function");
+		currentAllocation = allocationVector.begin();
 	}
 	void visitPre(const BasicStatement*) {}
 	void visitPre(const VarDecl*) {}
-	void visitPre(const BasicExpression*) {}
+	void visitPre(const BasicExpression* expr) 
+	{
+		if (expr->value == "__alloc__")
+		{
+			std::cout << "allocate:" << *currentAllocation << std::endl;
+			++currentAllocation;
+		}
+		if (expr->value == "__dealloc__")
+		{
+			std::cout << "deallocate:" << *--currentAllocation << std::endl;
+			allocationVector.erase(currentAllocation);
+			currentAllocation = allocationVector.rbegin().base();
+		}
+	}
 	void visitPre(const Expression*) {}
 	void visitPre(const IfStatement*) {}
 	void visitPre(const WhileLoop*) {}
 	void visitPre(const BlockStatement*) { symbolTable.enterScope();}
-	void visitPre(const LabelStatement* label) 
-	{
-		std::cout << "label:" << label->label << std::endl;
-	}
+	void visitPre(const LabelStatement*) {}
 	void visitPre(const GotoStatement*) {}
 	void visitPre(const FunctionCall*) {}
 	void visitPre(const FunctionDecl*) {}
@@ -106,6 +118,8 @@ private:
 	StatementList statements;
 	BasicSymbolTable symbolTable;
 	X86InstrVector& i_vector;
+	std::vector<size_t> allocationVector;
+	std::vector<size_t>::iterator currentAllocation;
 
 };
 
@@ -119,7 +133,7 @@ auto emitMachineCode(const StatementList& statements)
 
 	allocPass.dump();
 
-	Basicx86Emitter visitor(i_vector);
+	Basicx86Emitter visitor(i_vector, allocPass.getAllocationVector());
 
 	traverse(statements, visitor);
 	
