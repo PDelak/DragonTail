@@ -44,7 +44,8 @@ private:
 
 struct Basicx86Emitter : public AstVisitor
 {
-	Basicx86Emitter(X86InstrVector& v, std::vector<size_t> allocsVector):i_vector(v), allocationVector(allocsVector)
+	Basicx86Emitter(X86InstrVector& v, std::vector<size_t> allocsVector)
+		:i_vector(v), allocationVector(allocsVector)
 	{
 		symbolTable.insertSymbol("print", "function");
 		currentAllocation = allocationVector.begin();
@@ -55,6 +56,7 @@ struct Basicx86Emitter : public AstVisitor
 	{
 		if (expr->value == "__alloc__")
 		{
+			variable_position_on_stack = 0;
 			std::cout << "allocate:" << *currentAllocation << std::endl;
 			size_t numOfVariables = *currentAllocation;
 			// TODO: do that at once
@@ -130,7 +132,7 @@ private:
 	X86InstrVector& i_vector;
 	std::vector<size_t> allocationVector;
 	std::vector<size_t>::iterator currentAllocation;
-
+	size_t variable_position_on_stack = 0;
 };
 
 auto emitMachineCode(const StatementList& statements)

@@ -7,9 +7,10 @@
 
 struct symbol
 {
-	symbol(const std::string& id, const std::string& type):id(id), type(type) {}
+	symbol(const std::string& id, const std::string& type):id(id), type(type), stack_position(-1) {}
 	std::string id;
 	std::string type;
+	size_t stack_position;
 };
 
 typedef std::list<symbol> symbol_list;
