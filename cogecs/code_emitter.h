@@ -56,11 +56,21 @@ struct Basicx86Emitter : public AstVisitor
 		if (expr->value == "__alloc__")
 		{
 			std::cout << "allocate:" << *currentAllocation << std::endl;
+			size_t numOfVariables = *currentAllocation;
+			// TODO: do that at once
+			for (size_t i = 0; i < numOfVariables; ++i) {
+				i_vector.push_back({ std::byte(0x83), std::byte(0xEC), std::byte(0x04) }); // sub esp, 4 (alloc)
+			}
 			++currentAllocation;
 		}
 		if (expr->value == "__dealloc__")
 		{
 			std::cout << "deallocate:" << *--currentAllocation << std::endl;
+			size_t numOfVariables = *--currentAllocation;
+			// TODO: do that at once
+			for (size_t i = 0; i < numOfVariables; ++i) {
+				i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (dealloc)
+			}
 			allocationVector.erase(currentAllocation);
 			currentAllocation = allocationVector.rbegin().base();
 		}
