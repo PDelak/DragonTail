@@ -66,7 +66,7 @@ struct Basicx86Emitter : public AstVisitor
 		if (expr->value == "__dealloc__")
 		{
 			std::cout << "deallocate:" << *--currentAllocation << std::endl;
-			size_t numOfVariables = *--currentAllocation;
+			size_t numOfVariables = *currentAllocation;
 			// TODO: do that at once
 			for (size_t i = 0; i < numOfVariables; ++i) {
 				i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (dealloc)
