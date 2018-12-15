@@ -5,9 +5,12 @@
 #include <string>
 #include <utility>
 
-typedef std::string TypePtr;
-
-typedef std::pair<std::string, std::string> symbol;
+struct symbol
+{
+	symbol(const std::string& id, const std::string& type):id(id), type(type) {}
+	std::string id;
+	std::string type;
+};
 
 typedef std::list<symbol> symbol_list;
 
@@ -40,9 +43,9 @@ struct BasicSymbolTable
     --symbol_table_id;
   }
   
-  void insertSymbol(const std::string& symbol, const TypePtr& type)
+  void insertSymbol(const std::string& id, const std::string& type)
   {
-    symbol_table[symbol_table_id].push_back(std::make_pair(symbol, type));
+    symbol_table[symbol_table_id].push_back(symbol(id, type));
   }
   
   void dump()
@@ -51,25 +54,25 @@ struct BasicSymbolTable
 	  {
 		  for (const auto& symbol : bucket.second)
 		  {
-			  std::cout << bucket.first << " : " << "(" << symbol.first << "," << symbol.second << ")" << std::endl;
+			  std::cout << bucket.first << " : " << "(" << symbol.id << "," << symbol.type << ")" << std::endl;
 		  }
 	  }
   }
 
-  std::pair<std::string, TypePtr> findSymbol(const std::string& symbol, size_t lineno)
+  symbol findSymbol(const std::string& id, size_t lineno)
   {
     size_t local_table_id = symbol_table_id;
     do {
       symbol_iterator it = symbol_table[local_table_id].begin();
       while (it != symbol_table[local_table_id].end()) {
-        if (it->first.compare(symbol) == 0) return *it;
+        if (it->id.compare(id) == 0) return *it;
         it++;
       }
       --local_table_id;
 	} while (local_table_id > 0);
     std::stringstream ss;
     ss << lineno;
-    throw SymbolNotFound(symbol, ss.str());
+    throw SymbolNotFound(id, ss.str());
   }
 
   size_t symbol_table_id;
