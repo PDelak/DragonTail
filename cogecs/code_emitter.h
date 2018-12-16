@@ -89,8 +89,8 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl* varDecl) 
 	{
-		symbolTable.insertSymbol(varDecl->var_name, "number");
-		std::cout << "var:" << varDecl->var_name << std::endl;
+		std::cout << "var:" << varDecl->var_name << " position on stack:" << variable_position_on_stack << std::endl;
+		symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);			
 	}
 	void visitPost(const BasicExpression*) {}
 	void visitPost(const Expression*) {}
