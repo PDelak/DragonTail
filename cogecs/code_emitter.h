@@ -96,33 +96,42 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const Expression* expr) 
 	{
 		auto children = expr->getChilds();
-		if (children.size() == 3) 
+		switch(children.size()) 
 		{
-			auto op = cast<BasicExpression>(children[1]);
-			if (op->value == "=") 
-			{
-				auto lhs = cast<BasicExpression>(children[0]);
-				auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
-				auto rhs = cast<BasicExpression>(children[2]);
-				
-				// TODO: only variable = number works for now
-				if (std::isalpha(rhs->value[0])) return;
-				
-				int rhsValue = std::stoi(rhs->value);
-				
-				i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
-				i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+			case 3: {
+				auto op = cast<BasicExpression>(children[1]);
+				if (op->value == "=")
+				{
+					auto lhs = cast<BasicExpression>(children[0]);
+					auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
+					auto rhs = cast<BasicExpression>(children[2]);
 
-				// TODO: this is only true for 32 bit 
-				char variableSize = 4;
-				char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
-				
-				// TODO: just for now stack for local variables will be only 256 bytes
-				constexpr unsigned int stackSize = 256;
-				// mov [ebp - ebpOffset], eax
-				i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					// TODO: only variable = number works for now
+					if (std::isalpha(rhs->value[0])) return;
+
+					int rhsValue = std::stoi(rhs->value);
+
+					i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
+					i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+
+					// TODO: this is only true for 32 bit 
+					char variableSize = 4;
+					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
+
+					// TODO: just for now stack for local variables will be only 256 bytes
+					constexpr unsigned int stackSize = 256;
+					// mov [ebp - ebpOffset], eax
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+				}
+				break;
 			}
-		}
+			case 4: {
+				break;
+			}
+			case 5: {
+				break;
+			}
+		}		
 	}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
