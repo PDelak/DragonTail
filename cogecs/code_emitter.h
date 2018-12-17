@@ -155,7 +155,7 @@ struct Basicx86Emitter : public AstVisitor
 
 		i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
 		
-		symbolTable.findSymbol("print", 0);
+		symbolTable.findSymbol(fcall->name, 0);
 				
 		if (fcall->name == "print") 
 		{
