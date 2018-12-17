@@ -96,12 +96,18 @@ struct Basicx86Emitter : public NullVisitor
 					auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
 					auto rhs = cast<BasicExpression>(children[2]);
 
-					// TODO: only variable = number works for now
+					// variable alias on rhs
 					if (std::isalpha(rhs->value[0])) 
 					{
-						return;
+						auto sym = symbolTable.findSymbol(rhs->value, 0);
+						char variableSize = 4;
+						char ebpOffset = (sym.stack_position + 1) * variableSize;
+						constexpr unsigned int stackSize = 256;
+						// mov eax, [ebp - ebpOffset]
+						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });						
 					} 
-					else
+					// value on rhs
+					else 
 					{
 						int rhsValue = std::stoi(rhs->value);
 
