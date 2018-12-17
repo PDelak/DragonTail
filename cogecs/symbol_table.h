@@ -7,10 +7,10 @@
 
 struct symbol
 {
-	symbol(const std::string& id, const std::string& type, size_t stack_pos = -1):id(id), type(type), stack_position(stack_pos) {}
+	symbol(const std::string& id, const std::string& type, unsigned char stack_pos = -1):id(id), type(type), stack_position(stack_pos) {}
 	std::string id;
 	std::string type;
-	size_t stack_position;
+	unsigned char stack_position;
 };
 
 typedef std::list<symbol> symbol_list;
@@ -44,7 +44,7 @@ struct BasicSymbolTable
     --symbol_table_id;
   }
   
-  void insertSymbol(const std::string& id, const std::string& type, size_t position_on_stack = -1)
+  void insertSymbol(const std::string& id, const std::string& type, unsigned char position_on_stack = -1)
   {
     symbol_table[symbol_table_id].push_back(symbol(id, type, position_on_stack));
   }
@@ -62,7 +62,7 @@ struct BasicSymbolTable
 
   symbol findSymbol(const std::string& id, size_t lineno)
   {
-    size_t local_table_id = symbol_table_id;
+    int local_table_id = symbol_table_id;
     do {
       symbol_iterator it = symbol_table[local_table_id].begin();
       while (it != symbol_table[local_table_id].end()) {
@@ -76,7 +76,7 @@ struct BasicSymbolTable
     throw SymbolNotFound(id, ss.str());
   }
 
-  size_t symbol_table_id;
+  int symbol_table_id;
   basic_symbol_table_type symbol_table;
 
 };

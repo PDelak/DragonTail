@@ -89,11 +89,41 @@ struct Basicx86Emitter : public AstVisitor
 	void visitPost(const BasicStatement*) {}
 	void visitPost(const VarDecl* varDecl) 
 	{
-		std::cout << "var:" << varDecl->var_name << " position on stack:" << variable_position_on_stack << std::endl;
+		std::cout << "var:" << varDecl->var_name << " position on stack:" << static_cast<int>(variable_position_on_stack) << std::endl;
 		symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);			
 	}
 	void visitPost(const BasicExpression*) {}
-	void visitPost(const Expression*) {}
+	void visitPost(const Expression* expr) 
+	{
+		auto children = expr->getChilds();
+		if (children.size() == 3) 
+		{
+			auto op = cast<BasicExpression>(children[1]);
+			if (op->value == "=") 
+			{
+				auto lhs = cast<BasicExpression>(children[0]);
+				auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
+				auto rhs = cast<BasicExpression>(children[2]);
+				
+				// TODO: only variable = number works for now
+				if (std::isalpha(rhs->value[0])) return;
+				
+				int rhsValue = std::stoi(rhs->value);
+				
+				i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
+				i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+
+				// TODO: this is only true for 32 bit 
+				char variableSize = 4;
+				char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
+				
+				// TODO: just for now stack for local variables will be only 256 bytes
+				constexpr unsigned int stackSize = 256;
+				// mov [ebp - ebpOffset], eax
+				i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+			}
+		}
+	}
 	void visitPost(const IfStatement*) {}
 	void visitPost(const WhileLoop*) {}
 	void visitPost(const BlockStatement*) { symbolTable.exitScope(); }
@@ -105,8 +135,22 @@ struct Basicx86Emitter : public AstVisitor
 		// push params
 		for (const auto& param : fcall->parameters) 
 		{
-			i_vector.push_back({ std::byte(0x68) }); // push
-			i_vector.push_back(i_vector.int_to_bytes(std::stoi(param)));
+			if (std::isdigit(param[0])) {
+				i_vector.push_back({ std::byte(0x68) }); // push
+				i_vector.push_back(i_vector.int_to_bytes(std::stoi(param)));
+			}
+			if (std::isalpha(param[0])) {
+				// if it is not value check index on the stack
+				// and copy value that is indexed by this index
+				// FF 75 FC           push        dword ptr [ebp-4]
+				auto sym = symbolTable.findSymbol(param, 0);
+				char variableSize = 4;
+				char ebpOffset = (sym.stack_position + 1) * variableSize;
+
+				// just for now stack for local variables will be only 256 bytes
+				constexpr unsigned int stackSize = 256;
+				i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(stackSize - ebpOffset) });
+			}
 		}
 
 		i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
@@ -132,7 +176,7 @@ private:
 	X86InstrVector& i_vector;
 	std::vector<size_t> allocationVector;
 	std::vector<size_t>::iterator currentAllocation;
-	size_t variable_position_on_stack = 0;
+	unsigned char variable_position_on_stack = 0;
 };
 
 auto emitMachineCode(const StatementList& statements)
