@@ -97,13 +97,17 @@ struct Basicx86Emitter : public NullVisitor
 					auto rhs = cast<BasicExpression>(children[2]);
 
 					// TODO: only variable = number works for now
-					if (std::isalpha(rhs->value[0])) return;
+					if (std::isalpha(rhs->value[0])) 
+					{
+						return;
+					} 
+					else
+					{
+						int rhsValue = std::stoi(rhs->value);
 
-					int rhsValue = std::stoi(rhs->value);
-
-					i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
-					i_vector.push_back(i_vector.int_to_bytes(rhsValue));
-
+						i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
+						i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+					}
 					// TODO: this is only true for 32 bit 
 					char variableSize = 4;
 					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
