@@ -141,7 +141,7 @@ struct Basicx86Emitter : public NullVisitor
 				auto firstParam = cast<BasicExpression>(children[2]);
 				auto secondParam = cast<BasicExpression>(children[4]);
 				auto binOp = cast<BasicExpression>(children[3]);
-				if (binOp->value == "+") {
+				if (binOp->value == "+" || binOp->value == "-") {
 					// variable alias as firstParam
 					if (std::isalpha(firstParam->value[0]))
 					{
@@ -165,14 +165,20 @@ struct Basicx86Emitter : public NullVisitor
 						char variableSize = 4;
 						char ebpOffset = (sym.stack_position + 1) * variableSize;
 						constexpr unsigned int stackSize = 256;
-						// add eax, [ebp - ebpOffset]
-						i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+						if (binOp->value == "+") 
+						{
+							// add eax, [ebp - ebpOffset]
+							i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+						}
 					}
 					else
 					{
 						int rhsValue = std::stoi(secondParam->value);
-						i_vector.push_back({ std::byte(0x05) }); // add eax, rhsValue
-						i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+						if (binOp->value == "+")
+						{
+							i_vector.push_back({ std::byte(0x05) }); // add eax, rhsValue
+							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+						}
 					}
 					// TODO: this is only true for 32 bit 
 					char variableSize = 4;
