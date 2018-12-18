@@ -141,7 +141,7 @@ struct Basicx86Emitter : public NullVisitor
 				auto firstParam = cast<BasicExpression>(children[2]);
 				auto secondParam = cast<BasicExpression>(children[4]);
 				auto binOp = cast<BasicExpression>(children[3]);
-				if (binOp->value == "+" || binOp->value == "-" || binOp->value == "*") {
+				if (binOp->value == "+" || binOp->value == "-" || binOp->value == "*" || binOp->value == "/") {
 					// variable alias as firstParam
 					if (std::isalpha(firstParam->value[0]))
 					{
@@ -180,6 +180,11 @@ struct Basicx86Emitter : public NullVisitor
 							// imul        eax, dword ptr[ebp - ebpOffset]
 							i_vector.push_back({ std::byte(0x0F), std::byte(0xAF), std::byte(0x45), std::byte(stackSize - ebpOffset) });
 						}
+						if (binOp->value == "/")
+						{
+							// idiv        eax,dword ptr[ebp - ebpOffset]
+							i_vector.push_back({ std::byte(0xF7), std::byte(0x7D), std::byte(stackSize - ebpOffset) });
+						}
 					}
 					else
 					{
@@ -200,6 +205,9 @@ struct Basicx86Emitter : public NullVisitor
 							i_vector.push_back({ std::byte(0x69), std::byte(0xC0) }); 
 							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
 
+						}
+						if (binOp->value == "/")
+						{
 						}
 						//
 					}
