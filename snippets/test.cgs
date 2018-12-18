@@ -1,0 +1,9 @@
+var x;
+x = 1;
+{
+  var y;
+}
+print (11);
+print (33);
+print (44);
+print (666666);

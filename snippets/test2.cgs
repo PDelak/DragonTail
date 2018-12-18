@@ -1,0 +1,8 @@
+function fun1(param1 param2)
+{
+  var x;
+  if(x) 
+  {
+    var y;
+  }
+}
