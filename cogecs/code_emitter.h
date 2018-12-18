@@ -47,6 +47,11 @@ private:
 	std::vector<size_t> allocs;
 };
 
+struct CodeEmitterException : public std::runtime_error
+{
+	CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
+};
+
 struct Basicx86Emitter : public NullVisitor
 {
 	Basicx86Emitter(X86InstrVector& v, std::vector<size_t> allocsVector)
@@ -129,6 +134,55 @@ struct Basicx86Emitter : public NullVisitor
 				break;
 			}
 			case 5: {
+				auto op = cast<BasicExpression>(children[1]);
+				if (op->value != "=") throw CodeEmitterException("Expression should have form of a = b op c");
+				auto lhs = cast<BasicExpression>(children[0]);
+				auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
+				auto firstParam = cast<BasicExpression>(children[2]);
+				auto secondParam = cast<BasicExpression>(children[4]);
+				auto binOp = cast<BasicExpression>(children[3]);
+				if (binOp->value == "+") {
+					// variable alias as firstParam
+					if (std::isalpha(firstParam->value[0]))
+					{
+						auto sym = symbolTable.findSymbol(firstParam->value, 0);
+						char variableSize = 4;
+						char ebpOffset = (sym.stack_position + 1) * variableSize;
+						constexpr unsigned int stackSize = 256;
+						// mov eax, [ebp - ebpOffset]
+						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					}
+					else
+					{
+						int rhsValue = std::stoi(firstParam->value);
+
+						i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
+						i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+					}
+					if (std::isalpha(secondParam->value[0]))
+					{
+						auto sym = symbolTable.findSymbol(secondParam->value, 0);
+						char variableSize = 4;
+						char ebpOffset = (sym.stack_position + 1) * variableSize;
+						constexpr unsigned int stackSize = 256;
+						// add eax, [ebp - ebpOffset]
+						i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					}
+					else
+					{
+						int rhsValue = std::stoi(secondParam->value);
+						i_vector.push_back({ std::byte(0x05) }); // add eax, rhsValue
+						i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+					}
+					// TODO: this is only true for 32 bit 
+					char variableSize = 4;
+					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
+
+					// TODO: just for now stack for local variables will be only 256 bytes
+					constexpr unsigned int stackSize = 256;
+					// mov [ebp - ebpOffset], eax
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+				}
 				break;
 			}
 		}		
