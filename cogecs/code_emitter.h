@@ -189,6 +189,7 @@ struct Basicx86Emitter : public NullVisitor
 							i_vector.push_back({ std::byte(0x2D) }); // sub eax, rhsValue
 							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
 						}
+						//
 					}
 					// TODO: this is only true for 32 bit 
 					char variableSize = 4;
