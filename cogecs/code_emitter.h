@@ -177,6 +177,8 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "*")
 						{
+							// imul        eax, dword ptr[ebp - ebpOffset]
+							i_vector.push_back({ std::byte(0x0F), std::byte(0xAF), std::byte(0x45), std::byte(stackSize - ebpOffset) });
 						}
 					}
 					else
@@ -194,6 +196,10 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "*")
 						{
+							//69 C0 rhsValue  imul        eax, eax, rhsValue
+							i_vector.push_back({ std::byte(0x69), std::byte(0xC0) }); 
+							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+
 						}
 						//
 					}
