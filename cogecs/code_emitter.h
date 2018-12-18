@@ -172,6 +172,8 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "-")
 						{
+							// sub eax, [ebp - ebpOffset]
+							i_vector.push_back({ std::byte(0x2B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
 						}
 					}
 					else
@@ -184,6 +186,8 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "-")
 						{
+							i_vector.push_back({ std::byte(0x2D) }); // sub eax, rhsValue
+							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
 						}
 					}
 					// TODO: this is only true for 32 bit 
