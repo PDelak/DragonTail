@@ -141,7 +141,9 @@ struct Basicx86Emitter : public NullVisitor
 				auto firstParam = cast<BasicExpression>(children[2]);
 				auto secondParam = cast<BasicExpression>(children[4]);
 				auto binOp = cast<BasicExpression>(children[3]);
-				if (binOp->value == "+" || binOp->value == "-" || binOp->value == "*" || binOp->value == "/" || binOp->value == "==" || binOp->value == "!=") {
+				if (binOp->value == "+" || binOp->value == "-" || binOp->value == "*" || binOp->value == "/" || 
+					binOp->value == "==" || binOp->value == "!=" || binOp->value == "<") 
+				{
 					// variable alias as firstParam
 					if (std::isalpha(firstParam->value[0]))
 					{
@@ -247,6 +249,34 @@ struct Basicx86Emitter : public NullVisitor
 							// popf
 							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
 						}
+						if (binOp->value == "<")
+						{
+							// pushf
+							i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
+							// cmp eax, dword ptr[ebp - ebpOffset]
+							i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+
+							// jnl 0010
+							constexpr auto value0Offset = 10;
+							i_vector.push_back({ std::byte(0x0F), std::byte(0x8D) });
+							i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
+							// label_value_1:
+							// mov eax,1
+							i_vector.push_back({ std::byte(0xB8) });
+							i_vector.push_back(i_vector.int_to_bytes(1));
+
+							// jump 5 bytes
+							constexpr auto endOffset = 5;
+							i_vector.push_back({ std::byte(0xE9) });
+							i_vector.push_back(i_vector.int_to_bytes(endOffset));
+							// label_value_0 :
+							i_vector.push_back({ std::byte(0xB8) });
+							i_vector.push_back(i_vector.int_to_bytes(0));
+
+							// popf
+							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+
+						}
 					}
 					else
 					{
@@ -336,12 +366,15 @@ struct Basicx86Emitter : public NullVisitor
 							// popf
 							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
 						}
+						if (binOp->value == "<")
+						{
+						}
 					}
 					// TODO: this is only true for 32 bit 
 					char variableSize = 4;
 					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
 
-					// TODO: just for now stack for local variables will be only 256 bytes
+					// TODO: just for now stack for local variables will be only 256 bytes per scope
 					constexpr unsigned int stackSize = 256;
 					// mov [ebp - ebpOffset], eax
 					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
