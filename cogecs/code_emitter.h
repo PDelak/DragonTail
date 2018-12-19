@@ -216,6 +216,17 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "/")
 						{
+							// push ebx
+							i_vector.push_back({ std::byte(0x53) });
+							// cdq sign-extend EAX into EDX
+							i_vector.push_back({ std::byte(0x99) });
+							// mov ebx, rhsValue
+							i_vector.push_back({ std::byte(0xBB)});
+							i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+							// idiv ebx
+							i_vector.push_back({ std::byte(0xF7), std::byte(0xFB) });
+							// pop ebx
+							i_vector.push_back({ std::byte(0x5B) });
 						}
 						//
 					}
