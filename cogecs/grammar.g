@@ -18,7 +18,7 @@ goto_statement : 'goto' id;
 function_call : id '(' param* ')';
 function_decl : 'function' id '(' id* ')' block_statement ;
 param : id | number;
-op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>';
+op: '=' | '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>=' | '>';
 id : "[@a-zA-Z]" "[a-zA-Z0-9_]*";
 number : "[0-9]*";
 not : '!';
