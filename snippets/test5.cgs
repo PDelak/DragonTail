@@ -132,3 +132,10 @@ print(lte_resultTrue);
 
 lte_resultTrue = 6 <= 6;
 print(lte_resultTrue);
+
+var not;
+not = 0;
+var notRes;
+notRes = !not;
+print(not);
+print(notRes);

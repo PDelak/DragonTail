@@ -132,6 +132,28 @@ struct Basicx86Emitter : public NullVisitor
 				break;
 			}
 			case 4: {
+				auto lhs = cast<BasicExpression>(children[0]);
+				auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
+				auto op = cast<BasicExpression>(children[1]);
+				if (op->value != "=") throw CodeEmitterException("Expression should have form of a = op b");
+				auto unaryOp = cast<BasicExpression>(children[2]);
+				auto rhs = cast<BasicExpression>(children[3]);
+				if (unaryOp->value == "!")
+				{
+					auto sym = symbolTable.findSymbol(rhs->value, 0);
+					char variableSize = 4;
+					char ebpOffset = (sym.stack_position + 1) * variableSize;
+					constexpr unsigned int stackSize = 256;				
+					// mov eax, [ebp - ebpOffset]
+					i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					// compare rhsValue with 0
+					comparisonOperatorValue(0, insertJG);
+					// TODO: this is only true for 32 bit 
+					char ebpOffsetLhs = (lhsSymbol.stack_position + 1) * variableSize;
+
+					// mov [ebp - ebpOffset], eax
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffsetLhs) });
+				}
 				break;
 			}
 			case 5: {
@@ -351,6 +373,10 @@ private:
 		i_vector.push_back(i_vector.int_to_bytes(value));
 	}
 
+	static void insertJG(X86InstrVector& i_vector)
+	{
+		i_vector.push_back({ std::byte(0x0F), std::byte(0x8F) });
+	}
 	static void insertJNG(X86InstrVector& i_vector)
 	{
 		i_vector.push_back({ std::byte(0x0F), std::byte(0x8E) });
