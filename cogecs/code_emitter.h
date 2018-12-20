@@ -198,111 +198,19 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "==")
 						{
-							// pushf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
-							// cmp eax, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
-							
-							// jne 0010
-							constexpr auto value0Offset = 10;
-							i_vector.push_back({ std::byte(0x0F), std::byte(0x85) }); 							
-							i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
-							// label_value_1:
-							// mov eax,1
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(1));
-						
-							// jump 5 bytes
-							constexpr auto endOffset = 5;
-							i_vector.push_back({ std::byte(0xE9) });
-							i_vector.push_back(i_vector.int_to_bytes(endOffset));
-							// label_value_0 :
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(0));
-
-							// popf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJNE);
 						}
 						if (binOp->value == "!=")
 						{
-							// pushf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
-							// cmp eax, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
-
-							// je 0010
-							constexpr auto value0Offset = 10;
-							i_vector.push_back({ std::byte(0x0F), std::byte(0x84) });
-							i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
-							// label_value_1:
-							// mov eax,1
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(1));
-
-							// jump 5 bytes
-							constexpr auto endOffset = 5;
-							i_vector.push_back({ std::byte(0xE9) });
-							i_vector.push_back(i_vector.int_to_bytes(endOffset));
-							// label_value_0 :
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(0));
-
-							// popf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJE);
 						}
 						if (binOp->value == "<")
 						{
-							// pushf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
-							// cmp eax, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
-
-							// jnl 0010
-							constexpr auto value0Offset = 10;
-							i_vector.push_back({ std::byte(0x0F), std::byte(0x8D) });
-							i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
-							// label_value_1:
-							// mov eax,1
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(1));
-
-							// jump 5 bytes
-							constexpr auto endOffset = 5;
-							i_vector.push_back({ std::byte(0xE9) });
-							i_vector.push_back(i_vector.int_to_bytes(endOffset));
-							// label_value_0 :
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(0));
-
-							// popf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJNL);
 						}
 						if (binOp->value == ">")
 						{
-							// pushf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
-							// cmp eax, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
-
-							// jng 0010
-							constexpr auto value0Offset = 10;
-							i_vector.push_back({ std::byte(0x0F), std::byte(0x8E) });
-							i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
-							// label_value_1:
-							// mov eax,1
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(1));
-
-							// jump 5 bytes
-							constexpr auto endOffset = 5;
-							i_vector.push_back({ std::byte(0xE9) });
-							i_vector.push_back(i_vector.int_to_bytes(endOffset));
-							// label_value_0 :
-							i_vector.push_back({ std::byte(0xB8) });
-							i_vector.push_back(i_vector.int_to_bytes(0));
-
-							// popf
-							i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJNG);
 						}
 					}
 					else
@@ -415,7 +323,7 @@ private:
 	std::vector<size_t>::iterator currentAllocation;
 	unsigned char variable_position_on_stack = 0;
 
-	void cmpVariable(unsigned int stackSize, char ebpOffset)
+	void insertCmpVariable(unsigned int stackSize, char ebpOffset)
 	{
 		// cmp eax, dword ptr[ebp - ebpOffset]
 		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
@@ -442,6 +350,34 @@ private:
 	static void insertJNE(X86InstrVector& i_vector)
 	{
 		i_vector.push_back({ std::byte(0x0F), std::byte(0x85) });
+	}
+
+	void comparisonOperatorVariable(unsigned int stackSize, char ebpOffset, std::function<void(X86InstrVector& i_vector)> operatorOpcode)
+	{
+		// pushf
+		i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
+
+		insertCmpVariable(stackSize, ebpOffset);
+
+		constexpr auto value0Offset = 10;
+		operatorOpcode(i_vector);
+
+		i_vector.push_back({ i_vector.int_to_bytes(value0Offset) }); // omit next 10 bytes
+		// label_value_1:
+		// mov eax,1
+		i_vector.push_back({ std::byte(0xB8) });
+		i_vector.push_back(i_vector.int_to_bytes(1));
+
+		// jump 5 bytes
+		constexpr auto endOffset = 5;
+		i_vector.push_back({ std::byte(0xE9) });
+		i_vector.push_back(i_vector.int_to_bytes(endOffset));
+		// label_value_0 :
+		i_vector.push_back({ std::byte(0xB8) });
+		i_vector.push_back(i_vector.int_to_bytes(0));
+
+		// popf
+		i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
 	}
 
 	void comparisonOperatorValue(int value, std::function<void(X86InstrVector& i_vector)> operatorOpcode)
