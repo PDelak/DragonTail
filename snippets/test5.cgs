@@ -9,3 +9,47 @@ print(c);
 print(a);
 print(b);
 print(c);
+
+var x;
+var y;
+x = 6;
+y = 1;
+
+var add_result;
+add_result = x+y;
+print(add_result);
+var sub_result;
+sub_result = 27/3;
+print(sub_result);
+
+var eq_resultTrue;
+eq_resultTrue = 5 == 5;
+print(eq_resultTrue);
+
+var eq_resultFalse;
+eq_resultFalse = 5 == 4;
+print(eq_resultFalse);
+
+var noteq_resultTrue;
+noteq_resultTrue = 5 != 4;
+print(noteq_resultTrue);
+
+var noteq_resultFalse;
+noteq_resultFalse = 5 != 5;
+print(noteq_resultFalse);
+
+var lt_resultTrue;
+lt_resultTrue = 5 < 6;
+print(lt_resultTrue);
+
+var lt_resultFalse;
+lt_resultFalse = 6 < 5;
+print(lt_resultFalse);
+
+var gt_resultTrue;
+gt_resultTrue = 6 > 5;
+print(gt_resultTrue);
+
+var gt_resultFalse;
+gt_resultFalse = 5 > 6;
+print(gt_resultFalse);
