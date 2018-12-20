@@ -30,6 +30,23 @@ var eq_resultFalse;
 eq_resultFalse = 5 == 4;
 print(eq_resultFalse);
 
+var eq_resultTrue;
+var cmp_L;
+var cmp_R;
+cmp_L = 5;
+cmp_R = 5;
+eq_resultTrue = cmp_L == cmp_R;
+print(eq_resultTrue);
+
+var eq_resultFalse;
+var cmp_L;
+var cmp_R;
+cmp_L = 5;
+cmp_R = 4;
+eq_resultFalse = cmp_L == cmp_R;
+print(eq_resultFalse);
+
+
 var noteq_resultTrue;
 noteq_resultTrue = 5 != 4;
 print(noteq_resultTrue);
