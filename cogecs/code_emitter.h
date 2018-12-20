@@ -143,7 +143,7 @@ struct Basicx86Emitter : public NullVisitor
 				auto secondParam = cast<BasicExpression>(children[4]);
 				auto binOp = cast<BasicExpression>(children[3]);
 				if (binOp->value == "+" || binOp->value == "-" || binOp->value == "*" || binOp->value == "/" || 
-					binOp->value == "==" || binOp->value == "!=" || binOp->value == "<" || binOp->value == ">") 
+					binOp->value == "==" || binOp->value == "!=" || binOp->value == "<" || binOp->value == ">" || binOp->value == "<=" || binOp->value == ">=") 
 				{
 					// variable alias as firstParam
 					if (std::isalpha(firstParam->value[0]))
@@ -212,6 +212,14 @@ struct Basicx86Emitter : public NullVisitor
 						{
 							comparisonOperatorVariable(stackSize, ebpOffset, insertJNG);
 						}
+						if (binOp->value == ">=")
+						{
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJNGE);
+						}
+						if (binOp->value == "<=")
+						{
+							comparisonOperatorVariable(stackSize, ebpOffset, insertJNLE);
+						}
 					}
 					else
 					{
@@ -262,6 +270,14 @@ struct Basicx86Emitter : public NullVisitor
 						if (binOp->value == ">")
 						{
 							comparisonOperatorValue(rhsValue, insertJNG);
+						}
+						if (binOp->value == ">=")
+						{
+							comparisonOperatorValue(rhsValue, insertJNGE);
+						}
+						if (binOp->value == "<=")
+						{
+							comparisonOperatorValue(rhsValue, insertJNLE);
 						}
 					}
 					// TODO: this is only true for 32 bit 
@@ -350,6 +366,14 @@ private:
 	static void insertJNE(X86InstrVector& i_vector)
 	{
 		i_vector.push_back({ std::byte(0x0F), std::byte(0x85) });
+	}
+	static void insertJNLE(X86InstrVector& i_vector)
+	{
+		i_vector.push_back({ std::byte(0x0F), std::byte(0x8F) });
+	}
+	static void insertJNGE(X86InstrVector& i_vector)
+	{
+		i_vector.push_back({ std::byte(0x0F), std::byte(0x8C) });
 	}
 
 	void comparisonOperatorVariable(unsigned int stackSize, char ebpOffset, std::function<void(X86InstrVector& i_vector)> operatorOpcode)
