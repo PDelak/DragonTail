@@ -60,7 +60,7 @@ struct BasicSymbolTable
 	  }
   }
 
-  bool exists(const std::string& id, size_t lineno)
+  bool exists(const std::string& id)
   {
 	  int local_table_id = symbol_table_id;
 	  do {
