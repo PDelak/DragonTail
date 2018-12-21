@@ -30,7 +30,6 @@ var eq_resultFalse;
 eq_resultFalse = 5 == 4;
 print(eq_resultFalse);
 
-var eq_resultTrue;
 var cmp_L;
 var cmp_R;
 cmp_L = 5;
@@ -38,9 +37,6 @@ cmp_R = 5;
 eq_resultTrue = cmp_L == cmp_R;
 print(eq_resultTrue);
 
-var eq_resultFalse;
-var cmp_L;
-var cmp_R;
 cmp_L = 5;
 cmp_R = 4;
 eq_resultFalse = cmp_L == cmp_R;
@@ -55,14 +51,11 @@ var noteq_resultFalse;
 noteq_resultFalse = 5 != 5;
 print(noteq_resultFalse);
 
-var noteq_resultTrue;
-
 cmp_L = 5;
 cmp_R = 4;
 noteq_resultTrue = cmp_L != cmp_R;
 print(noteq_resultTrue);
 
-var eq_resultFalse;
 cmp_L = 5;
 cmp_R = 5;
 eq_resultFalse = cmp_L != cmp_R;
@@ -76,13 +69,12 @@ var lt_resultFalse;
 lt_resultFalse = 6 < 5;
 print(lt_resultFalse);
 
-var lt_resultTrue;
 cmp_L = 5;
 cmp_R = 6;
 lt_resultTrue = cmp_L < cmp_R;
 print(lt_resultTrue);
 
-var lt_resultFalse;
+
 cmp_L = 6;
 cmp_R = 5;
 lt_resultFalse = cmp_L < cmp_R;
@@ -96,13 +88,13 @@ var gt_resultFalse;
 gt_resultFalse = 5 > 6;
 print(gt_resultFalse);
 
-var gt_resultTrue;
+
 cmp_L = 6;
 cmp_R = 5;
 gt_resultTrue = cmp_L > cmp_R;
 print(gt_resultTrue);
 
-var gt_resultFalse;
+
 cmp_L = 5;
 cmp_R = 6;
 gt_resultFalse = cmp_L > cmp_R;

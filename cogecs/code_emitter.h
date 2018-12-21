@@ -87,9 +87,10 @@ struct Basicx86Emitter : public NullVisitor
 	}
 	void visitPost(const VarDecl* varDecl) 
 	{	
-		// TODO check if symbol is already defined 
-		// for now the same symbol overwrites variable
-		// which ends with wrong code generation
+		if(symbolTable.exists(varDecl->var_name, 0)) 
+		{
+			throw CodeEmitterException("variable already defined : " + varDecl->var_name);
+		}
 		symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);			
 	}
 	void visitPost(const Expression* expr) 
