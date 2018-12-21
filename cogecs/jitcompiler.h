@@ -29,6 +29,9 @@ std::string to_hex(const std::byte* buffer, size_t size) {
 
 struct X86InstrVector
 {
+	using const_iterator = std::vector<std::byte>::const_iterator;
+	using iterator = std::vector<std::byte>::iterator;
+
     void push_function_prolog()
     {
         push_back({ static_cast<std::byte>(0x55), 
@@ -82,6 +85,9 @@ struct X86InstrVector
 
     void dump() const { std::cout << to_hex(&code_vector[0], code_vector.size()) << std::endl;}
     
+	const_iterator begin() const { return code_vector.begin(); }
+	iterator begin() { return code_vector.begin(); }
+
     size_t size() const { return code_vector.size(); }
 
     std::vector<std::byte> instruction_vector() const { return code_vector; }

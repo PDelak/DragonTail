@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <map>
 #include "ast.h"
 #include "astvisitor.h"
 #include "jitcompiler.h"
@@ -87,7 +88,7 @@ struct Basicx86Emitter : public NullVisitor
 	}
 	void visitPost(const VarDecl* varDecl) 
 	{	
-		if(symbolTable.exists(varDecl->var_name, 0)) 
+		if(symbolTable.exists(varDecl->var_name)) 
 		{
 			throw CodeEmitterException("variable already defined : " + varDecl->var_name);
 		}
@@ -355,6 +356,56 @@ struct Basicx86Emitter : public NullVisitor
 
 	}
 
+	void visitPost(const IfStatement* ifstatement)
+	{
+		auto gotoStatement = cast<GotoStatement>(ifstatement->statements[0]);
+		auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
+		
+		auto sym = symbolTable.findSymbol(conditionVariable->value, 0);
+		char variableSize = 4;
+		char ebpOffset = (sym.stack_position + 1) * variableSize;
+		constexpr unsigned int stackSize = 256;
+		// pushf
+		i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
+
+		// mov eax, 0
+		i_vector.push_back({ std::byte(0xB8) });
+		i_vector.push_back(i_vector.int_to_bytes(0));
+
+		// cmp eax, dword ptr[ebp - ebpOffset]
+		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+		
+		insertJE(i_vector);
+
+		// this is just a placeholder
+		constexpr auto labelOffset = 0;
+		i_vector.push_back({ i_vector.int_to_bytes(labelOffset) });
+		auto pos = i_vector.size();
+
+		jumpTable.insert(std::make_pair(gotoStatement->label, pos));		
+	}
+
+	void visitPost(const LabelStatement* stmt)
+	{
+		constexpr size_t addressSize = 4;
+		// try to fix jumps
+		for (auto& element : jumpTable)
+		{	
+			if (element.first != stmt->label) continue;
+			auto jumpOffset = std::distance(i_vector.begin(), i_vector.begin() + i_vector.size() - element.second);
+			auto bytes = i_vector.int_to_bytes(jumpOffset);
+			
+			for (size_t i = 0; i < addressSize; ++i)
+			{
+				*(i_vector.begin() + element.second - addressSize + i) = bytes[i];
+			}			
+			// popf
+			i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+
+		}
+
+	}
+
 	StatementList getStatements() const { return statements; }
 
 private:
@@ -364,6 +415,11 @@ private:
 	std::vector<size_t> allocationVector;
 	std::vector<size_t>::iterator currentAllocation;
 	unsigned char variable_position_on_stack = 0;
+	
+	// jumpTable contains a label as key and list of jmp instruction pointers
+	// these pointers point to placeholders at first and are fixed
+	// during label traversal
+	std::multimap<std::string, size_t> jumpTable;
 
 	void insertCmpVariable(unsigned int stackSize, char ebpOffset)
 	{
