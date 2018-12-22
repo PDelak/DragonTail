@@ -21,6 +21,10 @@ struct AllocationPass : public NullVisitor
 {
 	void visitPre(const BasicExpression* expr) 
 	{
+		// TODO : allocation scheme contains a bug
+		// allocations are linear
+		// allocation can live inside other allocation
+	
 		if (expr->value == "__alloc__") 
 		{
 			if (allocs.size() < index + 1)
@@ -366,7 +370,7 @@ struct Basicx86Emitter : public NullVisitor
 		char ebpOffset = (sym.stack_position + 1) * variableSize;
 		constexpr unsigned int stackSize = 256;
 		// pushf
-		i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
+		//i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
 		// mov eax, 0
 		i_vector.push_back({ std::byte(0xB8) });
@@ -374,7 +378,7 @@ struct Basicx86Emitter : public NullVisitor
 
 		// cmp eax, dword ptr[ebp - ebpOffset]
 		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
-		
+
 		insertJE(i_vector);
 
 		// this is just a placeholder
@@ -392,7 +396,10 @@ struct Basicx86Emitter : public NullVisitor
 		for (auto& element : jumpTable)
 		{	
 			if (element.first != stmt->label) continue;
+			std::cout << "pos:" << element.second << std::endl;
+			std::cout << "size:" << i_vector.size() << std::endl;
 			auto jumpOffset = std::distance(i_vector.begin(), i_vector.begin() + i_vector.size() - element.second);
+			std::cout << "offset:" << jumpOffset << std::endl;
 			auto bytes = i_vector.int_to_bytes(jumpOffset);
 			
 			for (size_t i = 0; i < addressSize; ++i)
@@ -400,8 +407,7 @@ struct Basicx86Emitter : public NullVisitor
 				*(i_vector.begin() + element.second - addressSize + i) = bytes[i];
 			}			
 			// popf
-			i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
-
+			//i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
 		}
 
 	}
@@ -526,7 +532,7 @@ auto emitMachineCode(const StatementList& statements)
 	
 	AllocationPass allocPass;
 	traverse(statements, allocPass);
-
+	allocPass.dump();
 	Basicx86Emitter visitor(i_vector, allocPass.getAllocationVector());
 
 	traverse(statements, visitor);
