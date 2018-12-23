@@ -22,8 +22,7 @@ struct AllocationPass : public NullVisitor
 	void visitPre(const BasicExpression* expr) 
 	{
 		// TODO : allocation scheme contains a bug
-		// allocations are linear
-		// allocation can live inside other allocation
+		// should not be linear but hierarchical
 	
 		if (expr->value == "__alloc__") 
 		{
@@ -396,10 +395,7 @@ struct Basicx86Emitter : public NullVisitor
 		for (auto& element : jumpTable)
 		{	
 			if (element.first != stmt->label) continue;
-			std::cout << "pos:" << element.second << std::endl;
-			std::cout << "size:" << i_vector.size() << std::endl;
 			auto jumpOffset = std::distance(i_vector.begin(), i_vector.begin() + i_vector.size() - element.second);
-			std::cout << "offset:" << jumpOffset << std::endl;
 			auto bytes = i_vector.int_to_bytes(jumpOffset);
 			
 			for (size_t i = 0; i < addressSize; ++i)
