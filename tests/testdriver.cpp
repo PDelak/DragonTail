@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "../tests/compiler.h"
 #include "../tests/codegen.h"
+#include "../tests/prefixtree.h"
 
 int main(int argc, char* argv[]) 
 {    
