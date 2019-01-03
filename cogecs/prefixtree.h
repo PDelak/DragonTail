@@ -7,8 +7,9 @@
 
 struct PrefixNode
 {
-	PrefixNode() :character('$'), is_leaf(false) {}
-	PrefixNode(char c) :character(c), is_leaf(false) {}
+	PrefixNode() :character('$'), is_leaf(false), value(0) {}
+	PrefixNode(char c) :character(c), is_leaf(false), value(0) {}
+	PrefixNode(char c, size_t val) :character(c), is_leaf(false), value(val) {}
 
 	bool exists(char c) const { return children.find(c) != children.end(); }
 
@@ -23,6 +24,7 @@ struct PrefixNode
 	}
 
 	char getCharacter() const { return character; }
+	size_t getValue() const { return value; }
 
 	std::unordered_map<char, std::unique_ptr<PrefixNode>>&  getChildren() { return children; }
 
@@ -33,6 +35,7 @@ private:
 	std::unordered_map<char, std::unique_ptr<PrefixNode>> children;
 	char character;
 	bool is_leaf;
+	size_t value;
 
 };
 
@@ -41,13 +44,13 @@ struct PrefixTree
 
 	PrefixTree() :root(new PrefixNode) {}
 
-	void insert(const std::string& key) {
+	void insert(const std::string& key, size_t value) {
 		PrefixNode* current = root.get();
 
 		for (auto character : key) {
 
 			if (!current->exists(character)) {
-				auto tmpNode = new PrefixNode(character);
+				auto tmpNode = new PrefixNode(character, value);
 				current->setChild(character, tmpNode);
 			}
 			current = current->getChild(character);
