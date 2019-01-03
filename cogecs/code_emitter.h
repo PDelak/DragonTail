@@ -28,7 +28,7 @@ struct AllocationPass : public NullVisitor
 		{
 			if (allocs.size() < index + 1)
 			{
-				allocs.push_back(0);
+				allocs.insert(std::make_pair(index,0));
 			}
 			++index;
 		}
@@ -42,14 +42,14 @@ struct AllocationPass : public NullVisitor
 	void dump()
 	{
 		for (const auto& alloc : allocs)
-		{
-			std::cout << "allocation:" << alloc << std::endl;
+		{			
+			std::cout << "allocation:" << alloc.first << "," << alloc.second << std::endl;
 		}
 	}
-	std::vector<size_t> getAllocationVector() const { return allocs; }
+	std::map<size_t, size_t> getAllocationVector() const { return allocs; }
 private:
 	size_t index = 0;
-	std::vector<size_t> allocs;
+	std::map<size_t, size_t> allocs;
 };
 
 struct CodeEmitterException : public std::runtime_error
@@ -59,7 +59,7 @@ struct CodeEmitterException : public std::runtime_error
 
 struct Basicx86Emitter : public NullVisitor
 {
-	Basicx86Emitter(X86InstrVector& v, std::vector<size_t> allocsVector)
+	Basicx86Emitter(X86InstrVector& v, std::map<size_t, size_t> allocsVector)
 		:i_vector(v), allocationVector(allocsVector)
 	{
 		symbolTable.insertSymbol("print", "function");
@@ -71,7 +71,7 @@ struct Basicx86Emitter : public NullVisitor
 		if (expr->value == "__alloc__")
 		{
 			variable_position_on_stack = 0;
-			size_t numOfVariables = *currentAllocation;
+			size_t numOfVariables = currentAllocation->second;
 			// TODO: do that at once
 			for (size_t i = 0; i < numOfVariables; ++i) {
 				i_vector.push_back({ std::byte(0x83), std::byte(0xEC), std::byte(0x04) }); // sub esp, 4 (alloc)
@@ -80,12 +80,12 @@ struct Basicx86Emitter : public NullVisitor
 		}
 		if (expr->value == "__dealloc__")
 		{
-			size_t numOfVariables = *--currentAllocation;
+			size_t numOfVariables = std::prev(currentAllocation)->second;
 			// TODO: do that at once
 			for (size_t i = 0; i < numOfVariables; ++i) {
 				i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (dealloc)
 			}
-			allocationVector.erase(currentAllocation);
+			allocationVector.erase(std::prev(currentAllocation));
 			currentAllocation = allocationVector.rbegin().base();
 		}
 	}
@@ -414,8 +414,8 @@ private:
 	StatementList statements;
 	BasicSymbolTable symbolTable;
 	X86InstrVector& i_vector;
-	std::vector<size_t> allocationVector;
-	std::vector<size_t>::iterator currentAllocation;
+	std::map<size_t, size_t> allocationVector;
+	std::map<size_t, size_t>::iterator currentAllocation;
 	unsigned char variable_position_on_stack = 0;
 	
 	// jumpTable contains a label as key and list of jmp instruction pointers
