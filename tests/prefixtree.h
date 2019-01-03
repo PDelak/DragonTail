@@ -5,13 +5,17 @@
 TEST(prefixtree, test1)
 {
 	PrefixTree tree;
-	tree.insert("ab", 0);
-	tree.insert("abc", 1);
-	auto result = tree.search("d");
+	tree.insert({ 0 }, -1);
+	auto result = tree.search({ 0 });
+	EXPECT_EQ(result->getValue(), -1);
+	tree.insert({0,1}, 0);
+	tree.insert({0,1,2}, 1);
+	result = tree.search({ 3 });
 	EXPECT_FALSE(result);
-	result = tree.search("ab");
+	result = tree.search({0,1});
 	EXPECT_TRUE(result);
 	EXPECT_EQ(result->getValue(), 0);
-	result = tree.search("abc");
+	result = tree.search({0,1,2});
 	EXPECT_EQ(result->getValue(), 1);
+
 }
