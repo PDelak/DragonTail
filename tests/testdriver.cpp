@@ -4,6 +4,7 @@
 #include "nullvisitor.h"
 #include "astcloner.h"
 #include "cfg_flatten.h"
+#include "prefixtree.h"
 #include "gtest/gtest.h"
 #include "../tests/compiler.h"
 #include "../tests/codegen.h"
