@@ -75,7 +75,14 @@ struct Basicx86Emitter : public NullVisitor
 		{
 			variable_position_on_stack = 0;
 			symbolTable.enterScope();
+			// emitting function prolog
+			// push ebp
+			// mov ebp, esp
+			// is used to simplify relative access to variables
+			// TODO access to variables in outer scope still requires some work
+			// to calculate right offset
 			i_vector.push_function_prolog();
+
 			size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
 			//std::cout << "alloc" << "(" << allocationLevel << "," << allocationLevelIndex[allocationLevel] << ")" << ":" << numOfVariables << std::endl;
 			for (size_t i = 0; i < numOfVariables; ++i) {
@@ -94,6 +101,7 @@ struct Basicx86Emitter : public NullVisitor
 			}
 			--allocationLevel;
 			allocationLevelIndex[allocationLevel]++;
+			// pop ebp
 			i_vector.push_back({std::byte(0x5D)});
 			symbolTable.exitScope();
 
