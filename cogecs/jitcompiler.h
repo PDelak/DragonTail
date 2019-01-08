@@ -27,6 +27,22 @@ std::string to_hex(const std::byte* buffer, size_t size) {
     return str.str();
 }
 
+std::string to_hex_ext(const std::byte* buffer, size_t size) {
+	using namespace std;
+	std::stringstream str;
+	str.setf(std::ios_base::hex, std::ios::basefield);
+	str.setf(std::ios_base::uppercase);
+	str.fill('0');	//str.width(2);
+
+	for (size_t i = 0; i < size; ++i) {		
+		str << std::setw(2) << static_cast<unsigned short>(static_cast<std::byte>(buffer[i]));
+		str << " ";
+	}
+	return str.str();
+}
+
+
+
 struct X86InstrVector
 {
 	using const_iterator = std::vector<std::byte>::const_iterator;
@@ -84,7 +100,8 @@ struct X86InstrVector
     }
 
     void dump() const { std::cout << to_hex(&code_vector[0], code_vector.size()) << std::endl;}
-    
+	void dumpExt() const { std::cout << to_hex_ext(&code_vector[0], code_vector.size()) << std::endl; }
+
 	const_iterator begin() const { return code_vector.begin(); }
 	iterator begin() { return code_vector.begin(); }
 
@@ -124,6 +141,7 @@ struct JitCompiler
         pfunc func = reinterpret_cast<pfunc>(buf);
         return func;
     }
+
 
 private:
     std::byte* buf;

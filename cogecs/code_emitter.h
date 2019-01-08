@@ -19,38 +19,37 @@
 // of variables (memory) on the stack
 struct AllocationPass : public NullVisitor
 {
-	void visitPre(const BasicExpression* expr) 
+	void visitPre(const BasicExpression* expr)
 	{
-		// TODO : allocation scheme contains a bug
-		// should not be linear but hierarchical
-	
-		if (expr->value == "__alloc__") 
+		if (expr->value == "__alloc__")
 		{
-			if (allocs.size() < index + 1)
-			{
-				allocs.insert(std::make_pair(index,0));
-			}
-			++index;
+			++allocationLevel;
 		}
 		if (expr->value == "__dealloc__")
-		{
-			--index;
+		{			
+			allocationLevelIndex[allocationLevel]++;
+			--allocationLevel;
 		}
 	}
-	void visitPre(const VarDecl*) { allocs[index - 1]++; }
+	void visitPre(const VarDecl*) 
+	{
+		allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])]++;
+	}
 
 	void dump()
 	{
-		for (const auto& alloc : allocs)
-		{			
-			std::cout << "allocation:" << alloc.first << "," << alloc.second << std::endl;
+		for (auto elem : allocs)
+		{
+			std::cout << "(" << elem.first.first << "," << elem.first.second << ")" << "->" << elem.second << std::endl;
 		}
 	}
-	std::map<size_t, size_t> getAllocationVector() const { return allocs; }
+	std::map<std::pair<size_t, size_t>, size_t> getAllocationVector() const { return allocs; }
 private:
-	size_t index = 0;
-	std::map<size_t, size_t> allocs;
+	size_t allocationLevel = 0;
+	std::map<size_t, size_t> allocationLevelIndex;
+	std::map<std::pair<size_t, size_t>, size_t> allocs;
 };
+
 
 struct CodeEmitterException : public std::runtime_error
 {
@@ -59,34 +58,45 @@ struct CodeEmitterException : public std::runtime_error
 
 struct Basicx86Emitter : public NullVisitor
 {
-	Basicx86Emitter(X86InstrVector& v, std::map<size_t, size_t> allocsVector)
-		:i_vector(v), allocationVector(allocsVector)
+	Basicx86Emitter(X86InstrVector& v, std::map<std::pair<size_t, size_t>, size_t> allocVector)
+		:i_vector(v), allocs(allocVector)
 	{
+		allocationLevelIndex[allocationLevel] = 0;
+		symbolTable.enterScope();
 		symbolTable.insertSymbol("print", "function");
-		currentAllocation = allocationVector.begin();
 	}
-
+	~Basicx86Emitter()
+	{
+		symbolTable.exitScope();
+	}
 	void visitPre(const BasicExpression* expr) 
 	{
 		if (expr->value == "__alloc__")
 		{
 			variable_position_on_stack = 0;
-			size_t numOfVariables = currentAllocation->second;
-			// TODO: do that at once
+			symbolTable.enterScope();
+			i_vector.push_function_prolog();
+			size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
+			//std::cout << "alloc" << "(" << allocationLevel << "," << allocationLevelIndex[allocationLevel] << ")" << ":" << numOfVariables << std::endl;
 			for (size_t i = 0; i < numOfVariables; ++i) {
 				i_vector.push_back({ std::byte(0x83), std::byte(0xEC), std::byte(0x04) }); // sub esp, 4 (alloc)
 			}
-			++currentAllocation;
+			++allocationLevel;
+
 		}
 		if (expr->value == "__dealloc__")
 		{
-			size_t numOfVariables = std::prev(currentAllocation)->second;
-			// TODO: do that at once
+			size_t level = allocationLevel - 1;
+			size_t numOfVariables = allocs[std::make_pair(level, allocationLevelIndex[level])];
+			//std::cout << "dealloc" << "(" << level << "," << allocationLevelIndex[level] << ")" << ":" << numOfVariables << std::endl;
 			for (size_t i = 0; i < numOfVariables; ++i) {
 				i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (dealloc)
 			}
-			allocationVector.erase(std::prev(currentAllocation));
-			currentAllocation = allocationVector.rbegin().base();
+			--allocationLevel;
+			allocationLevelIndex[allocationLevel]++;
+			i_vector.push_back({std::byte(0x5D)});
+			symbolTable.exitScope();
+
 		}
 	}
 	void visitPost(const VarDecl* varDecl) 
@@ -369,7 +379,7 @@ struct Basicx86Emitter : public NullVisitor
 		char ebpOffset = (sym.stack_position + 1) * variableSize;
 		constexpr unsigned int stackSize = 256;
 		// pushf
-		//i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
+		// i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
 		// mov eax, 0
 		i_vector.push_back({ std::byte(0xB8) });
@@ -403,7 +413,7 @@ struct Basicx86Emitter : public NullVisitor
 				*(i_vector.begin() + element.second - addressSize + i) = bytes[i];
 			}			
 			// popf
-			//i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
+			// i_vector.push_back({ std::byte(0x66), std::byte(0x9D) });
 		}
 
 	}
@@ -416,6 +426,10 @@ private:
 	X86InstrVector& i_vector;
 	std::map<size_t, size_t> allocationVector;
 	std::map<size_t, size_t>::iterator currentAllocation;
+	size_t allocationLevel = 1;
+	std::map<size_t, size_t> allocationLevelIndex;
+	std::map<std::pair<size_t, size_t>, size_t> allocs;
+
 	unsigned char variable_position_on_stack = 0;
 	
 	// jumpTable contains a label as key and list of jmp instruction pointers
@@ -528,7 +542,7 @@ auto emitMachineCode(const StatementList& statements)
 	
 	AllocationPass allocPass;
 	traverse(statements, allocPass);
-	allocPass.dump();
+	
 	Basicx86Emitter visitor(i_vector, allocPass.getAllocationVector());
 
 	traverse(statements, visitor);
@@ -536,6 +550,8 @@ auto emitMachineCode(const StatementList& statements)
 	i_vector.push_function_epilog();
 
 	JitCompiler jit(i_vector);
+	
 	return jit.compile();
+
 }
 

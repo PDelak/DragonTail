@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include <iostream>
+#include <limits>
 
 struct PrefixNode
 {
@@ -42,11 +43,12 @@ private:
 
 struct PrefixTree
 {
-
-	PrefixTree() :root(new PrefixNode) {}
+	
+	bool empty() const { return root == nullptr; }
 
 	void insert(const std::vector<int>& key, int value) 
 	{
+		if (!root) root = std::make_unique<PrefixNode>();
 		PrefixNode* current = root.get();
 
 		for (auto k : key) {
@@ -62,6 +64,7 @@ struct PrefixTree
 
 	PrefixNode* search(const std::vector<int>& key)
 	{
+		if (!root) return nullptr;
 		auto current = root.get();
 		for (auto character : key) 
 		{
@@ -69,22 +72,6 @@ struct PrefixTree
 			current = current->getChild(character);
 		}
 		return current;
-	}
-
-	std::string longestCommonPrefix()
-	{
-		std::string lcs;
-		PrefixNode* current = root.get();
-
-		while (current && current->getChildren().size() == 1 && !current->isLeaf()) 
-		{
-			char character = current->getChildren().begin()->second->getKey();
-			lcs.push_back(character);
-
-			current = current->getChildren().begin()->second.get();
-
-		}
-		return lcs;
 	}
 
 	void visit() {
