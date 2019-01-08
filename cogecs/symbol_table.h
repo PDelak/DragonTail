@@ -55,7 +55,7 @@ struct BasicSymbolTable
 	  {
 		  for (const auto& symbol : bucket.second)
 		  {
-			  std::cout << bucket.first << " : " << "(" << symbol.id << "," << symbol.type << ")" << std::endl;
+			  std::cout << bucket.first << " : " << "(" << symbol.id << "," << symbol.type << "," << static_cast<int>(symbol.stack_position) << ")" << std::endl;
 		  }
 	  }
   }
