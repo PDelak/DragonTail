@@ -1,5 +1,4 @@
-#ifndef LANGUAGE_COMPILER_H
-#define LANGUAGE_COMPILER_H
+#pragma once
 
 #include <set>
 #include <algorithm>
@@ -315,4 +314,3 @@ ParserPtr initialize_parser()
 	return parser;
 }
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef COGECS_NULL_VISITOR
-#define COGECS_NULL_VISITOR
+#pragma once
 
 #include "astvisitor.h"
 
@@ -31,4 +30,3 @@ struct NullVisitor : public AstVisitor
 	void visitPost(const FunctionDecl*) {}
 };
 
-#endif

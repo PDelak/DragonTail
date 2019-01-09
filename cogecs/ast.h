@@ -1,5 +1,4 @@
-#ifndef LANGUAGE_AST_H
-#define LANGUAGE_AST_H
+#pragma once
 
 #include <memory>
 #include <iostream>
@@ -398,4 +397,3 @@ template<typename Node>
 StatementPtr makeNode(Node&& node) { return std::make_shared<Node>(Node(node));}
 
 
-#endif

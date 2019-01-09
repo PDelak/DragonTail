@@ -1,5 +1,4 @@
-#ifndef JIT_COMPILER_H
-#define JIT_COMPILER_H
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -154,4 +153,3 @@ private:
 
 };
 
-#endif

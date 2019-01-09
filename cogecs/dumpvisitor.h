@@ -1,5 +1,4 @@
-#ifndef COGECS_DUMP_VISITOR
-#define COGECS_DUMP_VISITOR
+#pragma once
 
 #include "astvisitor.h"
 
@@ -65,4 +64,3 @@ private:
 	std::ostream& out;
 };
 
-#endif

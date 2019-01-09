@@ -1,5 +1,4 @@
-#ifndef COGECS_AST_VISITOR
-#define COGECS_AST_VISITOR
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -52,4 +51,3 @@ struct AstVisitor
 
 };
 
-#endif
