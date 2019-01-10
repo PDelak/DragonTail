@@ -14,7 +14,13 @@
 
 // AllocationPass counts number of variables per each
 // __alloc__ builtin expression
-// Value is stored in a vector indexed per allocation 
+// Value is stored in a map, indexed by pair (level and position on the level)
+//               0              - level 0 (root) 
+//              / \
+//             /   \
+//            0     1           - level 1 (indexes in map (1,0) (1,1))
+//           / \   / \
+//          0   1 0   1         - level 2 (indexes in map (2,0) (2,1) (2,2) (2,3)
 // It is further used to allocate specific number
 // of variables (memory) on the stack
 struct AllocationPass : public NullVisitor
@@ -556,6 +562,8 @@ auto emitMachineCode(const StatementList& statements)
 	traverse(statements, visitor);
 	
 	i_vector.push_function_epilog();
+
+	i_vector.dumpExt();
 
 	JitCompiler jit(i_vector);
 	
