@@ -12,8 +12,8 @@
 #include "symbol_table.h"
 #include "nullvisitor.h"
 
-// AllocationPass counts number of variables per each
-// __alloc__ builtin expression
+// AllocationPass counts number of variables per each block
+// those between __alloc__ and __dealloc__ builtin expressions
 // Value is stored in a map, indexed by pair (level and position on the level)
 //               0              - level 0 (root) 
 //              / \
