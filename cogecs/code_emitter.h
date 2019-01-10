@@ -438,8 +438,6 @@ private:
 	StatementList statements;
 	BasicSymbolTable symbolTable;
 	X86InstrVector& i_vector;
-	std::map<size_t, size_t> allocationVector;
-	std::map<size_t, size_t>::iterator currentAllocation;
 	size_t allocationLevel = 1;
 	std::map<size_t, size_t> allocationLevelIndex;
 	std::map<std::pair<size_t, size_t>, size_t> allocs;
