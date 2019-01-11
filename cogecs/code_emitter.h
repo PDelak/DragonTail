@@ -67,6 +67,7 @@ struct CodeEmitterException : public std::runtime_error
 unsigned int calculateVariablePositionOnStack(const symbol& sym)
 {
     // TODO variable size is hardcoded for now and is always 4 bytes
+    // this is only true for 32 bit 
     char variableSize = 4;
     char ebpOffset = (sym.stack_position + 1) * variableSize;
     // TODO: just for now stack for local variables will be only 256 bytes
@@ -162,14 +163,9 @@ struct Basicx86Emitter : public NullVisitor
 						i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
 						i_vector.push_back(i_vector.int_to_bytes(rhsValue));
 					}
-					// TODO: this is only true for 32 bit 
-					char variableSize = 4;
-					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
-
-					// TODO: just for now stack for local variables will be only 256 bytes
-					constexpr unsigned int stackSize = 256;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol);
 					// mov [ebp - ebpOffset], eax
-					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
 				}
 				break;
 			}
@@ -183,18 +179,16 @@ struct Basicx86Emitter : public NullVisitor
 				if (unaryOp->value == "!")
 				{
 					auto sym = symbolTable.findSymbol(rhs->value, 0);
-					char variableSize = 4;
-					char ebpOffset = (sym.stack_position + 1) * variableSize;
-					constexpr unsigned int stackSize = 256;				
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym);
 					// mov eax, [ebp - ebpOffset]
-					i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
 					// compare rhsValue with 0
 					comparisonOperatorValue(0, insertJG);
 					// TODO: this is only true for 32 bit 
-					char ebpOffsetLhs = (lhsSymbol.stack_position + 1) * variableSize;
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol);
 
 					// mov [ebp - ebpOffset], eax
-					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffsetLhs) });
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition) });
 				}
 				break;
 			}
@@ -213,11 +207,9 @@ struct Basicx86Emitter : public NullVisitor
 					if (std::isalpha(firstParam->value[0]))
 					{
 						auto sym = symbolTable.findSymbol(firstParam->value, 0);
-						char variableSize = 4;
-						char ebpOffset = (sym.stack_position + 1) * variableSize;
-						constexpr unsigned int stackSize = 256;
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym);
 						// mov eax, [ebp - ebpOffset]
-						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
 					}
 					else
 					{
@@ -229,23 +221,22 @@ struct Basicx86Emitter : public NullVisitor
 					if (std::isalpha(secondParam->value[0]))
 					{
 						auto sym = symbolTable.findSymbol(secondParam->value, 0);
-						char variableSize = 4;
-						char ebpOffset = (sym.stack_position + 1) * variableSize;
-						constexpr unsigned int stackSize = 256;
-						if (binOp->value == "+") 
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym);
+						
+                        if (binOp->value == "+") 
 						{
 							// add eax, [ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+							i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(variablePosition) });
 						}
 						if (binOp->value == "-")
 						{
 							// sub eax, [ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x2B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+							i_vector.push_back({ std::byte(0x2B), std::byte(0x45), std::byte(variablePosition) });
 						}
 						if (binOp->value == "*")
 						{
 							// imul        eax, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x0F), std::byte(0xAF), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+							i_vector.push_back({ std::byte(0x0F), std::byte(0xAF), std::byte(0x45), std::byte(variablePosition) });
 						}
 						if (binOp->value == "/")
 						{
@@ -254,7 +245,7 @@ struct Basicx86Emitter : public NullVisitor
 							// cdq sign-extend EAX into EDX
 							i_vector.push_back({ std::byte(0x99) });
 							// mov ebx, dword ptr[ebp - ebpOffset]
-							i_vector.push_back({ std::byte(0x8B), std::byte(0x5D), std::byte(stackSize - ebpOffset) });
+							i_vector.push_back({ std::byte(0x8B), std::byte(0x5D), std::byte(variablePosition) });
 							// idiv ebx
 							i_vector.push_back({ std::byte(0xF7), std::byte(0xFB) });
 							// pop ebx
@@ -262,27 +253,27 @@ struct Basicx86Emitter : public NullVisitor
 						}
 						if (binOp->value == "==")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJNE);
+							comparisonOperatorVariable(variablePosition, insertJNE);
 						}
 						if (binOp->value == "!=")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJE);
+							comparisonOperatorVariable(variablePosition, insertJE);
 						}
 						if (binOp->value == "<")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJNL);
+							comparisonOperatorVariable(variablePosition, insertJNL);
 						}
 						if (binOp->value == ">")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJNG);
+							comparisonOperatorVariable(variablePosition, insertJNG);
 						}
 						if (binOp->value == ">=")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJNGE);
+							comparisonOperatorVariable(variablePosition, insertJNGE);
 						}
 						if (binOp->value == "<=")
 						{
-							comparisonOperatorVariable(stackSize, ebpOffset, insertJNLE);
+							comparisonOperatorVariable(variablePosition, insertJNLE);
 						}
 					}
 					else
@@ -344,14 +335,9 @@ struct Basicx86Emitter : public NullVisitor
 							comparisonOperatorValue(rhsValue, insertJNLE);
 						}
 					}
-					// TODO: this is only true for 32 bit 
-					char variableSize = 4;
-					char ebpOffset = (lhsSymbol.stack_position + 1) * variableSize;
-
-					// TODO: just for now stack for local variables will be only 256 bytes per scope
-					constexpr unsigned int stackSize = 256;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol);
 					// mov [ebp - ebpOffset], eax
-					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+					i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
 				}
 				break;
 			}
@@ -371,12 +357,8 @@ struct Basicx86Emitter : public NullVisitor
 				// and copy value that is indexed by this index
 				// FF 75 FC           push        dword ptr [ebp-4]
 				auto sym = symbolTable.findSymbol(param, 0);
-				char variableSize = 4;
-				char ebpOffset = (sym.stack_position + 1) * variableSize;
-
-				// just for now stack for local variables will be only 256 bytes
-				constexpr unsigned int stackSize = 256;
-				i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(stackSize - ebpOffset) });
+                unsigned int variablePosition = calculateVariablePositionOnStack(sym);
+				i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(variablePosition) });
 			}
 		}
 
@@ -399,9 +381,7 @@ struct Basicx86Emitter : public NullVisitor
 		auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
 		
 		auto sym = symbolTable.findSymbol(conditionVariable->value, 0);
-		char variableSize = 4;
-		char ebpOffset = (sym.stack_position + 1) * variableSize;
-		constexpr unsigned int stackSize = 256;
+        unsigned int variablePosition = calculateVariablePositionOnStack(sym);
 		// pushf
 		// i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
@@ -410,7 +390,7 @@ struct Basicx86Emitter : public NullVisitor
 		i_vector.push_back(i_vector.int_to_bytes(0));
 
 		// cmp eax, dword ptr[ebp - ebpOffset]
-		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(variablePosition) });
 
 		insertJE(i_vector);
 
@@ -459,10 +439,10 @@ private:
 	// during label traversal
 	std::multimap<std::string, size_t> jumpTable;
 
-	void insertCmpVariable(unsigned int stackSize, char ebpOffset)
+	void insertCmpVariable(unsigned int variablePosition)
 	{
 		// cmp eax, dword ptr[ebp - ebpOffset]
-		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(stackSize - ebpOffset) });
+		i_vector.push_back({ std::byte(0x3B), std::byte(0x45), std::byte(variablePosition) });
 	}
 	void insertCmpValue(int value)
 	{
@@ -500,12 +480,12 @@ private:
 		i_vector.push_back({ std::byte(0x0F), std::byte(0x8C) });
 	}
 
-	void comparisonOperatorVariable(unsigned int stackSize, char ebpOffset, std::function<void(X86InstrVector& i_vector)> operatorOpcode)
+	void comparisonOperatorVariable(unsigned int variablePosition, std::function<void(X86InstrVector& i_vector)> operatorOpcode)
 	{
 		// pushf
 		i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
-		insertCmpVariable(stackSize, ebpOffset);
+		insertCmpVariable(variablePosition);
 
 		constexpr auto value0Offset = 10;
 		operatorOpcode(i_vector);
