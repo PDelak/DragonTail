@@ -23,31 +23,31 @@ using StatementList = std::vector<StatementPtr>;
 struct AstVisitor
 {
 
-	virtual ~AstVisitor() {}
-	virtual void visitPre(const BasicStatement*) = 0;
-	virtual void visitPost(const BasicStatement*) = 0;
-	virtual void visitPre(const VarDecl*) = 0;
-	virtual void visitPost(const VarDecl*) = 0;
-	virtual void visitPre(const BasicExpression*) = 0;
-	virtual void visitPost(const BasicExpression*) = 0;
-	virtual void visitPre(const Expression*) = 0;
-	virtual void visitPost(const Expression*) = 0;
-	virtual void visitPre(const IfStatement*) = 0;
-	virtual void visitPost(const IfStatement*) = 0;
-	virtual void visitPre(const WhileLoop*) = 0;
-	virtual void visitPost(const WhileLoop*) = 0;
-	virtual void visitPre(const BlockStatement*) = 0;
-	virtual void visitPost(const BlockStatement*) = 0;
-	virtual void visitPre(const LabelStatement*) = 0;
-	virtual void visitPost(const LabelStatement*) = 0;
-	virtual void visitPre(const GotoStatement*) = 0;
-	virtual void visitPost(const GotoStatement*) = 0;
-	virtual void visitPre(const FunctionCall*) = 0;
-	virtual void visitPost(const FunctionCall*) = 0;
-	virtual void visitPre(const ReturnStatement*) = 0;
-	virtual void visitPost(const ReturnStatement*) = 0;
-	virtual void visitPre(const FunctionDecl*) = 0;
-	virtual void visitPost(const FunctionDecl*) = 0;
+    virtual ~AstVisitor() {}
+    virtual void visitPre(const BasicStatement*) = 0;
+    virtual void visitPost(const BasicStatement*) = 0;
+    virtual void visitPre(const VarDecl*) = 0;
+    virtual void visitPost(const VarDecl*) = 0;
+    virtual void visitPre(const BasicExpression*) = 0;
+    virtual void visitPost(const BasicExpression*) = 0;
+    virtual void visitPre(const Expression*) = 0;
+    virtual void visitPost(const Expression*) = 0;
+    virtual void visitPre(const IfStatement*) = 0;
+    virtual void visitPost(const IfStatement*) = 0;
+    virtual void visitPre(const WhileLoop*) = 0;
+    virtual void visitPost(const WhileLoop*) = 0;
+    virtual void visitPre(const BlockStatement*) = 0;
+    virtual void visitPost(const BlockStatement*) = 0;
+    virtual void visitPre(const LabelStatement*) = 0;
+    virtual void visitPost(const LabelStatement*) = 0;
+    virtual void visitPre(const GotoStatement*) = 0;
+    virtual void visitPost(const GotoStatement*) = 0;
+    virtual void visitPre(const FunctionCall*) = 0;
+    virtual void visitPost(const FunctionCall*) = 0;
+    virtual void visitPre(const ReturnStatement*) = 0;
+    virtual void visitPost(const ReturnStatement*) = 0;
+    virtual void visitPre(const FunctionDecl*) = 0;
+    virtual void visitPost(const FunctionDecl*) = 0;
 
 };
 

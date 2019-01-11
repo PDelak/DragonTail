@@ -16,7 +16,7 @@ std::string to_hex(const std::byte* buffer, size_t size) {
     std::stringstream str;
     str.setf(std::ios_base::hex, std::ios::basefield);
     str.setf(std::ios_base::uppercase);
-    str.fill('0');	//str.width(2);
+    str.fill('0');  //str.width(2);
 
     for (size_t i = 0; i<size; ++i) {
         str << "0x";
@@ -27,37 +27,37 @@ std::string to_hex(const std::byte* buffer, size_t size) {
 }
 
 std::string to_hex_ext(const std::byte* buffer, size_t size) {
-	using namespace std;
-	std::stringstream str;
-	str.setf(std::ios_base::hex, std::ios::basefield);
-	str.setf(std::ios_base::uppercase);
-	str.fill('0');	//str.width(2);
+    using namespace std;
+    std::stringstream str;
+    str.setf(std::ios_base::hex, std::ios::basefield);
+    str.setf(std::ios_base::uppercase);
+    str.fill('0');  //str.width(2);
 
-	for (size_t i = 0; i < size; ++i) {		
-		str << std::setw(2) << static_cast<unsigned short>(static_cast<std::byte>(buffer[i]));
-		str << " ";
-	}
-	return str.str();
+    for (size_t i = 0; i < size; ++i) {     
+        str << std::setw(2) << static_cast<unsigned short>(static_cast<std::byte>(buffer[i]));
+        str << " ";
+    }
+    return str.str();
 }
 
 
 
 struct X86InstrVector
 {
-	using const_iterator = std::vector<std::byte>::const_iterator;
-	using iterator = std::vector<std::byte>::iterator;
+    using const_iterator = std::vector<std::byte>::const_iterator;
+    using iterator = std::vector<std::byte>::iterator;
 
     void push_function_prolog()
     {
         push_back({ static_cast<std::byte>(0x55), 
-					static_cast<std::byte>(0x8B), 
-					static_cast<std::byte>(0xEC) });
+                    static_cast<std::byte>(0x8B), 
+                    static_cast<std::byte>(0xEC) });
     }
 
     void push_function_epilog()
     {
         push_back({ static_cast<std::byte>(0x5D), 
-					static_cast<std::byte>(0xC3) });
+                    static_cast<std::byte>(0xC3) });
     }
 
     void push_back(std::byte b)
@@ -99,10 +99,10 @@ struct X86InstrVector
     }
 
     void dump() const { std::cout << to_hex(&code_vector[0], code_vector.size()) << std::endl;}
-	void dumpExt() const { std::cout << to_hex_ext(&code_vector[0], code_vector.size()) << std::endl; }
+    void dumpExt() const { std::cout << to_hex_ext(&code_vector[0], code_vector.size()) << std::endl; }
 
-	const_iterator begin() const { return code_vector.begin(); }
-	iterator begin() { return code_vector.begin(); }
+    const_iterator begin() const { return code_vector.begin(); }
+    iterator begin() { return code_vector.begin(); }
 
     size_t size() const { return code_vector.size(); }
 

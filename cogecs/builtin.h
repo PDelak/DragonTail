@@ -4,5 +4,5 @@
 
 void builtin_print(int value)
 {
-	std::cout << value << std::endl;
+    std::cout << value << std::endl;
 }
