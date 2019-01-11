@@ -551,11 +551,6 @@ auto emitMachineCode(const StatementList& statements)
     
     i_vector.push_function_epilog();
 
-    i_vector.dumpExt();
-
-    JitCompiler jit(i_vector);
-    
-    return jit.compile();
-
+    return i_vector;
 }
 

@@ -39,45 +39,49 @@ bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
 int main(int argc, char* argv[])
 {    
 
-	if (argc < 2) {
-		std::cerr << "syntax: compiler.exe filename [ast|run]" << std::endl;
-		return -1;
-	}
+    if (argc < 3) {
+        std::cerr << "syntax: compiler.exe filename [ast|run|transform|emitx86]" << std::endl;        
+        return -1;
+    }
 
-	try {
-		std::string command;
+    try {
+        std::string command;
 
-		if (argc == 3) command = argv[2];
+        if (argc == 3) command = argv[2];
 
-		std::vector<int> v = { 4,2,6 };
+        std::vector<int> v = { 4,2,6 };
 
-		auto inputFile = argv[1];
+        auto inputFile = argv[1];
 
-		auto p = initialize_parser(inputFile);
+        auto p = initialize_parser(inputFile);
 
-		NullVisitor nvisitor;
+        NullVisitor nvisitor;
 
-		auto statements = compile(argv[1], p.get(), nvisitor);
+        auto statements = compile(argv[1], p.get(), nvisitor);
 
-		CFGFlattener visitor;
+        CFGFlattener visitor;
 
-		traverse(statements, visitor);
+        traverse(statements, visitor);
 
-		if (command == "ast") {
-			dumpAST(visitor.getStatements(), std::cout);
-		}
-
-		dumpCode(visitor.getStatements(), std::cout);
-
-		if (command == "run") {
-			std::cout << "execute..." << std::endl;
-
-			auto x86_text = emitMachineCode(visitor.getStatements());
-			x86_text();
-		}
-	}
-	catch (const std::runtime_error& err) {
-		std::cerr << err.what() << std::endl;
-	}
-	return 0;
+        if (command == "ast") {
+            dumpAST(visitor.getStatements(), std::cout);
+        }
+        else if (command == "transform") {
+            dumpCode(visitor.getStatements(), std::cout);
+        }
+        else if (command == "emitx86") {
+            auto x86_text = emitMachineCode(visitor.getStatements());
+            x86_text.dumpExt();
+        }
+        else if (command == "run") {
+            auto x86_text = emitMachineCode(visitor.getStatements());
+            JitCompiler jit(x86_text);
+            auto x86function = jit.compile();
+            x86function();
+        }
+    }
+    catch (const std::runtime_error& err) {
+        std::cerr << err.what() << std::endl;
+    }
+    return 0;
 }
