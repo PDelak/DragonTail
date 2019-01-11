@@ -7,10 +7,11 @@
 
 struct symbol
 {
-	symbol(const std::string& id, const std::string& type, unsigned char stack_pos = -1):id(id), type(type), stack_position(stack_pos) {}
+	symbol(const std::string& id, const std::string& type, unsigned char stack_pos = -1, size_t s = 0):id(id), type(type), stack_position(stack_pos), scope(s) {}
 	std::string id;
 	std::string type;
 	unsigned char stack_position;
+    size_t scope;
 };
 
 typedef std::list<symbol> symbol_list;
@@ -46,7 +47,7 @@ struct BasicSymbolTable
   
   void insertSymbol(const std::string& id, const std::string& type, unsigned char position_on_stack = -1)
   {
-    symbol_table[symbol_table_id].push_back(symbol(id, type, position_on_stack));
+    symbol_table[symbol_table_id].push_back(symbol(id, type, position_on_stack, symbol_table_id));
   }
   
   void dump()

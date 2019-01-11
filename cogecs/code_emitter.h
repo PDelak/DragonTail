@@ -12,6 +12,7 @@
 #include "symbol_table.h"
 #include "nullvisitor.h"
 
+/*
 // AllocationPass counts number of variables per each block
 // those between __alloc__ and __dealloc__ builtin expressions
 // Value is stored in a map, indexed by pair (level and position on the level)
@@ -23,6 +24,7 @@
 //          0   1 0   1         - level 2 (indexes in map (2,0) (2,1) (2,2) (2,3)
 // It is further used to allocate specific number
 // of variables (memory) on the stack
+*/
 struct AllocationPass : public NullVisitor
 {
 	void visitPre(const BasicExpression* expr)
@@ -61,6 +63,16 @@ struct CodeEmitterException : public std::runtime_error
 {
 	CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
 };
+
+unsigned int calculateVariablePositionOnStack(const symbol& sym)
+{
+    // TODO variable size is hardcoded for now and is always 4 bytes
+    char variableSize = 4;
+    char ebpOffset = (sym.stack_position + 1) * variableSize;
+    // TODO: just for now stack for local variables will be only 256 bytes
+    constexpr unsigned int stackSize = 256;
+    return stackSize - ebpOffset;
+}
 
 struct Basicx86Emitter : public NullVisitor
 {
@@ -138,11 +150,9 @@ struct Basicx86Emitter : public NullVisitor
 					if (std::isalpha(rhs->value[0])) 
 					{
 						auto sym = symbolTable.findSymbol(rhs->value, 0);
-						char variableSize = 4;
-						char ebpOffset = (sym.stack_position + 1) * variableSize;
-						constexpr unsigned int stackSize = 256;
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym);
 						// mov eax, [ebp - ebpOffset]
-						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(stackSize - ebpOffset) });						
+						i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});						
 					} 
 					// value on rhs
 					else 
@@ -345,7 +355,7 @@ struct Basicx86Emitter : public NullVisitor
 				}
 				break;
 			}
-		}		
+		}	
 	}
 	void visitPost(const FunctionCall* fcall) 
 	{	
