@@ -20,22 +20,6 @@
 #include "cfg_flatten.h"
 #include "code_emitter.h"
 
-void print(const std::vector<int>& v)
-{
-    for (const auto e : v) std::cout << e << std::endl;    
-}
-
-bool expect_eq(const std::vector<int>& v1, const std::vector<int>& v2)
-{
-    if (v1.size() != v2.size()) return false;
-    size_t index = 0;
-    for (const auto& e : v1) {
-        if (e != v2[index++]) return false;        
-    }
-    return true;
-}
-
-
 int main(int argc, char* argv[])
 {    
 
