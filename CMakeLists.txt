@@ -58,9 +58,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 enable_testing()
 
-include_directories(cogecs)
+include_directories(src)
 add_subdirectory(make_dparser)
-add_subdirectory(cogecs)
+add_subdirectory(src)
 add_subdirectory(tests)
 
 add_custom_target(TOPLEVEL_COGECS SOURCES
