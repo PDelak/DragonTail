@@ -1,4 +1,4 @@
-## CoGeCs - Low level language for JIT
+## DragonTail - Low level language for JIT
 
 Currently language supports only few primitives that can be used to build
 higher level language features
