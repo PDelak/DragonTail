@@ -1,5 +1,6 @@
+if(GCC)
 set(CMAKE_CXX_FLAGS "-m32 -march=native -std=c++17 -Wall -fstrict-aliasing -Wstrict-aliasing")
-
+endif()
 cmake_minimum_required(VERSION 2.6.4)
 
 if (POLICY CMP0048)
