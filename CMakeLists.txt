@@ -4,13 +4,11 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
-
 # Remove the warning that WIN32 is not defined in Cygwin any more.
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 # Project-wide settings for CoGeCs
 project(CoGeCs CXX C)
-
 ###############################################################################
 
 # gtest
@@ -45,11 +43,13 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS_RELEASE} ${COMMON_CXX_FLAGS} /MT")
 elseif(CMAKE_COMPILER_IS_GNUCXX)
   # Need gnu++ instead of c++ so that GTest can access fdopen() etc.
-  set(CMAKE_CXX_FLAGS "-march=native -std=c++17 -Wall -Wextra -Werror -Wold-style-cast -fstrict-aliasing -Wstrict-aliasing")
+  #set(CMAKE_CXX_FLAGS "-m32 -march=native -std=c++17 -Wall -Wextra -Werror -Wold-style-cast -fstrict-aliasing -Wstrict-aliasing")
+  set(CMAKE_CXX_FLAGS "-m32 -march=native -std=c++17 -Wno-write-strings -Wno-sign-compare -Wno-unused-parameter -Wno-missing-field-initializers -fstrict-aliasing -Wno-strict-aliasing -Wno-implicit-fallthrough -Wno-sequence-point -Wno-unused-but-set-variable -Wno-empty-body -Wno-misleading-indentation")
+  set(CMAKE_C_FLAGS "-m32 -march=native -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-missing-field-initializers -fstrict-aliasing -Wno-strict-aliasing -Wno-implicit-fallthrough -Wno-sequence-point -Wno-unused-but-set-variable -Wno-empty-body -Wno-misleading-indentation")
 else()
   # TODO: define a target for -Weverything.
   # set(CMAKE_CXX_FLAGS "-msse4.2 -std=c++17 -Wold-style-cast ${WEVERYTHING_FLAGS}")
-  set(CMAKE_CXX_FLAGS "-march=native -std=c++17 -Wold-style-cast")
+  set(CMAKE_CXX_FLAGS "-m32 -march=native -std=c++17 -Wold-style-cast")
 endif()
 
 

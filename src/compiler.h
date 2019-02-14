@@ -9,6 +9,7 @@
 #include "dparse.h"
 #include "ast.h"
 #include "astvisitor.h"
+#include <cstring>
 
 constexpr size_t MAX_LINE_LENGTH = 44;  /* must be at least 4 */
 constexpr size_t INDENT_SPACES = 4;

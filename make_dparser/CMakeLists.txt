@@ -20,7 +20,7 @@ if(MSVC)
 		)
 else()
 	SET_SOURCE_FILES_PROPERTIES( 	
-		make_dparser.c
+		make_dparser.c 
 		../src/dparser/grammar.g.d_parser.c
 		../src/dparser/arg.c
 		../src/dparser/dparse_tree.c

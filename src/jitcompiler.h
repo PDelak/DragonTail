@@ -8,8 +8,12 @@
 #include <iterator>
 #include <iostream>
 #include <cstddef>
+#ifdef _WIN32
 #include <Windows.h>
-
+#else
+#include <sys/mman.h>
+#endif
+#include <cstring>
 
 std::string to_hex(const std::byte* buffer, size_t size) {
     using namespace std;
@@ -126,13 +130,35 @@ struct JitCompiler
 {
     typedef int(*pfunc)(void);
 
+    #ifndef _WIN32
+    void* alloc_executable_memory(size_t size) {
+        void* ptr = mmap(0, size,
+                   PROT_READ | PROT_WRITE | PROT_EXEC,
+                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (ptr == reinterpret_cast<void*>(-1)) {
+            perror("mmap");
+            return NULL;
+        }
+        return ptr;
+    }
+    #endif
     JitCompiler(const X86InstrVector& i_vector) :buf(nullptr), instr_vector(i_vector) 
     {
         size = instr_vector.size();
-        buf = reinterpret_cast<std::byte*>(VirtualAllocEx(GetCurrentProcess(), 0, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+	#ifdef _WIN32
+	buf = reinterpret_cast<std::byte*>(VirtualAllocEx(GetCurrentProcess(), 0, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+        #else
+        buf = reinterpret_cast<std::byte*>(alloc_executable_memory(size));	
+	#endif
+
     }
 
-    ~JitCompiler() { VirtualFreeEx(GetCurrentProcess(), buf, size, MEM_RELEASE); }
+    ~JitCompiler() { 
+	#ifdef _WIN32
+	    VirtualFreeEx(GetCurrentProcess(), buf, size, MEM_RELEASE); 
+	#else
+	#endif
+    }
 
     pfunc compile()
     {

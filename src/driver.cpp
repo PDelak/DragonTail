@@ -10,7 +10,6 @@
 #include <chrono>
 #include <memory>
 #include <functional>
-#include <windows.h>
 #include "dparse.h"
 #include "ast.h"
 #include "compiler.h"
