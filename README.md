@@ -20,7 +20,15 @@ cmake --build ./build-msvc
 ~~~~~~~~~~~~~~~~~~~~~~~~
 * `MinGW`
 
-In order to build using MinGW run Configure_Make.bat 
+In order to build using MinGW run Configure_Make.bat (You have to use 32 bit version of gcc. x86-64 is unsupported for now) 
 ~~~~~~~~~~~~~~~~~~~~~~~~none
 cmake --build ./build-make
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+* `Linux`
+
+Run Configure_Make.sh
+~~~~~~~~~~~~~~~~~~~~~~~~none
+cmake --build ./build-make
+~~~~~~~~~~~~~~~~~~~~~~~~
+ 
