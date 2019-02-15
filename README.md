@@ -10,6 +10,8 @@ Work is divided into few sections:
 * `x86 code generation`
 * `x86-64 code generation`
 * `linear register allocation` 
+* `SSA form?`
+* `Other fancy optimizations`
 
 ### Building
 * `MSVC`
