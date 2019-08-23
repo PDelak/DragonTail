@@ -99,12 +99,10 @@ struct Basicx86Emitter : public NullVisitor
         :i_vector(v), allocs(allocVector)
     {
         allocationLevelIndex[allocationLevel] = 0;
-    //    symbolTable.enterScope();
         symbolTable.insertSymbol("print", "function");
     }
     ~Basicx86Emitter()
     {
-    //    symbolTable.exitScope();
     }
     void visitPre(const BasicExpression* expr) 
     {
