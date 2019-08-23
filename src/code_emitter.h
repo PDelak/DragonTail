@@ -80,7 +80,6 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     if ((currentAllocationLevel - 1 - sym.scope) == 0) 
     {  
     	char ebpOffset = (sym.stack_position + 1) * variableSize; 
-    	auto symbolLevel = sym.scope;
     	// TODO: just for now stack for local variables will be only 256 bytes
     	constexpr unsigned int stackSize = 256;
     	return stackSize - ebpOffset;
