@@ -50,7 +50,7 @@ struct BasicSymbolTable
     symbol_table[symbol_table_id].push_back(symbol(id, type, position_on_stack, symbol_table_id));
   }
   
-  void dump()
+  void dump() const
   {
       for (const auto& bucket : symbol_table)
       {
@@ -59,6 +59,13 @@ struct BasicSymbolTable
               std::cout << bucket.first << " : " << "(" << symbol.id << "," << symbol.type << "," << static_cast<int>(symbol.stack_position) << ")" << std::endl;
           }
       }
+  }
+
+  size_t numberOfVariablesPerScope(int scope) const 
+  {
+      auto it = symbol_table.find(scope);
+      if (it == symbol_table.end()) throw 1;
+      return it->second.size();
   }
 
   bool exists(const std::string& id)
@@ -71,7 +78,7 @@ struct BasicSymbolTable
               it++;
           }
           --local_table_id;
-      } while (local_table_id > 0);
+      } while (local_table_id > -1);
       return false;
   }
 
@@ -85,7 +92,7 @@ struct BasicSymbolTable
         it++;
       }
       --local_table_id;
-    } while (local_table_id > 0);
+    } while (local_table_id > -1);
     std::stringstream ss;
     ss << lineno;
     throw SymbolNotFound(id, ss.str());
