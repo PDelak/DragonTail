@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <map>
+#include <set>
 #include "ast.h"
 #include "astvisitor.h"
 #include "jitcompiler.h"
@@ -28,7 +29,10 @@
 
 using AllocationMap = std::map<std::pair<size_t, size_t>, size_t>;
 
-struct AllocationPass : public NullVisitor
+using GotoLabelsFromIf = std::set<std::string>;
+using LabelToCodePosition = std::map<std::string, size_t>;
+
+struct PreAllocationPass : public NullVisitor
 {
     void visitPre(const BasicExpression* expr)
     {
@@ -61,7 +65,6 @@ private:
     AllocationMap allocs;
 };
 
-
 struct CodeEmitterException : public std::runtime_error
 {
     CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
@@ -85,17 +88,45 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     	return stackSize - ebpOffset;
     }
     // it requires to go up the stack 
-    // so [ebp + value] 
+    // so [ebp + value]
+    // TODO using symbolTable.numberOfVariablesPerScope is just wrong here 
+    // as this method returns relative value, not absolute one
+    // so if variable is declared later it will not be counted 
     char numberOfLevelsUp = (currentAllocationLevel - 1 - sym.scope) * variableSize;
-    char numberOfVariablesInBetween = (symbolTable.numberOfVariablesPerScope(sym.scope) - (sym.stack_position + 1)) * variableSize;
+    char numberOfVariablesInBetween = (4/*symbolTable.numberOfVariablesPerScope(sym.scope)*/ - (sym.stack_position + 1)) * variableSize;
+    std::cout << "symbol : " << sym.id << " scope: " << sym.scope << " : " << (int) symbolTable.numberOfVariablesPerScope(sym.scope) << " : " << sym.stack_position+1  << std::endl;
     char ebpOffset = numberOfLevelsUp + numberOfVariablesInBetween;
     return ebpOffset;
 }
 
+struct AllocationPass : public NullVisitor
+{
+    AllocationPass(BasicSymbolTable& symTable):symbolTable(symTable) {}
+
+    void visitPre(const BasicExpression* expr)
+    {
+        if (expr->value == "__alloc__")
+        {
+            variable_position_on_stack = 0;
+            symbolTable.enterScope();
+        }
+        if (expr->value == "__dealloc__")
+        {
+            symbolTable.exitScope();
+        }
+    }
+    void visitPost(const VarDecl* varDecl)
+    {
+        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);
+    }
+    BasicSymbolTable& symbolTable;
+    unsigned char variable_position_on_stack = 0;
+};
+
 struct Basicx86Emitter : public NullVisitor
 {
-    Basicx86Emitter(X86InstrVector& v, std::map<std::pair<size_t, size_t>, size_t> allocVector)
-        :i_vector(v), allocs(allocVector)
+    Basicx86Emitter(X86InstrVector& v, std::map<std::pair<size_t, size_t>, size_t> allocVector, BasicSymbolTable& symTable)
+        :i_vector(v), allocs(allocVector), symbolTable(symTable)
     {
         allocationLevelIndex[allocationLevel] = 0;
         symbolTable.insertSymbol("print", "function");
@@ -397,10 +428,16 @@ struct Basicx86Emitter : public NullVisitor
 
     }
 
+    void visitPre(const IfStatement* ifstatement)
+    {
+        auto gotoStatement = cast<GotoStatement>(ifstatement->statements[0]);
+        gotoLabelsFromIf.insert(gotoStatement->label);
+    }
+
     void visitPost(const IfStatement* ifstatement)
     {
         auto gotoStatement = cast<GotoStatement>(ifstatement->statements[0]);
-        auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
+    	auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
         
         auto sym = symbolTable.findSymbol(conditionVariable->value, 0);
 	size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
@@ -425,6 +462,11 @@ struct Basicx86Emitter : public NullVisitor
         jumpTable.insert(std::make_pair(gotoStatement->label, pos));        
     }
 
+    void visitPre(const LabelStatement* stmt)
+    {
+	    labelToCodePosition[stmt->label] = i_vector.size() ;
+    }
+
     void visitPost(const LabelStatement* stmt)
     {
         constexpr size_t addressSize = 4;
@@ -445,11 +487,35 @@ struct Basicx86Emitter : public NullVisitor
 
     }
 
+    void visitPost(const GotoStatement* stmt)
+    {
+	    if(gotoLabelsFromIf.find(stmt->label) == gotoLabelsFromIf.end())
+	    {
+		std::cout << "current offset:" << i_vector.size() << std::endl;
+	    	std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
+                X86InstrVector tmp_vector;
+
+		int offset = labelToCodePosition[stmt->label] - 2 - i_vector.size();
+		if (offset < 0)
+		{
+			// negative offset jmp e9
+			std::cout << "negative offset:" << offset << std::endl;
+			i_vector.push_back({std::byte(0xe9)});
+			i_vector.push_back(i_vector.int_to_bytes(offset));
+			std::cout << "temp vector : " << tmp_vector.size() << std::endl;
+		}
+		else
+		{
+
+		}
+	    }
+    }
+
     StatementList getStatements() const { return statements; }
 
 private:
     StatementList statements;
-    BasicSymbolTable symbolTable;
+    BasicSymbolTable& symbolTable;
     X86InstrVector& i_vector;
     size_t allocationLevel = 1;
     std::map<size_t, size_t> allocationLevelIndex;
@@ -461,6 +527,15 @@ private:
     // these pointers point to placeholders at first and are fixed
     // during label traversal
     std::multimap<std::string, size_t> jumpTable;
+
+    // this set contains labels that are connected to if statements
+    // we have to omit them during visiting gotos as
+    // code for them was already generated during
+    // visiting if statement
+    GotoLabelsFromIf gotoLabelsFromIf;
+
+    // each label points to specific position in code
+    LabelToCodePosition labelToCodePosition;
 
     void insertCmpVariable(unsigned int variablePosition)
     {
@@ -564,11 +639,14 @@ auto emitMachineCode(const StatementList& statements)
 {
     X86InstrVector i_vector;
     i_vector.push_function_prolog();
-    
-    AllocationPass allocPass;
-    traverse(statements, allocPass);
-    
-    Basicx86Emitter visitor(i_vector, allocPass.getAllocationVector());
+    BasicSymbolTable symbolTable;
+
+    PreAllocationPass preallocPass;
+    traverse(statements, preallocPass);
+    AllocationPass allocationPass(symbolTable);
+    traverse(statements, allocationPass);
+
+    Basicx86Emitter visitor(i_vector, preallocPass.getAllocationVector(), symbolTable);
 
     traverse(statements, visitor);
     
