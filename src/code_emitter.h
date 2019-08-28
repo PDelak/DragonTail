@@ -6,6 +6,8 @@
 #include <functional>
 #include <map>
 #include <set>
+#include <stack>
+#include <utility>
 #include "ast.h"
 #include "astvisitor.h"
 #include "jitcompiler.h"
@@ -55,7 +57,7 @@ struct PreAllocationPass : public NullVisitor
     {
         for (auto elem : allocs)
         {
-            std::cout << "(" << elem.first.first << "," << elem.first.second << ")" << "->" << elem.second << std::endl;
+            //std::cout << "(" << elem.first.first << "," << elem.first.second << ")" << "->" << elem.second << std::endl;
         }
     }
     std::map<std::pair<size_t, size_t>, size_t> getAllocationVector() const { return allocs; }
@@ -70,7 +72,7 @@ struct CodeEmitterException : public std::runtime_error
     CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
 };
 
-unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentAllocationLevel, const BasicSymbolTable& symbolTable)
+unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentAllocationLevel, const AllocationMap& allocs)
 {
     // TODO variable size is hardcoded for now and is always 4 bytes
     // this is only true for 32 bit 
@@ -93,35 +95,12 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     // as this method returns relative value, not absolute one
     // so if variable is declared later it will not be counted 
     char numberOfLevelsUp = (currentAllocationLevel - 1 - sym.scope) * variableSize;
-    char numberOfVariablesInBetween = (4/*symbolTable.numberOfVariablesPerScope(sym.scope)*/ - (sym.stack_position + 1)) * variableSize;
-    std::cout << "symbol : " << sym.id << " scope: " << sym.scope << " : " << (int) symbolTable.numberOfVariablesPerScope(sym.scope) << " : " << sym.stack_position+1  << std::endl;
+    auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
+    auto numOfVariablesOnLevel = alloc_it->second;
+    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position + 1)) * variableSize;
     char ebpOffset = numberOfLevelsUp + numberOfVariablesInBetween;
     return ebpOffset;
 }
-
-struct AllocationPass : public NullVisitor
-{
-    AllocationPass(BasicSymbolTable& symTable):symbolTable(symTable) {}
-
-    void visitPre(const BasicExpression* expr)
-    {
-        if (expr->value == "__alloc__")
-        {
-            variable_position_on_stack = 0;
-            symbolTable.enterScope();
-        }
-        if (expr->value == "__dealloc__")
-        {
-            symbolTable.exitScope();
-        }
-    }
-    void visitPost(const VarDecl* varDecl)
-    {
-        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);
-    }
-    BasicSymbolTable& symbolTable;
-    unsigned char variable_position_on_stack = 0;
-};
 
 struct Basicx86Emitter : public NullVisitor
 {
@@ -153,6 +132,7 @@ struct Basicx86Emitter : public NullVisitor
             for (size_t i = 0; i < numOfVariables; ++i) {
                 i_vector.push_back({ std::byte(0x83), std::byte(0xEC), std::byte(0x04) }); // sub esp, 4 (alloc)
             }
+	    scopeId.push(std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel]));
             ++allocationLevel;
 
         }
@@ -166,6 +146,7 @@ struct Basicx86Emitter : public NullVisitor
             }
             --allocationLevel;
             allocationLevelIndex[allocationLevel]++;
+	    scopeId.pop();
             // pop ebp
             i_vector.push_back({std::byte(0x5D)});
             symbolTable.exitScope();
@@ -178,7 +159,9 @@ struct Basicx86Emitter : public NullVisitor
         {
             throw CodeEmitterException("variable already defined : " + varDecl->var_name);
         }
-        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++);            
+	auto scope = scopeId.top();
+	//std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << std::endl;
+        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++, scope.first, scope.second);            
     }
     void visitPost(const Expression* expr) 
     {
@@ -197,8 +180,7 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(rhs->value[0])) 
                     {
                         auto sym = symbolTable.findSymbol(rhs->value, 0);
-			size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
                         // mov eax, [ebp - ebpOffset]
                         i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});                       
                     } 
@@ -210,8 +192,7 @@ struct Basicx86Emitter : public NullVisitor
                         i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
                         i_vector.push_back(i_vector.int_to_bytes(rhsValue));
                     }
-		    size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-		    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, symbolTable);
+		    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
@@ -227,14 +208,14 @@ struct Basicx86Emitter : public NullVisitor
                 if (unaryOp->value == "!")
                 {
                     auto sym = symbolTable.findSymbol(rhs->value, 0);
-		    size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
                     // mov eax, [ebp - ebpOffset]
                     i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
                     // compare rhsValue with 0
                     comparisonOperatorValue(0, insertJG);
                     // TODO: this is only true for 32 bit 
-                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, symbolTable);
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
 
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition) });
@@ -256,8 +237,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(firstParam->value[0]))
                     {
                         auto sym = symbolTable.findSymbol(firstParam->value, 0);
-			size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
                         // mov eax, [ebp - ebpOffset]
                         i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
                     }
@@ -271,8 +252,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(secondParam->value[0]))
                     {
                         auto sym = symbolTable.findSymbol(secondParam->value, 0);
-			size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+
+			unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
                         
                         if (binOp->value == "+") 
                         {
@@ -386,8 +367,8 @@ struct Basicx86Emitter : public NullVisitor
                             comparisonOperatorValue(rhsValue, insertJNLE);
                         }
                     }
-		    size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, symbolTable);
+
+                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
@@ -409,8 +390,8 @@ struct Basicx86Emitter : public NullVisitor
                 // and copy value that is indexed by this index
                 // FF 75 FC           push        dword ptr [ebp-4]
                 auto sym = symbolTable.findSymbol(param, 0);
-		size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-                unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+
+		unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
                 i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(variablePosition) });
             }
         }
@@ -440,8 +421,8 @@ struct Basicx86Emitter : public NullVisitor
     	auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
         
         auto sym = symbolTable.findSymbol(conditionVariable->value, 0);
-	size_t numOfVariables = allocs[std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel])];
-        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, symbolTable);
+
+        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
         // pushf
         // i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
@@ -491,18 +472,18 @@ struct Basicx86Emitter : public NullVisitor
     {
 	    if(gotoLabelsFromIf.find(stmt->label) == gotoLabelsFromIf.end())
 	    {
-		std::cout << "current offset:" << i_vector.size() << std::endl;
-	    	std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
+		//std::cout << "current offset:" << i_vector.size() << std::endl;
+	    	//std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
                 X86InstrVector tmp_vector;
 
 		int offset = labelToCodePosition[stmt->label] - 2 - i_vector.size();
 		if (offset < 0)
 		{
 			// negative offset jmp e9
-			std::cout << "negative offset:" << offset << std::endl;
+			//std::cout << "negative offset:" << offset << std::endl;
 			i_vector.push_back({std::byte(0xe9)});
 			i_vector.push_back(i_vector.int_to_bytes(offset));
-			std::cout << "temp vector : " << tmp_vector.size() << std::endl;
+			//std::cout << "temp vector : " << tmp_vector.size() << std::endl;
 		}
 		else
 		{
@@ -536,6 +517,8 @@ private:
 
     // each label points to specific position in code
     LabelToCodePosition labelToCodePosition;
+
+    std::stack<std::pair<size_t, size_t>> scopeId;
 
     void insertCmpVariable(unsigned int variablePosition)
     {
@@ -643,8 +626,6 @@ auto emitMachineCode(const StatementList& statements)
 
     PreAllocationPass preallocPass;
     traverse(statements, preallocPass);
-    AllocationPass allocationPass(symbolTable);
-    traverse(statements, allocationPass);
 
     Basicx86Emitter visitor(i_vector, preallocPass.getAllocationVector(), symbolTable);
 

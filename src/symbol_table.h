@@ -11,7 +11,9 @@ struct symbol
     std::string id;
     std::string type;
     unsigned char stack_position;
-    size_t scope;
+    size_t scope = 0;
+    size_t allocation_level = 0;
+    size_t level_index = 0;
 };
 
 typedef std::list<symbol> symbol_list;
@@ -45,9 +47,12 @@ struct BasicSymbolTable
     --symbol_table_id;
   }
   
-  void insertSymbol(const std::string& id, const std::string& type, unsigned char position_on_stack = -1)
+  void insertSymbol(const std::string& id, const std::string& type, unsigned char position_on_stack = -1, size_t level = 0, size_t index = 0)
   {
-    symbol_table[symbol_table_id].push_back(symbol(id, type, position_on_stack, symbol_table_id));
+    auto new_symbol = symbol(id, type, position_on_stack, symbol_table_id);
+    new_symbol.allocation_level = level;
+    new_symbol.level_index = index;
+    symbol_table[symbol_table_id].push_back(new_symbol);
   }
   
   void dump() const
