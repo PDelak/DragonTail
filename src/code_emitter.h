@@ -89,12 +89,8 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     	constexpr unsigned int stackSize = 256;
     	return stackSize - ebpOffset;
     }
-    // TODO currentAllocationLevel is on stack
     // it requires to go up the stack 
     // so [ebp + value]
-    // TODO using symbolTable.numberOfVariablesPerScope is just wrong here 
-    // as this method returns relative value, not absolute one
-    // so if variable is declared later it will not be counted 
     char numberOfLevelsUp = (currentAllocationLevel - sym.scope) * variableSize;
     auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
     auto numOfVariablesOnLevel = alloc_it->second;
@@ -122,13 +118,11 @@ struct Basicx86Emitter : public NullVisitor
     {
         if (expr->value == "__alloc__")
         {
-            variable_position_on_stack = 0;
             symbolTable.enterScope();
             // emitting function prolog
             // push ebp
             // mov ebp, esp
             // is used to simplify relative access to variables
-            // TODO access to variables in outer scope still requires some work
             // to calculate right offset
             i_vector.push_function_prolog();
 
@@ -523,8 +517,6 @@ private:
     std::map<size_t, size_t> allocationLevelIndex;
     std::map<std::pair<size_t, size_t>, size_t> allocs;
 
-    unsigned char variable_position_on_stack = 0;
-    
     // jumpTable contains a label as key and list of jmp instruction pointers
     // these pointers point to placeholders at first and are fixed
     // during label traversal
