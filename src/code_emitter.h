@@ -81,24 +81,29 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     // each layer/scope adds additional 4 bytes due to fact of emitting
     // new function prolog eg push ebp; mov ebp, esp;
     char variableSize = 4;
-    // if in the same scope 
-    if ((currentAllocationLevel - 1 - sym.scope) == 0) 
+    // if in the same scope
+    if ((currentAllocationLevel - sym.scope) == 0) 
     {  
-    	char ebpOffset = (sym.stack_position + 1) * variableSize; 
+    	char ebpOffset = (sym.stack_position) * variableSize; 
     	// TODO: just for now stack for local variables will be only 256 bytes
     	constexpr unsigned int stackSize = 256;
     	return stackSize - ebpOffset;
     }
+    // TODO currentAllocationLevel is on stack
     // it requires to go up the stack 
     // so [ebp + value]
     // TODO using symbolTable.numberOfVariablesPerScope is just wrong here 
     // as this method returns relative value, not absolute one
     // so if variable is declared later it will not be counted 
-    char numberOfLevelsUp = (currentAllocationLevel - 1 - sym.scope) * variableSize;
+    char numberOfLevelsUp = (currentAllocationLevel - sym.scope) * variableSize;
     auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
     auto numOfVariablesOnLevel = alloc_it->second;
-    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position + 1)) * variableSize;
-    char ebpOffset = numberOfLevelsUp + numberOfVariablesInBetween;
+    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position)) * variableSize;
+    char ebpOffset = numberOfLevelsUp + (numberOfVariablesInBetween);
+    // std::cout << "sym:" << sym.id << " level:" << currentAllocationLevel 
+    // 	      << " scope: " << sym.scope << " stack_position: " << (int)sym.stack_position 
+    //	      << " between:" << (int)numberOfVariablesInBetween << " epbOffset:" << (int)ebpOffset << std::endl;
+
     return ebpOffset;
 }
 
@@ -160,8 +165,10 @@ struct Basicx86Emitter : public NullVisitor
             throw CodeEmitterException("variable already defined : " + varDecl->var_name);
         }
 	auto scope = scopeId.top();
-	//std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << std::endl;
-        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack++, scope.first, scope.second);            
+	// std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << " stack position:" << (int)variable_position_on_stack_map[scope] << std::endl;
+	
+        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack_map[scope], scope.first, scope.second);            
+	variable_position_on_stack_map[scope]++;
     }
     void visitPost(const Expression* expr) 
     {
@@ -180,7 +187,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(rhs->value[0])) 
                     {
                         auto sym = symbolTable.findSymbol(rhs->value, 0);
-                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+			auto currentAllocationLevel = scopeId.top().first;
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                         // mov eax, [ebp - ebpOffset]
                         i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});                       
                     } 
@@ -192,7 +200,9 @@ struct Basicx86Emitter : public NullVisitor
                         i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
                         i_vector.push_back(i_vector.int_to_bytes(rhsValue));
                     }
-		    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
+		    auto currentAllocationLevel = scopeId.top().first;
+		    //std::cout << "sym : " << lhsSymbol.id << " level:" << currentAllocationLevel << " scope:" << lhsSymbol.scope << std::endl;
+		    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
@@ -208,14 +218,14 @@ struct Basicx86Emitter : public NullVisitor
                 if (unaryOp->value == "!")
                 {
                     auto sym = symbolTable.findSymbol(rhs->value, 0);
-
-                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+                    auto currentAllocationLevel = scopeId.top().first;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                     // mov eax, [ebp - ebpOffset]
                     i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
                     // compare rhsValue with 0
                     comparisonOperatorValue(0, insertJG);
                     // TODO: this is only true for 32 bit 
-                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
 
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition) });
@@ -237,8 +247,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(firstParam->value[0]))
                     {
                         auto sym = symbolTable.findSymbol(firstParam->value, 0);
-
-                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+                        auto currentAllocationLevel = scopeId.top().first;
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                         // mov eax, [ebp - ebpOffset]
                         i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
                     }
@@ -252,8 +262,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(secondParam->value[0]))
                     {
                         auto sym = symbolTable.findSymbol(secondParam->value, 0);
-
-			unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+                        auto currentAllocationLevel = scopeId.top().first;
+			unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                         
                         if (binOp->value == "+") 
                         {
@@ -367,8 +377,8 @@ struct Basicx86Emitter : public NullVisitor
                             comparisonOperatorValue(rhsValue, insertJNLE);
                         }
                     }
-
-                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, allocationLevel, allocs);
+                    auto currentAllocationLevel = scopeId.top().first;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
@@ -390,8 +400,9 @@ struct Basicx86Emitter : public NullVisitor
                 // and copy value that is indexed by this index
                 // FF 75 FC           push        dword ptr [ebp-4]
                 auto sym = symbolTable.findSymbol(param, 0);
+		auto currentAllocationLevel = scopeId.top().first;
 
-		unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+		unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                 i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(variablePosition) });
             }
         }
@@ -421,8 +432,8 @@ struct Basicx86Emitter : public NullVisitor
     	auto conditionVariable = cast<BasicExpression>(ifstatement->condition.getChilds()[1]);
         
         auto sym = symbolTable.findSymbol(conditionVariable->value, 0);
-
-        unsigned int variablePosition = calculateVariablePositionOnStack(sym, allocationLevel, allocs);
+        auto currentAllocationLevel = scopeId.top().first;
+        unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
         // pushf
         // i_vector.push_back({ std::byte(0x66), std::byte(0x9C) });
 
@@ -519,6 +530,9 @@ private:
     LabelToCodePosition labelToCodePosition;
 
     std::stack<std::pair<size_t, size_t>> scopeId;
+
+    // key is a pair that uniquely identifying scope
+    std::map<std::pair<size_t, size_t>, size_t> variable_position_on_stack_map;
 
     void insertCmpVariable(unsigned int variablePosition)
     {
