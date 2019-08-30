@@ -494,16 +494,17 @@ struct Basicx86Emitter : public NullVisitor
 	        //std::cout << "current offset:" << i_vector.size() << std::endl;
 	        //std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
 	        X86InstrVector tmp_vector;
-
-	        int offset = labelToCodePosition[stmt->label] - 2 - i_vector.size();
+		// jump is coded by e9 and four bytes for offset
+                constexpr auto sizeofJump = 5;
+	        int offset = labelToCodePosition[stmt->label] - sizeofJump - i_vector.size();
 
 	        if (offset < 0)
 	        {
 	            // negative offset jmp e9
-              //std::cout << "negative offset:" << offset << std::endl;
-              i_vector.push_back({std::byte(0xe9)});
-              i_vector.push_back(i_vector.int_to_bytes(offset));
-              //std::cout << "temp vector : " << tmp_vector.size() << std::endl;
+	            // std::cout << "negative offset:" << offset << std::endl;
+	            i_vector.push_back({std::byte(0xe9)});
+	            i_vector.push_back(i_vector.int_to_bytes(offset));
+	            //std::cout << "temp vector : " << tmp_vector.size() << std::endl;
 	        }
 	        else
 	        {
