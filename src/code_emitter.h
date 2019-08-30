@@ -137,7 +137,7 @@ struct Basicx86Emitter : public NullVisitor
             for (size_t i = 0; i < numOfVariables; ++i) {
                 i_vector.push_back({ std::byte(0x83), std::byte(0xEC), std::byte(0x04) }); // sub esp, 4 (alloc)
             }
-	    scopeId.push(std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel]));
+            scopeId.push(std::make_pair(allocationLevel, allocationLevelIndex[allocationLevel]));
             ++allocationLevel;
 
         }
@@ -151,7 +151,8 @@ struct Basicx86Emitter : public NullVisitor
             }
             --allocationLevel;
             allocationLevelIndex[allocationLevel]++;
-	    scopeId.pop();
+
+            scopeId.pop();
             // pop ebp
             i_vector.push_back({std::byte(0x5D)});
             symbolTable.exitScope();
@@ -164,11 +165,13 @@ struct Basicx86Emitter : public NullVisitor
         {
             throw CodeEmitterException("variable already defined : " + varDecl->var_name);
         }
-	auto scope = scopeId.top();
-	// std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << " stack position:" << (int)variable_position_on_stack_map[scope] << std::endl;
+
+        auto scope = scopeId.top();
+        // std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << " stack position:" << (int)variable_position_on_stack_map[scope] << std::endl;
 	
         symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack_map[scope], scope.first, scope.second);            
-	variable_position_on_stack_map[scope]++;
+
+        variable_position_on_stack_map[scope]++;
     }
     void visitPost(const Expression* expr) 
     {
@@ -187,7 +190,8 @@ struct Basicx86Emitter : public NullVisitor
                     if (std::isalpha(rhs->value[0])) 
                     {
                         auto sym = symbolTable.findSymbol(rhs->value, 0);
-			auto currentAllocationLevel = scopeId.top().first;
+
+                        auto currentAllocationLevel = scopeId.top().first;
                         unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                         // mov eax, [ebp - ebpOffset]
                         i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});                       
@@ -200,9 +204,11 @@ struct Basicx86Emitter : public NullVisitor
                         i_vector.push_back({ std::byte(0xB8) }); // mov eax, rhsValue
                         i_vector.push_back(i_vector.int_to_bytes(rhsValue));
                     }
-		    auto currentAllocationLevel = scopeId.top().first;
-		    //std::cout << "sym : " << lhsSymbol.id << " level:" << currentAllocationLevel << " scope:" << lhsSymbol.scope << std::endl;
-		    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
+
+                    auto currentAllocationLevel = scopeId.top().first;
+
+                    //std::cout << "sym : " << lhsSymbol.id << " level:" << currentAllocationLevel << " scope:" << lhsSymbol.scope << std::endl;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
@@ -263,7 +269,8 @@ struct Basicx86Emitter : public NullVisitor
                     {
                         auto sym = symbolTable.findSymbol(secondParam->value, 0);
                         auto currentAllocationLevel = scopeId.top().first;
-			unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
+
+                        unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                         
                         if (binOp->value == "+") 
                         {
@@ -400,9 +407,9 @@ struct Basicx86Emitter : public NullVisitor
                 // and copy value that is indexed by this index
                 // FF 75 FC           push        dword ptr [ebp-4]
                 auto sym = symbolTable.findSymbol(param, 0);
-		auto currentAllocationLevel = scopeId.top().first;
+                auto currentAllocationLevel = scopeId.top().first;
 
-		unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
+                unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                 i_vector.push_back({ std::byte(0xFF), std::byte(0x75), std::byte(variablePosition) });
             }
         }
@@ -483,23 +490,25 @@ struct Basicx86Emitter : public NullVisitor
     {
 	    if(gotoLabelsFromIf.find(stmt->label) == gotoLabelsFromIf.end())
 	    {
-		//std::cout << "current offset:" << i_vector.size() << std::endl;
-	    	//std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
-                X86InstrVector tmp_vector;
 
-		int offset = labelToCodePosition[stmt->label] - 2 - i_vector.size();
-		if (offset < 0)
-		{
-			// negative offset jmp e9
-			//std::cout << "negative offset:" << offset << std::endl;
-			i_vector.push_back({std::byte(0xe9)});
-			i_vector.push_back(i_vector.int_to_bytes(offset));
-			//std::cout << "temp vector : " << tmp_vector.size() << std::endl;
-		}
-		else
-		{
+	        //std::cout << "current offset:" << i_vector.size() << std::endl;
+	        //std::cout << "goto label:" << stmt->label << " << " << labelToCodePosition[stmt->label] << std::endl;
+	        X86InstrVector tmp_vector;
 
-		}
+	        int offset = labelToCodePosition[stmt->label] - 2 - i_vector.size();
+
+	        if (offset < 0)
+	        {
+	            // negative offset jmp e9
+              //std::cout << "negative offset:" << offset << std::endl;
+              i_vector.push_back({std::byte(0xe9)});
+              i_vector.push_back(i_vector.int_to_bytes(offset));
+              //std::cout << "temp vector : " << tmp_vector.size() << std::endl;
+	        }
+	        else
+	        {
+
+	        }
 	    }
     }
 
