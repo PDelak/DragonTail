@@ -83,18 +83,19 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
     char variableSize = 4;
     // if in the same scope
     if ((currentAllocationLevel - sym.scope) == 0) 
-    {  
-    	char ebpOffset = (sym.stack_position) * variableSize; 
+    {
+	char ebpOffset = (sym.stack_position + 1) * variableSize;
     	// TODO: just for now stack for local variables will be only 256 bytes
     	constexpr unsigned int stackSize = 256;
     	return stackSize - ebpOffset;
     }
+    // if variable is defined in outer scope
     // it requires to go up the stack 
     // so [ebp + value]
     char numberOfLevelsUp = (currentAllocationLevel - sym.scope) * variableSize;
     auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
     auto numOfVariablesOnLevel = alloc_it->second;
-    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position)) * variableSize;
+    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position + 1)) * variableSize;
     char ebpOffset = numberOfLevelsUp + (numberOfVariablesInBetween);
     // std::cout << "sym:" << sym.id << " level:" << currentAllocationLevel 
     // 	      << " scope: " << sym.scope << " stack_position: " << (int)sym.stack_position 
