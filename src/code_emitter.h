@@ -34,6 +34,9 @@ using AllocationMap = std::map<std::pair<size_t, size_t>, size_t>;
 using GotoLabelsFromIf = std::set<std::string>;
 using LabelToCodePosition = std::map<std::string, size_t>;
 
+// TODO: just for now stack for local variables will be only 256 bytes
+constexpr unsigned int stackSize = 256;
+
 struct PreAllocationPass : public NullVisitor
 {
     void visitPre(const BasicExpression* expr)
@@ -72,36 +75,44 @@ struct CodeEmitterException : public std::runtime_error
     CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
 };
 
+unsigned int calculateVariableOffset(const symbol& sym, size_t currentAllocationLevel, const AllocationMap& allocs)
+{
+  // TODO variable size is hardcoded for now and is always 4 bytes
+  // this is only true for 32 bit
+  // calculation variable position is frame layout dependent
+  // currently each variable is allocated at the beginning of stack frame
+  // each layer/scope adds additional 4 bytes due to fact of emitting
+  // new function prolog eg push ebp; mov ebp, esp;
+  char variableSize = 4;
+  // if in the same scope
+  if ((currentAllocationLevel - sym.scope) == 0)
+  {
+    char ebpOffset = (sym.stack_position + 1) * variableSize;
+    return ebpOffset;
+  }
+  // if variable is defined in outer scope
+  // it requires to go up the stack
+  // so [ebp + value]
+  char numberOfLevelsUp = (currentAllocationLevel - sym.scope) * variableSize;
+  auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
+  auto numOfVariablesOnLevel = alloc_it->second;
+  char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position + 1)) * variableSize;
+  char ebpOffset = numberOfLevelsUp + (numberOfVariablesInBetween);
+  // std::cout << "sym:" << sym.id << " level:" << currentAllocationLevel
+  // 	      << " scope: " << sym.scope << " stack_position: " << (int)sym.stack_position
+  //	      << " between:" << (int)numberOfVariablesInBetween << " epbOffset:" << (int)ebpOffset << std::endl;
+
+  return ebpOffset;
+}
+
+
 unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentAllocationLevel, const AllocationMap& allocs)
 {
-    // TODO variable size is hardcoded for now and is always 4 bytes
-    // this is only true for 32 bit 
-    // calculation variable position is frame layout dependent 
-    // currently each variable is allocated at the beginning of stack frame
-    // each layer/scope adds additional 4 bytes due to fact of emitting
-    // new function prolog eg push ebp; mov ebp, esp;
-    char variableSize = 4;
-    // if in the same scope
-    if ((currentAllocationLevel - sym.scope) == 0) 
+    if ((currentAllocationLevel - sym.scope) == 0)
     {
-	char ebpOffset = (sym.stack_position + 1) * variableSize;
-    	// TODO: just for now stack for local variables will be only 256 bytes
-    	constexpr unsigned int stackSize = 256;
-    	return stackSize - ebpOffset;
+      return stackSize - calculateVariableOffset(sym, currentAllocationLevel, allocs);
     }
-    // if variable is defined in outer scope
-    // it requires to go up the stack 
-    // so [ebp + value]
-    char numberOfLevelsUp = (currentAllocationLevel - sym.scope) * variableSize;
-    auto alloc_it = allocs.find(std::make_pair(sym.allocation_level, sym.level_index));
-    auto numOfVariablesOnLevel = alloc_it->second;
-    char numberOfVariablesInBetween = (numOfVariablesOnLevel - (sym.stack_position + 1)) * variableSize;
-    char ebpOffset = numberOfLevelsUp + (numberOfVariablesInBetween);
-    // std::cout << "sym:" << sym.id << " level:" << currentAllocationLevel 
-    // 	      << " scope: " << sym.scope << " stack_position: " << (int)sym.stack_position 
-    //	      << " between:" << (int)numberOfVariablesInBetween << " epbOffset:" << (int)ebpOffset << std::endl;
-
-    return ebpOffset;
+    return calculateVariableOffset(sym, currentAllocationLevel, allocs);
 }
 
 struct Basicx86Emitter : public NullVisitor
@@ -229,7 +240,8 @@ struct Basicx86Emitter : public NullVisitor
                   if (op->value != "=") throw CodeEmitterException("Expression should have form of a = op b");
                   auto unaryOp = cast<BasicExpression>(children[2]);
                   auto rhs = cast<BasicExpression>(children[3]);
-                  if (unaryOp->value == "!") {
+                  if (unaryOp->value == "!")
+                  {
                     auto sym = symbolTable.findSymbol(rhs->value, 0);
                     auto currentAllocationLevel = scopeId.top().first;
                     unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel,
@@ -247,7 +259,7 @@ struct Basicx86Emitter : public NullVisitor
                   }
                   if (unaryOp->value == "&")
                   {
-
+                    i_vector.push_back({std::byte(0x89), std::byte(0xe8)});
                   }
                   if (unaryOp->value == "*")
                   {
