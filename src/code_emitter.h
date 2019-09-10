@@ -210,28 +210,51 @@ struct Basicx86Emitter : public NullVisitor
                 break;
             }
             case 4: {
+                // just for now
+                // support only 3 pointer operations
+                // var a;
+                // var p;
+                // p = &a; (get address of)
+                // *p = 1; (assignment to dereferenced pointer)
+                // a = *p; (pointer dereference and assignment)
                 auto lhs = cast<BasicExpression>(children[0]);
-                auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
-                auto op = cast<BasicExpression>(children[1]);
-                if (op->value != "=") throw CodeEmitterException("Expression should have form of a = op b");
-                auto unaryOp = cast<BasicExpression>(children[2]);
-                auto rhs = cast<BasicExpression>(children[3]);
-                if (unaryOp->value == "!")
+                if (lhs->value == "*")
                 {
+
+                }
+                else
+                {
+                  auto lhsSymbol = symbolTable.findSymbol(lhs->value, 0);
+                  auto op = cast<BasicExpression>(children[1]);
+                  if (op->value != "=") throw CodeEmitterException("Expression should have form of a = op b");
+                  auto unaryOp = cast<BasicExpression>(children[2]);
+                  auto rhs = cast<BasicExpression>(children[3]);
+                  if (unaryOp->value == "!") {
                     auto sym = symbolTable.findSymbol(rhs->value, 0);
                     auto currentAllocationLevel = scopeId.top().first;
-                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel,
+                                                                                     allocs);
                     // mov eax, [ebp - ebpOffset]
-                    i_vector.push_back({ std::byte(0x8B), std::byte(0x45), std::byte(variablePosition) });
+                    i_vector.push_back({std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});
                     // compare rhsValue with 0
                     comparisonOperatorValue(0, insertJG);
                     // TODO: this is only true for 32 bit 
-                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol,
+                                                                                        currentAllocationLevel, allocs);
 
                     // mov [ebp - ebpOffset], eax
-                    i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition) });
+                    i_vector.push_back({std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition)});
+                  }
+                  if (unaryOp->value == "&")
+                  {
+
+                  }
+                  if (unaryOp->value == "*")
+                  {
+
+                  }
                 }
-                break;
+              break;
             }
             case 5: {
                 auto op = cast<BasicExpression>(children[1]);
