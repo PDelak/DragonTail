@@ -3,8 +3,8 @@
 DragonTail is an ambitious project to create low level language with implementation 
 of most important state of the art optimizations.
 
-Work is divided into few sections:
-* `supporting all primitives (loops and pointer handling is sill ongoing work)`
+Ongoing work:
+* `supporting all primitives (pointer handling is sill ongoing work)`
 * `support for functions`
 * `support for compound types (structs)`
 * `x86 code generation`
