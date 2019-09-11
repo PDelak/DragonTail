@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 {    
 
     if (argc < 3) {
-        std::cerr << "syntax: compiler.exe filename [ast|run|transform|emitx86]" << std::endl;        
+        std::cerr << "syntax: compiler.exe filename [ast|run|transform|emitx86|emitbin]" << std::endl;
         return -1;
     }
 
@@ -61,6 +61,11 @@ int main(int argc, char* argv[])
             JitCompiler jit(x86_text);
             auto x86function = jit.compile();
             x86function();
+        }
+        else if(command == "emitbin") {
+            auto x86_text = emitMachineCode(visitor.getStatements());
+            std::ofstream ofile("x86.bin", std::ios::binary);
+            ofile.write((char*)&x86_text.instruction_vector()[0], x86_text.instruction_vector().size());
         }
     }
     catch (const std::runtime_error& err) {
