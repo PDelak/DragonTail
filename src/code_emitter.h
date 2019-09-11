@@ -260,10 +260,42 @@ struct Basicx86Emitter : public NullVisitor
                   if (unaryOp->value == "&")
                   {
                     i_vector.push_back({std::byte(0x89), std::byte(0xe8)});
+                    auto sym = symbolTable.findSymbol(rhs->value, 0);
+                    auto currentAllocationLevel = scopeId.top().first;
+
+                    unsigned int offset = calculateVariableOffset(sym, currentAllocationLevel, allocs);
+                    // go down the stack, variable in current scope
+                    if ((currentAllocationLevel - sym.scope) == 0)
+                    {
+                      // sub eax, offset
+                      i_vector.push_back({ std::byte(0x83), std::byte(0xe8), std::byte(offset) });
+
+                    }
+                    // go up the stack, variable in outer scope
+                    else
+                    {
+                        // add eax, offset
+                      i_vector.push_back({ std::byte(0x83), std::byte(0xc0), std::byte(offset) });
+                    }
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol,
+                                                                                        currentAllocationLevel, allocs);
+                    // mov [ebp - ebpOffset], eax
+                    i_vector.push_back({std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition)});
                   }
                   if (unaryOp->value == "*")
                   {
-
+                    auto sym = symbolTable.findSymbol(rhs->value, 0);
+                    auto currentAllocationLevel = scopeId.top().first;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel,
+                                                                                     allocs);
+                    // mov eax, [ebp - ebpOffset]
+                    i_vector.push_back({std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});
+                    // mov eax, [eax]
+                    i_vector.push_back({std::byte(0x8B), std::byte(0x00)});
+                    unsigned int lhsVariablePosition = calculateVariablePositionOnStack(lhsSymbol,
+                                                                                        currentAllocationLevel, allocs);
+                    // mov [ebp - ebpOffset], eax
+                    i_vector.push_back({std::byte(0x89), std::byte(0x45), std::byte(lhsVariablePosition)});
                   }
                 }
               break;
