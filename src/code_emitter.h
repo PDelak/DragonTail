@@ -231,7 +231,36 @@ struct Basicx86Emitter : public NullVisitor
                 auto lhs = cast<BasicExpression>(children[0]);
                 if (lhs->value == "*")
                 {
+                  auto lhsVariable =  cast<BasicExpression>(children[1]);
+                  auto op =  cast<BasicExpression>(children[2]);
+                  if(op->value != "=")
+                  {
+                    throw CodeEmitterException("only = is supported for pointers");
+                  }
+                  auto rhsVariable =  cast<BasicExpression>(children[3]);
+                  auto sym = symbolTable.findSymbol(lhsVariable->value, 0);
+                  auto currentAllocationLevel = scopeId.top().first;
+                  unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
+                  // mov eax, [ebp - ebpOffset]
+                  i_vector.push_back({std::byte(0x8B), std::byte(0x45), std::byte(variablePosition)});
+                  if (!std::isalpha(rhsVariable->value[0]))
+                  {
+                    int value = std::stoi(rhsVariable->value);
+                    // mov [eax], value
+                    i_vector.push_back({std::byte(0xC7), std::byte(0x00)});
+                    i_vector.push_back(i_vector.int_to_bytes(value));
+                  }
+                  else {
+                    auto sym = symbolTable.findSymbol(rhsVariable->value, 0);
 
+                    auto currentAllocationLevel = scopeId.top().first;
+                    unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
+                    // mov ebx, [ebp - ebpOffset]
+                    i_vector.push_back({ std::byte(0x8B), std::byte(0x5D), std::byte(variablePosition)});
+
+                    // mov [eax], ebx
+                    i_vector.push_back({std::byte(0x89), std::byte(0x18)});
+                  }
                 }
                 else
                 {
