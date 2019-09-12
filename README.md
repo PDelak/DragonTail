@@ -9,12 +9,12 @@ Supported features:
 * `logic operators`
 * `loops`
 * `branching`
-* `partial pointer support`
+* `pointer support`
 
 Ongoing work:
-* `supporting all primitives (pointer handling is sill ongoing work)`
 * `support for functions`
-* `support for compound types (structs)`
+* `support for primitive types`
+* `support for compound heterogeneous types (structs)`
 * `x86 code generation`
 * `x86-64 code generation`
 * `linear register allocation` 
