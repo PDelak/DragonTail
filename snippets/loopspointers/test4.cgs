@@ -1,0 +1,25 @@
+    var c;
+    c = 1;
+    var b;
+    b = 2;
+    var dd;
+    dd = 4;
+    if (c < 5) 
+    {
+      var x;
+      var y;
+      x = 5;
+      y = 6;
+      if (x == 5)
+      {
+        print(y);
+        c = c+1;
+        print(c);
+      }
+    }
+  
+    while(b < 10)
+    {
+      print(b);
+      b = b + 1;      
+    }

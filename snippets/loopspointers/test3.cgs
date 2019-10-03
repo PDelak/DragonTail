@@ -1,0 +1,18 @@
+var x;
+if (x)
+{
+	var a;
+	{
+		var b;
+		{
+			var c;
+                        c = 1;
+                        if (c)
+                        { 
+			  var d;
+                          d = 2;
+                        }
+			var e;
+		}
+	}
+}

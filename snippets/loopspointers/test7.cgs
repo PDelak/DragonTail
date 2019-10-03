@@ -1,0 +1,27 @@
+var z;
+z = 1;
+var x;
+x = 33;
+while(z < 10)
+{
+  var c;
+  z=z+1;
+  print(z);
+  c=2;
+  print(c);
+  var p; 
+  p = &x;
+  var v;
+  v = *p;
+  print(v);
+}
+
+var a;
+a = 15;
+while(a < 20)
+{
+  var b; 
+  print(a);
+  a=a+1;
+  b = 222;
+}

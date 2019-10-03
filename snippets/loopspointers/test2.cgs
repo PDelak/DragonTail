@@ -1,0 +1,9 @@
+var a;
+var b;
+b = 929;
+var p;
+a = 1;
+p = &a;
+print(p);
+*p = b;
+print(a);

@@ -1,0 +1,14 @@
+var x;
+x = 88;
+var a;
+a = 23;
+var d;
+d = 99;
+var b;
+b = &a;
+var c;
+c = *b;
+print(c);
+b = b+4;
+c = *b;
+print(c);
