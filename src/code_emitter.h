@@ -514,7 +514,11 @@ struct Basicx86Emitter : public NullVisitor
             i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
         }
         i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
-        i_vector.push_back({ std::byte(0x83), std::byte(0xC4), std::byte(0x04) }); // add esp, 4 (clean stack)
+
+        for (const auto& param : fcall->parameters)
+        {
+            i_vector.push_back({std::byte(0x83), std::byte(0xC4), std::byte(0x04)}); // add esp, 4 (clean stack)
+        }
 
     }
 
