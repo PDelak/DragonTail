@@ -117,8 +117,8 @@ unsigned int calculateVariablePositionOnStack(const symbol& sym, size_t currentA
 
 struct Basicx86Emitter : public NullVisitor
 {
-    Basicx86Emitter(X86InstrVector& v, std::map<std::pair<size_t, size_t>, size_t> allocVector, BasicSymbolTable& symTable)
-        :i_vector(v), allocs(allocVector), symbolTable(symTable)
+    Basicx86Emitter(X86InstrVector& v, std::map<std::pair<size_t, size_t>, size_t> allocVector, BasicSymbolTable& symTable, const std::map<std::string, void*>& fMap)
+        :i_vector(v), allocs(allocVector), symbolTable(symTable), functionMap(fMap)
     {
         allocationLevelIndex[allocationLevel] = 0;
         symbolTable.insertSymbol("print", "function");
@@ -508,10 +508,12 @@ struct Basicx86Emitter : public NullVisitor
         i_vector.push_back({ std::byte(0xB8) });  // \  mov eax, address of function
         
         symbolTable.findSymbol(fcall->name, 0);
-                
-        if (fcall->name == "print") 
+
+        auto functionIterator = functionMap.find(fcall->name);
+
+        if (functionIterator != functionMap.end())
         {
-            i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(&builtin_print)));
+            i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(functionIterator->second)));
         }
         i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
 
@@ -637,6 +639,8 @@ private:
     // key is a pair that uniquely identifying scope
     std::map<std::pair<size_t, size_t>, size_t> variable_position_on_stack_map;
 
+    std::map<std::string, void*> functionMap;
+
     void insertCmpVariable(unsigned int variablePosition)
     {
         // cmp eax, dword ptr[ebp - ebpOffset]
@@ -735,7 +739,7 @@ private:
     }
 };
 
-auto emitMachineCode(const StatementList& statements)
+auto emitMachineCode(const StatementList& statements, const std::map<std::string, void*>& functionMap)
 {
     X86InstrVector i_vector;
     i_vector.push_function_prolog();
@@ -744,7 +748,7 @@ auto emitMachineCode(const StatementList& statements)
     PreAllocationPass preallocPass;
     traverse(statements, preallocPass);
 
-    Basicx86Emitter visitor(i_vector, preallocPass.getAllocationVector(), symbolTable);
+    Basicx86Emitter visitor(i_vector, preallocPass.getAllocationVector(), symbolTable, functionMap);
 
     traverse(statements, visitor);
     
