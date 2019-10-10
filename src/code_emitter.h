@@ -121,7 +121,6 @@ struct Basicx86Emitter : public NullVisitor
         :i_vector(v), allocs(allocVector), symbolTable(symTable), functionMap(fMap)
     {
         allocationLevelIndex[allocationLevel] = 0;
-        symbolTable.insertSymbol("print", "function");
     }
     ~Basicx86Emitter()
     {
@@ -744,6 +743,11 @@ auto emitMachineCode(const StatementList& statements, const std::map<std::string
     X86InstrVector i_vector;
     i_vector.push_function_prolog();
     BasicSymbolTable symbolTable;
+
+    for(const auto& function : functionMap)
+    {
+        symbolTable.insertSymbol(function.first, "function");
+    }
 
     PreAllocationPass preallocPass;
     traverse(statements, preallocPass);

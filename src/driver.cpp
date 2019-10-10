@@ -50,7 +50,10 @@ int main(int argc, char* argv[])
 
         traverse(statements, visitor);
 
-        FunctionMap functionMap = {{"print", (void*)&builtin_print}};
+        FunctionMap functionMap = {
+                {"print", (void*)&builtin_print},
+                {"out", (void*)&out}
+        };
 
         if (command == "ast") {
             dumpAST(visitor.getStatements(), std::cout);
