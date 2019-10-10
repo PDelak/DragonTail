@@ -52,7 +52,9 @@ int main(int argc, char* argv[])
 
         FunctionMap functionMap = {
                 {"print", (void*)&builtin_print},
-                {"out", (void*)&out}
+                {"out", (void*)&out},
+                {"malloc", (void*)&builtin_malloc},
+                {"free", (void*)&builtin_free}
         };
 
         if (command == "ast") {
