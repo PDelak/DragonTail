@@ -486,8 +486,10 @@ struct Basicx86Emitter : public NullVisitor
     void visitPost(const FunctionCall* fcall) 
     {   
         // push params
-        for (const auto& param : fcall->parameters) 
+        // parameters are passed on the stack in reverse order from right to left
+        for (auto it = fcall->parameters.rbegin(); it != fcall->parameters.rend(); ++it)
         {
+            const auto& param = *it;
             if (std::isdigit(param[0])) {
                 i_vector.push_back({ std::byte(0x68) }); // push
                 i_vector.push_back(i_vector.int_to_bytes(std::stoi(param)));
@@ -515,6 +517,7 @@ struct Basicx86Emitter : public NullVisitor
             i_vector.push_back(i_vector.get_address(reinterpret_cast<void*>(functionIterator->second)));
         }
         i_vector.push_back({ std::byte(0xFF), std::byte(0xD0) }); // call eax
+
 
         for (const auto& param : fcall->parameters)
         {
