@@ -1,0 +1,11 @@
+var a;
+var b;
+b = &a;
+out(b);
+print(a);
+var p;
+var ptr;
+ptr = &p;
+malloc(10 ptr);
+print(a);
+free(p);
