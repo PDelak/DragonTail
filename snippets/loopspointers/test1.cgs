@@ -1,12 +1,12 @@
-var x;
+var x:i32;
 x = 88;
-var a;
+var a:i32;
 a = 23;
-var d;
+var d:i32;
 d = 99;
-var b;
+var b:^i32;
 b = &a;
-var c;
+var c:i32;
 c = *b;
 print(c);
 b = b+4;

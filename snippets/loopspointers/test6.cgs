@@ -1,4 +1,4 @@
-var y;
+var y:i32;
 
 y = 1;
 while (y < 5)
@@ -8,9 +8,9 @@ while (y < 5)
   y = y + 1;
 }
 
-var x;
+var x:i32;
 x = 1;
-var c;
+var c:i32;
 
 while(x<=10)
 {

@@ -1,7 +1,7 @@
-var x;
+var x:i32;
 x = 1;
 {
-  var y;
+  var y:i32;
 }
 print (11);
 print (33);

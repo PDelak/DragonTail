@@ -1,13 +1,13 @@
-    var c;
+    var c:i32;
     c = 1;
-    var b;
+    var b:i32;
     b = 2;
-    var dd;
+    var dd:i32;
     dd = 4;
     if (c < 5) 
     {
-      var x;
-      var y;
+      var x:i32;
+      var y:i32;
       x = 5;
       y = 6;
       if (x == 5)

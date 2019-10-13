@@ -1,8 +1,8 @@
 {
-  var a;
-  var b;
+  var a:i32;
+  var b:i32;
   {
-    var c;
+    var c:i32;
     while(c)
     { 
       c = c+1;

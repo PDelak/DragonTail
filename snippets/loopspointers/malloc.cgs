@@ -1,10 +1,10 @@
-var a;
-var b;
+var a:i32;
+var b:^i32;
 b = &a;
 out(b);
 print(a);
-var p;
-var ptr;
+var p:^i32;
+var ptr:^^i32;
 ptr = &p;
 malloc(10 ptr);
 print(a);

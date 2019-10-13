@@ -1,7 +1,7 @@
-var a;
-var b;
+var a:i32;
+var b:i32;
 b = 929;
-var p;
+var p:^i32;
 a = 1;
 p = &a;
 print(p);

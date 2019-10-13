@@ -1,8 +1,8 @@
-var a;
+var a:i32;
 a = 1;
-var b;
+var b:i32;
 b = a;
-var c;
+var c:i32;
 c = b;
 
 print(c);
@@ -10,28 +10,28 @@ print(a);
 print(b);
 print(c);
 
-var x;
-var y;
+var x:i32;
+var y:i32;
 x = 6;
 y = 1;
 
-var add_result;
+var add_result:i32;
 add_result = x+y;
 print(add_result);
-var sub_result;
+var sub_result:i32;
 sub_result = 27/3;
 print(sub_result);
 
-var eq_resultTrue;
+var eq_resultTrue:i32;
 eq_resultTrue = 5 == 5;
 print(eq_resultTrue);
 
-var eq_resultFalse;
+var eq_resultFalse:i32;
 eq_resultFalse = 5 == 4;
 print(eq_resultFalse);
 
-var cmp_L;
-var cmp_R;
+var cmp_L:i32;
+var cmp_R:i32;
 cmp_L = 5;
 cmp_R = 5;
 eq_resultTrue = cmp_L == cmp_R;
@@ -43,11 +43,11 @@ eq_resultFalse = cmp_L == cmp_R;
 print(eq_resultFalse);
 
 
-var noteq_resultTrue;
+var noteq_resultTrue:i32;
 noteq_resultTrue = 5 != 4;
 print(noteq_resultTrue);
 
-var noteq_resultFalse;
+var noteq_resultFalse:i32;
 noteq_resultFalse = 5 != 5;
 print(noteq_resultFalse);
 
@@ -61,11 +61,11 @@ cmp_R = 5;
 eq_resultFalse = cmp_L != cmp_R;
 print(eq_resultFalse);
 
-var lt_resultTrue;
+var lt_resultTrue:i32;
 lt_resultTrue = 5 < 6;
 print(lt_resultTrue);
 
-var lt_resultFalse;
+var lt_resultFalse:i32;
 lt_resultFalse = 6 < 5;
 print(lt_resultFalse);
 
@@ -80,11 +80,11 @@ cmp_R = 5;
 lt_resultFalse = cmp_L < cmp_R;
 print(lt_resultFalse);
 
-var gt_resultTrue;
+var gt_resultTrue:i32;
 gt_resultTrue = 6 > 5;
 print(gt_resultTrue);
 
-var gt_resultFalse;
+var gt_resultFalse:i32;
 gt_resultFalse = 5 > 6;
 print(gt_resultFalse);
 
@@ -100,23 +100,23 @@ cmp_R = 6;
 gt_resultFalse = cmp_L > cmp_R;
 print(gt_resultFalse);
 
-var gte_resultTrue;
+var gte_resultTrue:i32;
 gte_resultTrue = 6 >= 5;
 print(gte_resultTrue);
 
 gte_resultTrue = 6 >= 6;
 print(gte_resultTrue);
 
-var lte_resultTrue;
+var lte_resultTrue:i32;
 lte_resultTrue = 5 <= 6;
 print(lte_resultTrue);
 
 lte_resultTrue = 6 <= 6;
 print(lte_resultTrue);
 
-var not;
+var not:i32;
 not = 0;
-var notRes;
+var notRes:i32;
 notRes = !not;
 print(not);
 print(notRes);

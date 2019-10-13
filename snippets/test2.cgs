@@ -1,8 +1,8 @@
 function fun1(param1 param2)
 {
-  var x;
+  var x:i32;
   if(x) 
   {
-    var y;
+    var y:i32;
   }
 }

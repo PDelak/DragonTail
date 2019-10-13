@@ -1,18 +1,18 @@
-var x;
+var x:i32;
 if (x)
 {
-	var a;
+	var a:i32;
 	{
-		var b;
+		var b:i32;
 		{
-			var c;
+			var c:i32;
                         c = 1;
                         if (c)
                         { 
-			  var d;
+			  var d:i32;
                           d = 2;
                         }
-			var e;
+			var e:i32;
 		}
 	}
 }

@@ -1,13 +1,13 @@
-var x;
+var x:i32;
 if (x)
 {
-	var a;
+	var a:i32;
 	{
-		var b;
+		var b:i32;
 		{
-			var c;
-			var d;
-			var e;
+			var c:i32;
+			var d:i32;
+			var e:i32;
 		}
 	}
 }

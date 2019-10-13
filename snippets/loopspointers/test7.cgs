@@ -1,26 +1,26 @@
-var z;
+var z:i32;
 z = 1;
-var x;
+var x:i32;
 x = 33;
 while(z < 10)
 {
-  var c;
+  var c:i32;
   z=z+1;
   print(z);
   c=2;
   print(c);
-  var p; 
+  var p:^i32; 
   p = &x;
-  var v;
+  var v:i32;
   v = *p;
   print(v);
 }
 
-var a;
+var a:i32;
 a = 15;
 while(a < 20)
 {
-  var b; 
+  var b:i32; 
   print(a);
   a=a+1;
   b = 222;
