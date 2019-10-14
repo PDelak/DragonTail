@@ -9,7 +9,7 @@ expr : expr op expr
        | dereference id 
        | id
        | number;
-var_statement : 'var' id (':' type)?;
+var_statement : 'var' id (':' type);
 if_statement : 'if' '(' expr ')' statement;
 while_loop : 'while' '(' expr ')' statement;
 block_statement : '{' statement* '}';

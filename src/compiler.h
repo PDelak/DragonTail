@@ -58,7 +58,7 @@ visit_node(const std::string& name, const std::string& value, StatementStack&, S
 
 void
 pre_visit_node(const std::string& name, const std::string& value, StatementStack& stmtStack, StatementList&, size_t& scope, AstVisitor&) {
-    if (name == "id" || name == "op" || name == "number" || name == "not" || name == "addr" || name == "dereference")
+    if (name == "id" || name == "op" || name == "number" || name == "not" || name == "addr" || name == "dereference" || name == "type")
     {
         std::string temp = value;
         auto it = std::remove_if(temp.begin(), temp.end(), isspace);
@@ -173,8 +173,10 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
 
     if (name == "var_statement") {
         auto begin = stmtStack.rbegin();
-        auto var_name = *begin;
+        auto type = *begin;
         auto i = stmtStack.erase(std::next(begin).base());
+        auto var_name = *std::prev(i);
+        stmtStack.erase(--i);
         stmtStack.erase(--i);
         auto node = std::make_shared<VarDecl>(scope);
         node->var_name = var_name;
