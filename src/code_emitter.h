@@ -36,6 +36,13 @@ using LabelToCodePosition = std::map<std::string, size_t>;
 
 // TODO: just for now stack for local variables will be only 256 bytes
 constexpr unsigned int stackSize = 256;
+using TypeSizeOfMap = std::map<std::string, int>;
+
+// for 32 bit arch
+TypeSizeOfMap typeSizeOfMap = {
+        {"i32", 4},
+        {"^i32", 4},
+};
 
 struct PreAllocationPass : public NullVisitor
 {
@@ -217,6 +224,17 @@ struct Basicx86Emitter : public NullVisitor
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
                 }
+                else
+                {
+                    std::string errMessage = "expression is noop operation : ";
+                    std::stringstream outStream;
+                    for(const auto child : expr->getChilds())
+                    {
+                        child->text(outStream);
+                    }
+                    errMessage += outStream.str();
+                    throw CodeEmitterException(errMessage);
+                }
                 break;
             }
             case 4: {
@@ -386,13 +404,39 @@ struct Basicx86Emitter : public NullVisitor
                         
                         if (binOp->value == "+") 
                         {
-                            // add eax, [ebp - ebpOffset]
-                            i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(variablePosition) });
+                            auto sym = symbolTable.findSymbol(firstParam->value, 0);
+                            // stack grows downwards which means
+                            // that for pointer subtraction means addition and reverse
+                            if(sym.type[0] == '^')
+                            {
+                                auto sizeOf = typeSizeOfMap[sym.type];
+                                for(int i = 0; i < sizeOf; ++i) {
+                                    i_vector.push_back({std::byte(0x2B), std::byte(0x45), std::byte(variablePosition)});
+                                }
+                            }
+                            else
+                            {
+                                // add eax, [ebp - ebpOffset]
+                                i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(variablePosition) });
+                            }
                         }
                         if (binOp->value == "-")
                         {
-                            // sub eax, [ebp - ebpOffset]
-                            i_vector.push_back({ std::byte(0x2B), std::byte(0x45), std::byte(variablePosition) });
+                            auto sym = symbolTable.findSymbol(firstParam->value, 0);
+                            // stack grows downwards which means
+                            // that for pointer subtraction means addition and reverse
+                            if(sym.type[0] == '^')
+                            {
+                                auto sizeOf = typeSizeOfMap[sym.type];
+                                for(int i = 0; i < sizeOf; ++i) {
+                                    i_vector.push_back({ std::byte(0x03), std::byte(0x45), std::byte(variablePosition) });
+                                }
+                            }
+                            else
+                            {
+                                // sub eax, [ebp - ebpOffset]
+                                i_vector.push_back({ std::byte(0x2B), std::byte(0x45), std::byte(variablePosition) });
+                            }
                         }
                         if (binOp->value == "*")
                         {
@@ -442,13 +486,41 @@ struct Basicx86Emitter : public NullVisitor
                         int rhsValue = std::stoi(secondParam->value);
                         if (binOp->value == "+")
                         {
-                            i_vector.push_back({ std::byte(0x05) }); // add eax, rhsValue
-                            i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                            auto sym = symbolTable.findSymbol(firstParam->value, 0);
+                            // stack grows downwards which means
+                            // that for pointer subtraction means addition and reverse
+                            if(sym.type[0] == '^')
+                            {
+                                auto sizeOf = typeSizeOfMap[sym.type];
+                                for(int i = 0; i < sizeOf; ++i) {
+                                    i_vector.push_back({std::byte(0x2D)}); // sub eax, rhsValue
+                                    i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                                }
+                            }
+                            else
+                            {
+                                i_vector.push_back({std::byte(0x05)}); // add eax, rhsValue
+                                i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                            }
                         }
                         if (binOp->value == "-")
                         {
-                            i_vector.push_back({ std::byte(0x2D) }); // sub eax, rhsValue
-                            i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                            auto sym = symbolTable.findSymbol(firstParam->value, 0);
+                            // stack grows downwards which means
+                            // that for pointer subtraction means addition and reverse
+                            if(sym.type[0] == '^')
+                            {
+                                auto sizeOf = typeSizeOfMap[sym.type];
+                                for(int i = 0; i < sizeOf; ++i) {
+                                    i_vector.push_back({std::byte(0x05)}); // add eax, rhsValue
+                                    i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                                }
+                            }
+                            else
+                            {
+                                i_vector.push_back({std::byte(0x2D)}); // sub eax, rhsValue
+                                i_vector.push_back(i_vector.int_to_bytes(rhsValue));
+                            }
                         }
                         if (binOp->value == "*")
                         {
