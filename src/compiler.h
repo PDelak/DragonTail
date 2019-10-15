@@ -180,6 +180,7 @@ post_visit_node(const std::string& name, const std::string&, StatementStack& stm
         stmtStack.erase(--i);
         auto node = std::make_shared<VarDecl>(scope);
         node->var_name = var_name;
+        node->type = type;
         statementList.push_back(node);
         visitor.visitPost(node.get());
     }

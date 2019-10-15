@@ -32,7 +32,9 @@ struct CFGFlattener : public AstVisitor
 
     void visitPre(const VarDecl* stmt)
     {
-        nodesStack.push_back(makeNode(VarDecl(scope, stmt->var_name)));
+        auto node = makeNode(VarDecl(scope, stmt->var_name));
+        cast<VarDecl>(node)->type = stmt->type;
+        nodesStack.push_back(node);
     }
     
     void visitPre(const Expression* stmt)

@@ -173,8 +173,8 @@ struct Basicx86Emitter : public NullVisitor
 
         auto scope = scopeId.top();
         // std::cout << varDecl->var_name << " : " << "(" << scope.first << "," << scope.second << ")" << " stack position:" << (int)variable_position_on_stack_map[scope] << std::endl;
-	
-        symbolTable.insertSymbol(varDecl->var_name, "number", variable_position_on_stack_map[scope], scope.first, scope.second);            
+
+        symbolTable.insertSymbol(varDecl->var_name, varDecl->type, variable_position_on_stack_map[scope], scope.first, scope.second);
 
         variable_position_on_stack_map[scope]++;
     }
@@ -238,6 +238,17 @@ struct Basicx86Emitter : public NullVisitor
                   }
                   auto rhsVariable =  cast<BasicExpression>(children[3]);
                   auto sym = symbolTable.findSymbol(lhsVariable->value, 0);
+                  if(sym.type[0] != '^')
+                  {
+                    std::string errMessage = "only pointers can be dereferenced : ";
+                    std::stringstream outStream;
+                    for(const auto child : expr->getChilds())
+                    {
+                        child->text(outStream);
+                    }
+                    errMessage += outStream.str();
+                    throw CodeEmitterException(errMessage);
+                  }
                   auto currentAllocationLevel = scopeId.top().first;
                   unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel, allocs);
                   // mov eax, [ebp - ebpOffset]
@@ -313,6 +324,17 @@ struct Basicx86Emitter : public NullVisitor
                   if (unaryOp->value == "*")
                   {
                     auto sym = symbolTable.findSymbol(rhs->value, 0);
+                    if(sym.type[0] != '^')
+                    {
+                        std::string errMessage = "only pointers can be dereferenced : ";
+                        std::stringstream outStream;
+                        for(const auto child : expr->getChilds())
+                        {
+                            child->text(outStream);
+                        }
+                        errMessage += outStream.str();
+                        throw CodeEmitterException(errMessage);
+                    }
                     auto currentAllocationLevel = scopeId.top().first;
                     unsigned int variablePosition = calculateVariablePositionOnStack(sym, currentAllocationLevel,
                                                                                      allocs);

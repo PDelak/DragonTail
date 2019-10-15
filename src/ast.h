@@ -69,6 +69,7 @@ struct BasicExpression : public BasicStatement
 struct VarDecl : public Statement
 {
     std::string var_name;
+    std::string type;
     VarDecl(size_t scope):Statement(scope) {}
     VarDecl(size_t scope, std::string var) :Statement(scope), var_name(var) {}
     void dump(size_t& depth, std::ostream& out) const {
