@@ -9,6 +9,6 @@ b = &a;
 var c:i32;
 c = *b;
 print(c);
-b = b+4;
+b = b+1;
 c = *b;
 print(c);
