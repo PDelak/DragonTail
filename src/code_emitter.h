@@ -14,6 +14,7 @@
 #include "builtin.h"
 #include "symbol_table.h"
 #include "nullvisitor.h"
+#include "sema.h"
 
 /*
 // AllocationPass counts number of variables per each block
