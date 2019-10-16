@@ -850,6 +850,9 @@ auto emitMachineCode(const StatementList& statements, const std::map<std::string
     PreAllocationPass preallocPass;
     traverse(statements, preallocPass);
 
+    SemanticChecker semaChecker;
+    traverse(statements, semaChecker);
+
     Basicx86Emitter visitor(i_vector, preallocPass.getAllocationVector(), symbolTable, functionMap);
 
     traverse(statements, visitor);
