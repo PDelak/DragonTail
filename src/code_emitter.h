@@ -78,10 +78,6 @@ private:
     AllocationMap allocs;
 };
 
-struct CodeEmitterException : public std::runtime_error
-{
-    CodeEmitterException(const std::string& msg):std::runtime_error(msg) {}
-};
 
 unsigned int calculateVariableOffset(const symbol& sym, size_t currentAllocationLevel, const AllocationMap& allocs)
 {
@@ -224,17 +220,6 @@ struct Basicx86Emitter : public NullVisitor
                     unsigned int variablePosition = calculateVariablePositionOnStack(lhsSymbol, currentAllocationLevel, allocs);
                     // mov [ebp - ebpOffset], eax
                     i_vector.push_back({ std::byte(0x89), std::byte(0x45), std::byte(variablePosition) });
-                }
-                else
-                {
-                    std::string errMessage = "expression is noop operation : ";
-                    std::stringstream outStream;
-                    for(const auto child : expr->getChilds())
-                    {
-                        child->text(outStream);
-                    }
-                    errMessage += outStream.str();
-                    throw CodeEmitterException(errMessage);
                 }
                 break;
             }
