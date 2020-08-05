@@ -41,4 +41,6 @@ Run Configure_Make.sh
 ~~~~~~~~~~~~~~~~~~~~~~~~none
 cmake --build ./build-make
 ~~~~~~~~~~~~~~~~~~~~~~~~
- 
+
+#References
+https://www.cs.cmu.edu/~aplatzer/course/Compilers/11-ssa.pdf 
