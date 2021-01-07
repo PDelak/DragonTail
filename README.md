@@ -46,3 +46,6 @@ cmake --build ./build-make
 https://www.cs.cmu.edu/~aplatzer/course/Compilers/11-ssa.pdf 
 
 https://pp.info.uni-karlsruhe.de/uploads/publikationen/braun13cc.pdf
+
+#### Higher level concepts
+[Concepts](https://github.com/PDelak/DragonTail/blob/master/CONCEPTS.md)
