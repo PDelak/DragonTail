@@ -14,6 +14,9 @@
 
 ### Building blocks
 
+#### Variable declaration
+* `var a: int8 = 0;`
+
 ### CTFE
 
 ### Compile time reflection
